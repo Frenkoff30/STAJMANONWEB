@@ -119,31 +119,4 @@ import heroImg from '@/assets/photos/terasa-02.jpg';
     <Map class="mt-10" />
   </Section>
 
-  <!-- Rychlé odkazy -->
-  <Section tone="dark" space="md">
-    <div class="grid gap-px border border-white/12 bg-white/12 sm:grid-cols-2 lg:grid-cols-4">
-      {
-        [
-          { t: 'Rezervace ubytování', d: site.emailPenzion, href: `mailto:${site.emailPenzion}` },
-          { t: 'Kurzy a pobyty', d: '+420 606 836 449', href: 'tel:+420606836449' },
-          { t: 'Ustájení a sport', d: '+420 602 451 918', href: 'tel:+420602451918' },
-          { t: 'Kalendář akcí', d: 'Sezóna 2026', href: '/akce' },
-        ].map((x, i) => (
-          <a
-            href={x.href}
-            class="group bg-loden-950 p-7 transition-colors hover:bg-loden-900"
-            data-reveal
-            style={`--reveal-delay:${i * 60}ms`}
-          >
-            <p class="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-brass-300">
-              {x.t}
-            </p>
-            <p class="mt-3 break-words text-[1.0625rem] text-white transition-colors group-hover:text-brass-300">
-              {x.d}
-            </p>
-          </a>
-        ))
-      }
-    </div>
-  </Section>
 </PageLayout>

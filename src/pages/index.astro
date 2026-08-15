@@ -513,38 +513,24 @@ const jsonLd = {
   </Section>
 
   <!-- ================================================================ CTA -->
-  <Section tone="dark" space="lg">
-    <div class="grid gap-12 lg:grid-cols-12 lg:items-end">
+  <Section tone="loden" space="lg">
+    <div class="grid gap-8 lg:grid-cols-12 lg:items-center">
       <div class="lg:col-span-7">
         <h2 class="t-1 text-white">
           Přijeďte se podívat.<br />Nejlépe o víkendu, kdy se závodí.
         </h2>
-        <p class="lead mt-7 max-w-2xl text-white/70">
+        <p class="lead mt-5 max-w-2xl text-white/70">
           Ustájení, výuka, kurz pro dítě nebo jen víkend na venkově — ozvěte se
           a domluvíme se. Areál najdete tři kilometry od Litomyšle.
         </p>
       </div>
 
-      <div class="lg:col-span-5">
-        <div class="border border-white/15 p-8">
-          {
-            site.contacts.map((c, i) => (
-              <div class:list={['py-5', i > 0 && 'border-t border-white/12']}>
-                <p class="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-brass-300">
-                  {c.role}
-                </p>
-                <p class="mt-2 font-display text-[1.375rem] text-white">{c.name}</p>
-                <a
-                  href={`tel:${c.phoneHref}`}
-                  class="link-underline mt-2 inline-block text-white/75"
-                >
-                  {c.phone}
-                </a>
-              </div>
-            ))
-          }
-          <a href="/kontakt" class="btn btn-brass mt-6 w-full">Kontaktní formulář</a>
-        </div>
+      <div class="flex flex-wrap gap-3 lg:col-span-5 lg:justify-end">
+        <a href={`tel:${site.phoneHref}`} class="btn btn-brass">
+          <Icon name="phone" class="h-4 w-4" />
+          {site.phone}
+        </a>
+        <a href="/kontakt" class="btn btn-ghost-light">Napsat nám</a>
       </div>
     </div>
   </Section>
