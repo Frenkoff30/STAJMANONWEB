@@ -239,26 +239,43 @@ fulltext a filtry, které si sbalené roky samy rozbalí.
   a přesměrování na `/kontakt?odeslano=1`
 - adresa příjemce je konstanta `RECIPIENT` na začátku souboru
 
-**Při nasazení na statický hosting** (Netlify, Vercel, Cloudflare Pages) PHP
-nepoběží. Formulář to pozná a nabídne přímý e-mail; pro plnou funkčnost je
-potřeba `action` v `src/components/ContactForm.astro` přesměrovat na formulářovou
-službu daného hostingu.
+**Na statickém hostingu** (Vercel, Netlify, Cloudflare Pages) PHP neběží.
+Adresa se proto dá přepnout proměnnými prostředí — kód se nemusí sahat:
+
+```
+PUBLIC_FORM_ENDPOINT=https://api.web3forms.com/submit
+PUBLIC_FORM_ACCESS_KEY=<klíč z web3forms.com>
+```
+
+Bez nich se použije `/kontakt-odeslat.php`. Formulář zvládne obě odpovědi —
+`{ ok, message }` z vlastního PHP i `{ success, message }` z Web3Forms.
+Vzor je v `.env.example`.
 
 ---
 
 ## Nasazení
 
+### Apache hosting (cílový stav)
+
 ```bash
 npm run build
 ```
 
-Obsah složky `dist/` nahrát do kořene webu. `.htaccess` se přenese s ním.
-
-Před ostrým nasazením:
+Obsah složky `dist/` nahrát do kořene webu — `.htaccess` se přenese s ním.
 
 1. `src/data/site.ts` → zkontrolovat `url` (kanonická doména v `<link rel=canonical>` a v sitemapě)
 2. ověřit, že hosting má zapnuté `mod_rewrite`, `mod_deflate` a `mod_expires`
 3. otestovat odeslání formuláře — hosting musí mít funkční `mail()`
+
+### Vercel (náhled pro klienta)
+
+Repozitář stačí připojit, `vercel.json` řeší build, hezké URL, přesměrování ze
+starých `.php` adres i bezpečnostní hlavičky. Jen pozor na dvě věci:
+
+- **formulář** — nastavit `PUBLIC_FORM_ENDPOINT` a `PUBLIC_FORM_ACCESS_KEY`
+  v *Settings → Environment Variables*, jinak PHP endpoint neodpoví
+- **indexace** — u náhledu, který nemá skončit ve vyhledávačích, přidat
+  proměnnou `VERCEL_ENV=preview` nebo nasadit na chráněný náhled
 
 ---
 

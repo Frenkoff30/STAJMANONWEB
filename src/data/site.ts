@@ -59,6 +59,16 @@ export const site = {
   bankAccount: '86-5310227/0100',
   bankName: 'Komerční banka',
 
+  /**
+   * Kam odesílá kontaktní formulář.
+   *
+   * Výchozí je PHP skript v public/ — funguje na běžném hostingu s mail().
+   * Na statickém hostingu (Vercel, Netlify) PHP neběží, proto se dá přepsat
+   * proměnnou prostředí PUBLIC_FORM_ENDPOINT na adresu formulářové služby
+   * (Web3Forms, Formspree…). Odpověď musí být JSON.
+   */
+  formEndpoint: import.meta.env.PUBLIC_FORM_ENDPOINT || '/kontakt-odeslat.php',
+
   social: {
     facebook: 'https://www.facebook.com/stajmanon.jiriskrivan',
     facebookKlub:

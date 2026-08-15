@@ -16,7 +16,7 @@ const topics = [
 <form
   id="formular"
   method="post"
-  action="/kontakt-odeslat.php"
+  action={site.formEndpoint}
   class="card p-7 lg:p-10"
   novalidate
 >
@@ -32,6 +32,18 @@ const topics = [
     <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
   </div>
   <input type="hidden" name="ts" id="form-ts" value="0" />
+  {
+    /* Klíč pro externí formulářovou službu (Web3Forms apod.), pokud se
+       místo PHP použije ona — viz PUBLIC_FORM_ENDPOINT v src/data/site.ts. */
+    import.meta.env.PUBLIC_FORM_ACCESS_KEY && (
+      <input
+        type="hidden"
+        name="access_key"
+        value={import.meta.env.PUBLIC_FORM_ACCESS_KEY}
+      />
+    )
+  }
+  <input type="hidden" name="subject" value="Nová zpráva z webu stajmanon.cz" />
 
   <div class="mt-8 grid gap-5 sm:grid-cols-2">
     <div class="sm:col-span-2">
@@ -275,9 +287,20 @@ const topics = [
           throw new Error('no-endpoint');
         }
 
-        const data = (await res.json()) as { ok: boolean; message: string };
-        setStatus(data.ok, data.message);
-        if (data.ok) form.reset();
+        // Vlastní PHP vrací { ok, message }, Web3Forms { success, message }
+        const data = (await res.json()) as {
+          ok?: boolean;
+          success?: boolean;
+          message?: string;
+        };
+        const ok = data.ok ?? data.success ?? false;
+        setStatus(
+          ok,
+          ok
+            ? 'Děkujeme, zpráva byla odeslána. Ozveme se v nejkratším možném čase.'
+            : (data.message ?? 'Zprávu se nepodařilo odeslat.'),
+        );
+        if (ok) form.reset();
       } catch {
         setStatus(
           false,
