@@ -1,0 +1,19 @@
+# Závislosti a build
+node_modules/
+dist/
+.astro/
+
+# Nástroje mimo projekt (skill pro návrh UI, ne součást webu)
+skills/
+
+# Systém a editory
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+
+# Lokální konfigurace
+.env
+.env.*
+!.env.example

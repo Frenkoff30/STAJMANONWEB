@@ -1,0 +1,93 @@
+# =============================================================================
+#  Stáj Manon — konfigurace pro Apache hosting
+#  Nový web je statický; tenhle soubor řeší přesměrování ze starých .php adres,
+#  hezké URL bez .html, komprimaci a cache.
+# =============================================================================
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # ---------------------------------------------------------------------------
+  # 301 ze starých adres (kvůli SEO a odkazům, které někde zůstaly)
+  # ---------------------------------------------------------------------------
+  RewriteRule ^index\.php$                       /                        [R=301,L]
+  RewriteRule ^aktuality\.php$                   /akce                    [R=301,L]
+  RewriteRule ^penzion-jizdarna-sucha\.php$      /penzion                 [R=301,L]
+  RewriteRule ^akce\.php$                        /akce                    [R=301,L]
+  RewriteRule ^vysledky\.php$                    /vysledky                [R=301,L]
+  RewriteRule ^sluzby\.php$                      /sluzby                  [R=301,L]
+  RewriteRule ^kone-na-prodej\.php$              /kone-na-prodej          [R=301,L]
+  RewriteRule ^testacni-odchovna-hrebcu\.php$    /odchovna                [R=301,L]
+  # Pozor: na starém webu byly „Pobyty" pod jezdecka-skola.php
+  # a „Jezdecká škola" pod jezdecky-klub.php.
+  RewriteRule ^jezdecka-skola\.php$              /pobyty                  [R=301,L]
+  RewriteRule ^jezdecky-klub\.php$               /jezdecka-skola          [R=301,L]
+  RewriteRule ^prazdninove-kurzy\.php$           /kurzy                   [R=301,L]
+  RewriteRule ^fotogalerie\.php$                 /galerie                 [R=301,L]
+  RewriteRule ^staj-manon\.php$                  /o-nas                   [R=301,L]
+  RewriteRule ^uspechy\.php$                     /uspechy                 [R=301,L]
+  RewriteRule ^jiri-skrivan\.php$                /jiri-skrivan            [R=301,L]
+  RewriteRule ^kontakt\.php$                     /kontakt                 [R=301,L]
+  RewriteRule ^(cs|en|de)/index\.php$            /                        [R=301,L]
+  RewriteRule ^fotogalerie/.*$                   /galerie                 [R=301,L]
+  RewriteRule ^gallery2/.*$                      /galerie                 [R=301,L]
+
+  # ---------------------------------------------------------------------------
+  # Kanonická doména s www a HTTPS
+  # ---------------------------------------------------------------------------
+  RewriteCond %{HTTPS} off
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+  RewriteCond %{HTTP_HOST} ^stajmanon\.cz$ [NC]
+  RewriteRule ^(.*)$ https://www.stajmanon.cz/$1 [R=301,L]
+
+  # ---------------------------------------------------------------------------
+  # Hezké URL — /penzion místo /penzion.html
+  # ---------------------------------------------------------------------------
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME}\.html -f
+  RewriteRule ^(.+?)/?$ $1.html [L]
+
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME}/index\.html -f
+  RewriteRule ^(.+?)/?$ $1/index.html [L]
+</IfModule>
+
+ErrorDocument 404 /404.html
+
+# -----------------------------------------------------------------------------
+# Komprimace
+# -----------------------------------------------------------------------------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript
+  AddOutputFilterByType DEFLATE application/javascript application/json
+  AddOutputFilterByType DEFLATE image/svg+xml application/xml
+</IfModule>
+
+# -----------------------------------------------------------------------------
+# Cache — hashované assety dlouho, HTML krátce
+# -----------------------------------------------------------------------------
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html                 "access plus 10 minutes"
+  ExpiresByType text/css                  "access plus 1 year"
+  ExpiresByType application/javascript    "access plus 1 year"
+  ExpiresByType image/webp                "access plus 1 year"
+  ExpiresByType image/jpeg                "access plus 1 year"
+  ExpiresByType image/png                 "access plus 1 year"
+  ExpiresByType image/svg+xml             "access plus 1 year"
+  ExpiresByType font/woff2                "access plus 1 year"
+</IfModule>
+
+# -----------------------------------------------------------------------------
+# Bezpečnostní hlavičky
+# -----------------------------------------------------------------------------
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+</IfModule>
+
+AddDefaultCharset UTF-8

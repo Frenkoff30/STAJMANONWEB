@@ -1,0 +1,50 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import PageNav from '@/components/PageNav.astro';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  title: string;
+  description: string;
+  heading?: string;
+  lead?: string;
+  image: ImageMetadata;
+  imageAlt: string;
+  crumbs?: { label: string; href?: string }[];
+  heroSize?: 'default' | 'tall';
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  ogImage?: string;
+  /** Kotvy na sekce stránky — vykreslí lepicí lištu pod hero. */
+  nav?: { id: string; label: string }[];
+  navAction?: { label: string; href: string };
+}
+
+const {
+  title,
+  description,
+  heading,
+  lead,
+  image,
+  imageAlt,
+  crumbs,
+  heroSize = 'default',
+  jsonLd,
+  ogImage,
+  nav,
+  navAction,
+} = Astro.props;
+---
+
+<BaseLayout {title} {description} {jsonLd} image={ogImage} overlayHeader>
+  <PageHero
+    title={heading ?? title}
+    {lead}
+    {image}
+    {imageAlt}
+    {crumbs}
+    size={heroSize}
+  />
+  {nav && nav.length > 1 && <PageNav items={nav} action={navAction} />}
+  <slot />
+</BaseLayout>

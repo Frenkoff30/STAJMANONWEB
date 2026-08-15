@@ -1,0 +1,229 @@
+---
+import { Image } from 'astro:assets';
+import PageLayout from '@/layouts/PageLayout.astro';
+import Section from '@/components/Section.astro';
+import SectionHead from '@/components/SectionHead.astro';
+import Icon from '@/components/Icon.astro';
+import Map from '@/components/Map.astro';
+import { facilities } from '@/data/services';
+import { site } from '@/data/site';
+
+import heroImg from '@/assets/photos/areal-letecky.jpg';
+import halaImg from '@/assets/photos/hala-01.jpg';
+import kolbisteImg from '@/assets/photos/kolbiste-01.jpg';
+import stajImg from '@/assets/photos/boxy-01.jpg';
+import penzionImg from '@/assets/photos/areal-budovy.jpg';
+
+const timeline = [
+  {
+    year: '1992',
+    title: 'Zemědělská usedlost u Litomyšle',
+    text: 'Po návratu ze zahraničí zakoupil Jiří Skřivan zemědělskou usedlost nedaleko Litomyšle. Po přestavbě zde byl zahájen provoz sportovní stáje.',
+  },
+  {
+    year: '1995',
+    title: 'Nová stáj v Litomyšli',
+    text: 'Stáj se přestěhovala do nově vybudované moderní stáje přímo v Litomyšli.',
+  },
+  {
+    year: '1997',
+    title: 'Přírodní areál u Primátorské hráze',
+    text: 'Pro pořádání jezdeckých závodů vzniklo pískové kolbiště, přírodní tribuna a travnaté kolbiště.',
+  },
+  {
+    year: '2002',
+    title: 'Velká cena vstupuje do Českého skokového poháru',
+    text: 'Tradiční Velká cena Litomyšle se stala součástí prestižního celorepublikového seriálu.',
+  },
+  {
+    year: '2007',
+    title: 'Areál Jízdárna Suchá',
+    text: 'V areálu Hřebčína Suchá byla dokončena stavba 30 boxů s krytou halou 23 × 66 m a penzionu s ubytováním — za přispění prostředků státního rozpočtu z programu Ministerstva pro místní rozvoj.',
+  },
+];
+
+const gallery = [
+  { src: halaImg, alt: 'Krytá jezdecká hala 23 × 66 m', label: 'Krytá hala' },
+  { src: kolbisteImg, alt: 'Venkovní kolbiště s parkurovými překážkami', label: 'Kolbiště' },
+  { src: stajImg, alt: 'Stájová chodba s boxy pro koně', label: 'Stáje a boxy' },
+  { src: penzionImg, alt: 'Budovy areálu s parkovištěm', label: 'Zázemí' },
+];
+---
+
+<PageLayout
+  title="Areál Jízdárna Suchá"
+  description="Moderní jezdecký areál 3 km od Litomyšle — krytá hala 23 × 66 m, venkovní kolbiště 60 × 70 m, písková jízdárna, 30 boxů a penzion s restaurací."
+  heading="Areál Jízdárna Suchá"
+  lead="Krytá hala, dvě venkovní plochy, třicet boxů a penzion — všechno na jednom místě tři kilometry od Litomyšle."
+  image={heroImg}
+  imageAlt="Letecký pohled na areál Jízdárna Suchá"
+  crumbs={[{ label: 'Areál' }]}
+  nav={[
+    { id: 'parametry', label: 'Parametry' },
+    { id: 'fotky', label: 'Fotky' },
+    { id: 'historie', label: 'Historie' },
+    { id: 'mapa', label: 'Kudy k nám' },
+  ]}
+  heroSize="tall"
+>
+  <!-- Parametry -->
+  <Section tone="paper" space="lg" id="parametry">
+    <SectionHead
+      title="Co tu najdete"
+      lead="Komplex vznikl v roce 2007 a je postavený tak, aby fungoval po celý rok bez ohledu na počasí."
+    />
+
+    <div class="mt-10 space-y-px">
+      {
+        facilities.map((f, i) => (
+          <article
+            class="grid gap-4 border-t border-ink/12 py-8 last:border-b sm:grid-cols-[auto_1fr_auto] sm:items-baseline sm:gap-10"
+            data-reveal
+            style={`--reveal-delay:${i * 80}ms`}
+          >
+            <span class="index-num">{String(i + 1).padStart(2, '0')}</span>
+            <div>
+              <h3 class="t-3">{f.name}</h3>
+              <p class="mt-3 max-w-2xl text-[0.9375rem] leading-relaxed text-ink-3">
+                {f.text}
+              </p>
+            </div>
+            <span class="font-display text-[1.75rem] text-brass-700 sm:text-right lg:text-[2.25rem]">
+              {f.size}
+            </span>
+          </article>
+        ))
+      }
+    </div>
+  </Section>
+
+  <!-- Fotky -->
+  <Section tone="paper-2" space="md" id="fotky">
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        gallery.map((g, i) => (
+          <figure
+            class="img-zoom group relative overflow-hidden"
+            data-reveal
+            style={`--reveal-delay:${i * 70}ms`}
+          >
+            <Image
+              src={g.src}
+              alt={g.alt}
+              widths={[320, 640]}
+              sizes="(min-width: 1024px) 24vw, (min-width: 640px) 48vw, 100vw"
+              class="aspect-[3/4] w-full object-cover"
+            />
+            <figcaption class="absolute inset-x-0 bottom-0 bg-[linear-gradient(to_top,rgba(10,16,13,.85),transparent)] p-5 text-[0.75rem] font-semibold uppercase tracking-[0.16em] text-white">
+              {g.label}
+            </figcaption>
+          </figure>
+        ))
+      }
+    </div>
+  </Section>
+
+  <!-- Historie -->
+  <Section tone="dark" space="lg" id="historie">
+    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+      <div class="lg:col-span-4">
+        <div class="lg:sticky lg:top-28">
+          <SectionHead
+            title="Od usedlosti k areálu."
+            lead="Třicet let postupného budování — od přestavěného statku po komplex, kde se ročně koná přes čtyřicet jezdeckých akcí."
+            tone="light"
+          />
+          <a href="/o-nas" class="link-arrow mt-8 text-brass-300">
+            Celý příběh stáje
+            <Icon name="arrow-right" class="h-3.5 w-3.5" />
+          </a>
+        </div>
+      </div>
+
+      <ol class="lg:col-span-8">
+        {
+          timeline.map((t, i) => (
+            <li
+              class="relative grid gap-3 border-t border-white/12 py-8 sm:grid-cols-[7rem_1fr] sm:gap-10 last:border-b"
+              data-reveal
+              style={`--reveal-delay:${i * 80}ms`}
+            >
+              <span class="font-display text-[1.75rem] leading-none text-brass-300 tabular-nums">
+                {t.year}
+              </span>
+              <div>
+                <h3 class="font-display text-[1.375rem] text-white">{t.title}</h3>
+                <p class="mt-2.5 text-[0.9375rem] leading-relaxed text-white/65">
+                  {t.text}
+                </p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </Section>
+
+  <!-- Mapa -->
+  <Section tone="paper" space="lg" id="mapa">
+    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+      <div class="lg:col-span-4">
+        <SectionHead title="Kde nás najdete" />
+        <address class="mt-8 not-italic">
+          <p class="font-display text-[1.5rem]">Areál Jízdárna Suchá</p>
+          <p class="mt-3 text-[1.0625rem] leading-relaxed text-ink-3">
+            {site.address.street}<br />
+            {site.address.zip}&nbsp;{site.address.city}
+          </p>
+        </address>
+        <ul class="mt-8 space-y-3 text-[0.9375rem] text-ink-3">
+          <li class="flex gap-3">
+            <Icon name="pin" class="mt-0.5 h-4 w-4 shrink-0 text-brass-600" />
+            3 km od centra Litomyšle
+          </li>
+          <li class="flex gap-3">
+            <Icon name="home" class="mt-0.5 h-4 w-4 shrink-0 text-brass-600" />
+            Parkování přímo v areálu
+          </li>
+        </ul>
+        <a
+          href={site.address.directionsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-primary mt-9"
+        >
+          Navigovat
+          <Icon name="arrow-up-right" class="h-4 w-4" />
+        </a>
+      </div>
+
+      <div class="lg:col-span-8">
+        <Map />
+      </div>
+    </div>
+  </Section>
+
+  <!-- Odkazy dál -->
+  <Section tone="paper-2" space="md">
+    <div class="grid gap-4 sm:grid-cols-3">
+      {
+        [
+          { t: 'Penzion & restaurace', d: 'Ubytování a stravování přímo v areálu', href: '/penzion' },
+          { t: 'Služby a ceník', d: 'Ustájení, trénink, pronájmy, přeprava', href: '/sluzby' },
+          { t: 'Kalendář akcí', d: 'Závody a akce v sezóně 2026', href: '/akce' },
+        ].map((c) => (
+          <a href={c.href} class="card card-hover group block p-8">
+            <h3 class="font-display text-[1.375rem] transition-colors group-hover:text-brass-700">
+              {c.t}
+            </h3>
+            <p class="mt-2 text-[0.875rem] text-ink-3">{c.d}</p>
+            <span class="link-arrow mt-6">
+              Zobrazit
+              <Icon name="arrow-right" class="h-3.5 w-3.5" />
+            </span>
+          </a>
+        ))
+      }
+    </div>
+  </Section>
+</PageLayout>

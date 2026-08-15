@@ -1,0 +1,114 @@
+---
+import Icon from './Icon.astro';
+import {
+  eventKindLabels,
+  formatRange,
+  parseDate,
+  type StableEvent,
+} from '@/data/events';
+
+interface Props {
+  event: StableEvent;
+  tone?: 'dark' | 'light';
+  /** Pořadové číslo v seznamu */
+  index?: number;
+}
+
+const { event, tone = 'dark', index } = Astro.props;
+const onDark = tone === 'light';
+
+const start = parseDate(event.start);
+const day = String(start.getDate());
+const monthShort = [
+  'led', 'úno', 'bře', 'dub', 'kvě', 'čvn',
+  'čvc', 'srp', 'zář', 'říj', 'lis', 'pro',
+][start.getMonth()];
+---
+
+<article
+  class:list={[
+    'group relative grid grid-cols-[4.5rem_1fr] items-start gap-5 border-t py-6 transition-colors sm:grid-cols-[6rem_1fr_auto] sm:gap-8 sm:py-7',
+    onDark ? 'border-white/12' : 'border-ink/12',
+    event.highlight && (onDark ? 'bg-white/[0.03]' : 'bg-brass-100/60'),
+  ]}
+  data-reveal
+  style={index !== undefined ? `--reveal-delay:${Math.min(index * 60, 300)}ms` : undefined}
+>
+  <!-- Datum -->
+  <div class:list={['pt-1 text-center sm:text-left', event.highlight && 'sm:pl-4']}>
+    <span
+      class:list={[
+        'block font-display text-[2rem] leading-none tabular-nums sm:text-[2.75rem]',
+        onDark ? 'text-white' : 'text-ink',
+      ]}
+    >
+      {day}
+    </span>
+    <span
+      class:list={[
+        'mt-1 block text-[0.6875rem] font-semibold uppercase tracking-[0.18em]',
+        onDark ? 'text-white/50' : 'text-ink-3/70',
+      ]}
+    >
+      {monthShort}
+    </span>
+  </div>
+
+  <!-- Popis -->
+  <div>
+    <p
+      class:list={[
+        'text-[0.6875rem] font-semibold uppercase tracking-[0.16em]',
+        event.highlight
+          ? onDark ? 'text-brass-300' : 'text-brass-700'
+          : onDark ? 'text-white/45' : 'text-ink-3/65',
+      ]}
+    >
+      {eventKindLabels[event.kind]}
+    </p>
+    <h3
+      class:list={[
+        'mt-2 font-display text-[1.25rem] leading-snug sm:text-[1.5rem]',
+        onDark ? 'text-white' : 'text-ink',
+      ]}
+    >
+      {event.title}
+    </h3>
+    {
+      event.detail && (
+        <p
+          class:list={[
+            'mt-1.5 text-[0.875rem] leading-relaxed',
+            onDark ? 'text-white/60' : 'text-ink-3',
+          ]}
+        >
+          {event.detail}
+        </p>
+      )
+    }
+    {
+      event.file && (
+        <a
+          href={event.file.href}
+          class:list={[
+            'mt-3 inline-flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.1em] transition-colors',
+            onDark ? 'text-brass-300 hover:text-white' : 'text-brass-700 hover:text-ink',
+          ]}
+        >
+          <Icon name="download" class="h-3.5 w-3.5" />
+          {event.file.label}
+        </a>
+      )
+    }
+  </div>
+
+  <!-- Termín -->
+  <div
+    class:list={[
+      'col-span-2 text-[0.8125rem] sm:col-span-1 sm:pt-1 sm:text-right',
+      onDark ? 'text-white/55' : 'text-ink-3',
+    ]}
+  >
+    {formatRange(event)}
+  </div>
+</article>

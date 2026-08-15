@@ -1,0 +1,86 @@
+---
+import { site } from '@/data/site';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Cesta k OG obrázku (absolutní URL se doplní) */
+  image?: string;
+  /** Doplňkový JSON-LD (Event, LodgingBusiness…) */
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description,
+  image = '/og-default.jpg',
+  jsonLd,
+  noindex = false,
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname.replace(/\/$/, '') || '/', Astro.site);
+const ogImage = new URL(image, Astro.site);
+const fullTitle =
+  Astro.url.pathname === '/' ? `${site.fullName}` : `${title} — ${site.name}`;
+
+/** Základní organizace — na každé stránce. */
+const organizationLd = {
+  '@context': 'https://schema.org',
+  '@type': ['SportsActivityLocation', 'LocalBusiness'],
+  '@id': `${site.url}/#organizace`,
+  name: site.fullName,
+  alternateName: 'Jízdárna Suchá',
+  description: site.description,
+  url: site.url,
+  telephone: site.phone,
+  email: site.email,
+  foundingDate: String(site.founded),
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: site.address.street,
+    addressLocality: site.address.city,
+    postalCode: site.address.zip,
+    addressCountry: site.address.country,
+  },
+  geo: {
+    '@type': 'GeoCoordinates',
+    latitude: site.address.lat,
+    longitude: site.address.lng,
+  },
+  sameAs: [site.social.facebook, site.social.youtube, site.social.facebookKlub],
+  image: ogImage.href,
+};
+
+const structured = [organizationLd, ...(Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : [])];
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical.href} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={site.fullName} />
+<meta property="og:locale" content={site.locale} />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical.href} />
+<meta property="og:image" content={ogImage.href} />
+<meta name="twitter:card" content="summary_large_image" />
+
+<meta name="theme-color" content="#16281f" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="sitemap" href="/sitemap-index.xml" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+/>
+
+<script type="application/ld+json" set:html={JSON.stringify(structured)} is:inline />

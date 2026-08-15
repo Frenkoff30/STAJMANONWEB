@@ -1,0 +1,208 @@
+---
+import PageLayout from '@/layouts/PageLayout.astro';
+import Section from '@/components/Section.astro';
+import SectionHead from '@/components/SectionHead.astro';
+import EventRow from '@/components/EventRow.astro';
+import Icon from '@/components/Icon.astro';
+import { site } from '@/data/site';
+import {
+  upcomingEvents,
+  pastEvents,
+  groupByMonth,
+  formatRange,
+  eventKindLabels,
+  events,
+} from '@/data/events';
+
+import heroImg from '@/assets/photos/vc-skok.jpg';
+
+const upcoming = upcomingEvents();
+const months = groupByMonth(upcoming);
+const past = pastEvents();
+const pastByYear = [...new Set(past.map((e) => e.start.slice(0, 4)))].map((y) => ({
+  year: y,
+  items: past.filter((e) => e.start.startsWith(y)),
+}));
+
+const vcl = events.find((e) => e.highlight);
+
+/** Schema.org Event pro nadcházející akce — Google je umí zobrazit ve výsledcích. */
+const eventsLd = upcoming.slice(0, 20).map((e) => ({
+  '@context': 'https://schema.org',
+  '@type': 'Event',
+  name: e.title,
+  description: e.detail,
+  startDate: e.start,
+  endDate: e.end ?? e.start,
+  eventStatus: 'https://schema.org/EventScheduled',
+  eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+  location: {
+    '@type': 'Place',
+    name: 'Areál Jízdárna Suchá',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: site.address.street,
+      addressLocality: site.address.city,
+      postalCode: site.address.zip,
+      addressCountry: site.address.country,
+    },
+  },
+  organizer: { '@id': `${site.url}/#organizace` },
+}));
+---
+
+<PageLayout
+  title="Kalendář jezdeckých akcí 2026"
+  heading="Jezdecké akce 2026"
+  description="Kalendář závodů, jezdeckých her pro děti, soustředění a chovatelských akcí v areálu Jízdárna Suchá. Přes 40 akcí ročně včetně Velké ceny Litomyšle."
+  lead="Skokové a drezurní závody, všestrannost, spřežení, jezdecké hry pro děti, soustředění a chovatelské akce — vše v areálu Jízdárna Suchá."
+  image={heroImg}
+  imageAlt="Skok na parkuru Velké ceny Litomyšle"
+  crumbs={[{ label: 'Kalendář akcí' }]}
+  nav={[
+    { id: 'nadchazejici', label: 'Nadcházející' },
+    { id: 'druhy', label: 'Jaké akce pořádáme' },
+    { id: 'archiv', label: 'Archiv' },
+  ]}
+  jsonLd={eventsLd}
+>
+  <!-- Vrchol sezóny -->
+  {
+    vcl && (
+      <Section tone="loden" space="sm">
+        <div class="grid gap-8 lg:grid-cols-12 lg:items-center" data-reveal>
+          <div class="lg:col-span-8">
+            <h2 class="t-2 text-white">{vcl.title}</h2>
+            <p class="lead mt-4 text-white/70">
+              Už dvacet dva let je Velká cena Litomyšle nedílnou součástí
+              extraligového seriálu Českého skokového poháru. Čtyři dny sportu na
+              hlavním kolbišti.
+            </p>
+          </div>
+          <div class="lg:col-span-4 lg:text-right">
+            <p class="font-display text-[2.5rem] leading-none text-brass-300 lg:text-[3.25rem]">
+              {formatRange(vcl)}
+            </p>
+            <p class="mt-3 text-[0.8125rem] uppercase tracking-[0.16em] text-white/50">
+              Areál Jízdárna Suchá
+            </p>
+          </div>
+        </div>
+      </Section>
+    )
+  }
+
+  <!-- Nadcházející -->
+  <Section tone="paper" space="lg" id="nadchazejici">
+    <SectionHead
+      title="Co nás čeká"
+      lead="Termíny se mohou výjimečně měnit. U jezdeckých her najdete i rozpis ke stažení."
+    />
+
+    <div class="mt-10 space-y-12">
+      {
+        months.map((m) => (
+          <div>
+            <div class="flex items-baseline gap-5">
+              <h3 class="font-display text-[1.5rem] lg:text-[1.75rem]">{m.label}</h3>
+              <span class="h-px flex-1 bg-ink/12" />
+              <span class="text-[0.75rem] uppercase tracking-[0.16em] text-ink-3/70">
+                {m.items.length}{' '}
+                {m.items.length === 1 ? 'akce' : m.items.length < 5 ? 'akce' : 'akcí'}
+              </span>
+            </div>
+            <div class="mt-4">
+              {m.items.map((e, i) => (
+                <EventRow event={e} index={i} />
+              ))}
+              <div class="border-t border-ink/12" />
+            </div>
+          </div>
+        ))
+      }
+    </div>
+
+    {
+      upcoming.length === 0 && (
+        <p class="mt-10 border border-ink/12 bg-white p-10 text-center text-ink-3">
+          Kalendář na další sezónu právě připravujeme. Ozvěte se nám na{' '}
+          <a href={`mailto:${site.email}`} class="link-underline text-brass-700">
+            {site.email}
+          </a>
+          .
+        </p>
+      )
+    }
+  </Section>
+
+  <!-- Legenda kategorií -->
+  <Section tone="paper-2" space="sm" id="druhy">
+    <div class="grid gap-8 lg:grid-cols-12">
+      <div class="lg:col-span-4">
+        <h2 class="t-3">Jaké akce pořádáme</h2>
+      </div>
+      <ul class="grid gap-x-8 gap-y-3 sm:grid-cols-2 lg:col-span-8">
+        {
+          Object.entries(eventKindLabels).map(([, label]) => (
+            <li class="flex items-start gap-3 text-[0.9375rem] text-ink-3">
+              <span class="mt-2 h-px w-4 shrink-0 bg-brass-600" />
+              {label}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </Section>
+
+  <!-- Archiv -->
+  <Section tone="paper" space="lg" id="archiv">
+    <SectionHead
+      title="Proběhlé akce"
+      lead="Přehled toho, co se v areálu odehrálo v předchozích měsících a letech."
+      action={{ label: 'Výsledkové listiny', href: '/vysledky' }}
+    />
+
+    <div class="mt-9 space-y-4">
+      {
+        pastByYear.map((y) => (
+          <details class="group border border-ink/12 bg-white">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-5 transition-colors hover:bg-paper-2">
+              <span class="font-display text-[1.5rem]">{y.year}</span>
+              <span class="flex items-center gap-4">
+                <span class="text-[0.75rem] uppercase tracking-[0.16em] text-ink-3/70">
+                  {y.items.length} akcí
+                </span>
+                <Icon
+                  name="chevron-down"
+                  class="h-4 w-4 text-ink-3 transition-transform duration-300 group-open:rotate-180"
+                />
+              </span>
+            </summary>
+            <div class="border-t border-ink/12 px-6 pb-4">
+              {y.items.map((e) => (
+                <EventRow event={e} />
+              ))}
+            </div>
+          </details>
+        ))
+      }
+    </div>
+  </Section>
+
+  <!-- CTA -->
+  <Section tone="dark" space="md">
+    <div class="grid gap-10 lg:grid-cols-12 lg:items-center">
+      <div class="lg:col-span-7">
+        <h2 class="t-2 text-white">Chcete u nás uspořádat vlastní akci?</h2>
+        <p class="lead mt-5 text-white/70">
+          Pronajímáme halu i kolbiště včetně kompletního parkuru — 11 moderních
+          překážek, zeď a imitace vodního příkopu.
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-3 lg:col-span-5 lg:justify-end">
+        <a href="/sluzby" class="btn btn-ghost-light">Pronájmy a ceník</a>
+        <a href="/kontakt" class="btn btn-brass">Domluvit termín</a>
+      </div>
+    </div>
+  </Section>
+</PageLayout>

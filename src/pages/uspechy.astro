@@ -1,0 +1,177 @@
+---
+import { Image } from 'astro:assets';
+import PageLayout from '@/layouts/PageLayout.astro';
+import Section from '@/components/Section.astro';
+import SectionHead from '@/components/SectionHead.astro';
+import Icon from '@/components/Icon.astro';
+import { achievements, majorTitles } from '@/data/achievements';
+
+import heroImg from '@/assets/photos/vc-areal.jpg';
+import portraitImg from '@/assets/photos/uspechy-02.jpg';
+
+const total = achievements.reduce((sum, y) => sum + y.items.length, 0);
+const wins = achievements.reduce(
+  (sum, y) => sum + y.items.filter((i) => i.place?.startsWith('1.')).length,
+  0,
+);
+const span = `${achievements[achievements.length - 1]!.year}–${achievements[0]!.year}`;
+---
+
+<PageLayout
+  title="Úspěchy"
+  description="Sportovní úspěchy Stáje Manon od roku 1993 — mistrovské tituly, vítězství ve Velkých cenách a tři celkové triumfy v Českém skokovém poháru."
+  heading="Úspěchy"
+  lead="Třicet let výsledků na domácích i zahraničních kolbištích — od prvního mistrovského titulu v roce 1993 po Český skokový pohár."
+  image={heroImg}
+  imageAlt="Velká cena Litomyšle v areálu Jízdárna Suchá"
+  crumbs={[{ label: 'Sport' }, { label: 'Úspěchy' }]}
+  nav={[
+    { id: 'souhrn', label: 'Souhrn' },
+    { id: 'milniky', label: 'Milníky' },
+    { id: 'prehled', label: 'Rok po roce' },
+  ]}
+>
+  <!-- Souhrn -->
+  <Section tone="paper" space="md" id="souhrn">
+    <dl class="grid gap-px border border-ink/12 bg-ink/12 sm:grid-cols-3">
+      {
+        [
+          { k: total, v: 'zaznamenaných umístění' },
+          { k: wins, v: 'vítězství' },
+          { k: '3×', v: 'celkový vítěz Českého skokového poháru' },
+        ].map((s, i) => (
+          <div class="bg-paper p-8" data-reveal style={`--reveal-delay:${i * 70}ms`}>
+            <dt class="sr-only">{s.v}</dt>
+            <dd class="font-display text-[3rem] leading-none lg:text-[3.75rem]">{s.k}</dd>
+            <dd class="mt-3 text-[0.875rem] text-ink-3">{s.v}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <p class="mt-5 text-[0.8125rem] text-ink-3/80">
+      Období {span}. Přehled zahrnuje výsledky Jiřího Skřivana a jezdců Stáje Manon.
+    </p>
+  </Section>
+
+  <!-- Milníky -->
+  <Section tone="dark" space="lg" id="milniky">
+    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+      <div class="lg:col-span-5">
+        <div class="img-zoom overflow-hidden" data-reveal>
+          <Image
+            src={portraitImg}
+            alt="Dekorování vítězů Volvo World Cupu"
+            widths={[320, 640]}
+            sizes="(min-width: 1024px) 38vw, 100vw"
+            class="aspect-[4/3] w-full object-cover"
+          />
+        </div>
+      </div>
+
+      <div class="lg:col-span-7">
+        <SectionHead title="Tituly, které se počítají." tone="light" />
+        <ul class="mt-10 space-y-px">
+          {
+            majorTitles.map((m, i) => (
+              <li
+                class="flex items-baseline gap-6 border-t border-white/12 py-5 last:border-b"
+                data-reveal
+                style={`--reveal-delay:${i * 70}ms`}
+              >
+                <span class="w-20 shrink-0 font-display text-[1.75rem] text-brass-300 tabular-nums">
+                  {m.year}
+                </span>
+                <span class="text-[1.0625rem] text-white/85">{m.text}</span>
+              </li>
+            ))
+          }
+        </ul>
+        <a href="/jiri-skrivan" class="link-arrow mt-10 text-brass-300">
+          Profil Jiřího Skřivana
+          <Icon name="arrow-right" class="h-3.5 w-3.5" />
+        </a>
+      </div>
+    </div>
+  </Section>
+
+  <!-- Kompletní přehled -->
+  <Section tone="paper" space="lg" id="prehled">
+    <SectionHead
+      title="Rok po roce"
+      lead="Umístění na mistrovstvích, ve Velkých cenách a v seriálových soutěžích."
+    />
+
+    <div class="mt-10 space-y-3">
+      {
+        achievements.map((y, yi) => (
+          <details class="group border border-ink/12 bg-white" open={yi < 3}>
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-paper-2 sm:px-6">
+              <span class="font-display text-[1.75rem] leading-none tabular-nums">
+                {y.year}
+              </span>
+              <span class="flex items-center gap-4">
+                <span class="text-[0.75rem] uppercase tracking-[0.16em] text-ink-3/70">
+                  {y.items.length}{' '}
+                  {y.items.length === 1 ? 'umístění' : 'umístění'}
+                </span>
+                <Icon
+                  name="chevron-down"
+                  class="h-4 w-4 text-ink-3 transition-transform duration-300 group-open:rotate-180"
+                />
+              </span>
+            </summary>
+
+            <ul class="border-t border-ink/12 px-5 pb-2 sm:px-6">
+              {y.items.map((a) => (
+                <li
+                  class:list={[
+                    'grid grid-cols-[3.5rem_1fr] items-baseline gap-x-5 gap-y-1 border-t border-ink/12 py-4 first:border-t-0 sm:grid-cols-[4rem_1fr_auto] sm:gap-8',
+                    a.major && '-mx-5 bg-brass-100/60 px-5 sm:-mx-6 sm:px-6',
+                  ]}
+                >
+                  <span
+                    class:list={[
+                      'font-display text-[1.25rem] tabular-nums',
+                      a.major ? 'text-brass-700' : 'text-ink-3',
+                      a.major && 'sm:pl-4',
+                    ]}
+                  >
+                    {a.place ?? (
+                      <Icon name="trophy" class="h-5 w-5 text-brass-600" />
+                    )}
+                  </span>
+
+                  <span class:list={['text-[1rem] leading-snug', a.major && 'font-semibold']}>
+                    {a.event}
+                  </span>
+
+                  <span class="col-span-2 text-[0.875rem] text-ink-3 sm:col-span-1 sm:text-right">
+                    {a.rider}
+                    {a.horse && (
+                      <span class="text-ink-3/70"> · {a.horse}</span>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </details>
+        ))
+      }
+    </div>
+  </Section>
+
+  <Section tone="paper-2" space="md">
+    <div class="grid gap-8 lg:grid-cols-12 lg:items-center">
+      <div class="lg:col-span-8">
+        <h2 class="t-3">Výsledky z domácích akcí</h2>
+        <p class="mt-3 text-ink-3">
+          Výsledkové listiny z jezdeckých her, veřejných tréninků a závodů pořádaných
+          v areálu najdete v samostatném archivu.
+        </p>
+      </div>
+      <div class="lg:col-span-4 lg:text-right">
+        <a href="/vysledky" class="btn btn-primary">Výsledkové listiny</a>
+      </div>
+    </div>
+  </Section>
+</PageLayout>

@@ -1,0 +1,267 @@
+---
+import { Image } from 'astro:assets';
+import PageLayout from '@/layouts/PageLayout.astro';
+import Section from '@/components/Section.astro';
+import SectionHead from '@/components/SectionHead.astro';
+import Icon from '@/components/Icon.astro';
+import { site } from '@/data/site';
+import { upcomingEvents } from '@/data/events';
+import EventRow from '@/components/EventRow.astro';
+
+import heroImg from '@/assets/photos/skola-01.jpg';
+import lekceImg from '@/assets/photos/deti-parkur.jpg';
+import bezpecnostImg from '@/assets/photos/skola-02.jpg';
+
+const nextGames = upcomingEvents()
+  .filter((e) => e.kind === 'hry' || e.kind === 'zkousky')
+  .slice(0, 3);
+
+const steps = [
+  {
+    n: '01',
+    title: 'Základ na lonži',
+    text: 'Začínající jezdce vedeme důsledným základním výcvikem na lonži. Nejvhodnější věk pro učení jízdy na koni je kolem sedmi let — ale výjimky se najdou.',
+  },
+  {
+    n: '02',
+    title: 'Skupina nebo individuál',
+    text: 'Pokročilejší jezdci pracují ve skupině nebo si mohou zvolit individuální lekce. Docházka 1–2× týdně, celoročně díky kryté hale.',
+  },
+  {
+    n: '03',
+    title: 'Jezdecké hry',
+    text: 'Pětkrát ročně si děti ověří získané zkušenosti v soutěži — jízdy zručnosti, jízdy zručnosti se skákáním a parkury 40, 50 a 60 cm.',
+  },
+  {
+    n: '04',
+    title: 'ZZVJ a veřejné tréninky',
+    text: 'Od 17 let mohou jezdci složit základní zkoušky výcviku jezdce a startovat na veřejných trénincích a domácích závodech.',
+  },
+];
+
+const klubActivities = [
+  'moderní jezdecký areál, krytá hala, venkovní kolbiště',
+  'víkendové pobyty a jezdecké kurzy',
+  'jezdecké závody a veřejné tréninky',
+  'skoková a drezurní soustředění',
+  'jezdecké hry pro děti, prázdninové tábory',
+  'možnost ustájení vlastního koně',
+  'skokový výcvik, základy drezurního a voltižního ježdění',
+];
+---
+
+<PageLayout
+  title="Jezdecká škola"
+  description="Celoroční jezdecká škola v areálu Jízdárna Suchá — pro začínající i pokročilé jezdce od 7 let. Výcvik na lonži, skupinové i individuální lekce, jezdecké hry a příprava na ZZVJ."
+  heading="Jezdecká škola"
+  lead="Pro začínající i pokročilé jezdce od sedmi let. Na ponících i velkých koních, celoročně, vždy pod odborným dohledem."
+  image={heroImg}
+  imageAlt="Výuka jízdy na koni v kryté hale"
+  crumbs={[{ label: 'Jezdectví' }, { label: 'Jezdecká škola' }]}
+  nav={[
+    { id: 'vyuka', label: 'Jak výuka probíhá' },
+    { id: 'bezpecnost', label: 'Bezpečnost' },
+    { id: 'klub', label: 'Jezdecký klub' },
+    { id: 'prihlaseni', label: 'Přihlášení' },
+  ]}
+>
+  <!-- Jak to funguje -->
+  <Section tone="paper" space="lg" id="vyuka">
+    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+      <div class="lg:col-span-5">
+        <div class="lg:sticky lg:top-28">
+          <SectionHead
+            title="Krok za krokem k vlastnímu parkuru."
+            lead="Výuka na ponících i velkých koních probíhá díky kryté hale celoročně. Pouze letní prázdniny patří týdenním kurzům pro děti."
+          />
+          <div class="img-zoom mt-10 overflow-hidden" data-reveal>
+            <Image
+              src={lekceImg}
+              alt="Dítě na ponym na parkuru jezdeckých her"
+              widths={[400, 800]}
+              sizes="(min-width: 1024px) 36vw, 100vw"
+              class="aspect-[4/3] w-full object-cover"
+            />
+          </div>
+        </div>
+      </div>
+
+      <ol class="lg:col-span-7">
+        {
+          steps.map((s, i) => (
+            <li
+              class="grid gap-4 border-t border-ink/12 py-9 last:border-b sm:grid-cols-[auto_1fr] sm:gap-8"
+              data-reveal
+              style={`--reveal-delay:${i * 80}ms`}
+            >
+              <span class="index-num sm:pt-2">{s.n}</span>
+              <div>
+                <h2 class="t-3">{s.title}</h2>
+                <p class="mt-3 text-[0.9375rem] leading-relaxed text-ink-3">{s.text}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </Section>
+
+  <!-- Bezpečnost -->
+  <Section tone="dark" space="lg" id="bezpecnost">
+    <div class="grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-14">
+      <div class="lg:col-span-6">
+        <div class="img-zoom overflow-hidden" data-reveal>
+          <Image
+            src={bezpecnostImg}
+            alt="Dívka se stará o koně před lekcí"
+            widths={[400, 800]}
+            sizes="(min-width: 1024px) 45vw, 100vw"
+            class="aspect-[4/3] w-full object-cover"
+          />
+        </div>
+      </div>
+
+      <div class="lg:col-span-6">
+        <SectionHead
+          title="Na tomhle nešetříme."
+          tone="light"
+        />
+        <p class="lead mt-6 text-white/70">
+          Bezpečnostní třmeny, vesty a tříbodové helmy jsou samozřejmostí. Výcvik je
+          vždy veden pod odborným dohledem a podle možností jezdce. Na začátku
+          ochranné pomůcky půjčujeme — pokud je předpoklad, že se dítě bude ježdění
+          věnovat dál, doporučujeme vlastní tříbodovou helmu, chapsy a bezpečnostní
+          vestu.
+        </p>
+
+        <ul class="mt-10 space-y-3">
+          {
+            [
+              'Tříbodová jezdecká helma',
+              'Bezpečnostní vesta',
+              'Sedla s bezpečnostními třmeny',
+              'Vybraní školní koně — zkušení, klidní a dobře jezditelní',
+            ].map((t) => (
+              <li class="flex gap-3 text-[0.9375rem] text-white/80">
+                <Icon name="shield" class="mt-0.5 h-4 w-4 shrink-0 text-brass-300" />
+                {t}
+              </li>
+            ))
+          }
+        </ul>
+
+        <p class="mt-8 border-l-2 border-brass-500 pl-5 text-[0.9375rem] text-white/65">
+          Při pravidelné sportovní činnosti poskytujeme zvýhodněné cenové podmínky.
+        </p>
+      </div>
+    </div>
+  </Section>
+
+  <!-- Jezdecký klub -->
+  <Section tone="paper" space="lg" id="klub">
+    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+      <div class="lg:col-span-5">
+        <SectionHead
+          title="Klub za tím vším."
+          lead="Hlavní činností klubu je organizace jezdeckých akcí a účast na nich, výuka dětí a mládeže a pořádání víkendových pobytů a prázdninových kurzů."
+        />
+        <p class="prose-manon mt-8">
+          V roce 2024 uspořádal JK Hřebčín Suchá přes 50 jezdeckých akcí. Sezónu
+          otevřela série skokové zimní přípravy s Jiřím Skřivanem a veřejné tréninky,
+          následovala Kritéria mladých koní, jezdecké hry pro děti na pony i velkých
+          koních, dětský šampionát, Mikulášská veselice a drezurní soustředění.
+          Vrcholem byla Velká cena Litomyšle.
+        </p>
+        <p class="prose-manon mt-4">
+          Drezurní soustředění pořádáme ve spolupráci s Danielou Groeben — Češkou,
+          která dlouhodobě žije v Německu a působí ve stájích pana Kasellmanna.
+        </p>
+      </div>
+
+      <div class="lg:col-span-7">
+        <ul class="grid gap-px border border-ink/12 bg-ink/12 sm:grid-cols-2">
+          {
+            klubActivities.map((a, i) => (
+              <li
+                class="flex items-start gap-4 bg-paper p-6"
+                data-reveal
+                style={`--reveal-delay:${Math.min(i * 50, 250)}ms`}
+              >
+                <Icon name="check" class="mt-1 h-4 w-4 shrink-0 text-brass-600" strokeWidth={2.2} />
+                <span class="text-[0.9375rem] leading-relaxed text-ink-3">{a}</span>
+              </li>
+            ))
+          }
+        </ul>
+
+        {
+          nextGames.length > 0 && (
+            <div class="mt-12">
+              <div class="mt-5">
+                {nextGames.map((e, i) => (
+                  <EventRow event={e} index={i} />
+                ))}
+                <div class="border-t border-ink/12" />
+              </div>
+            </div>
+          )
+        }
+      </div>
+    </div>
+  </Section>
+
+  <!-- Navazující nabídka -->
+  <Section tone="paper-2" space="md">
+    <div class="grid gap-4 sm:grid-cols-3">
+      {
+        [
+          {
+            t: 'Prázdninové kurzy',
+            d: 'Osm týdenních turnusů pro děti od 8 let, léto 2026',
+            href: '/kurzy',
+          },
+          {
+            t: 'Pobyty s výukou',
+            d: 'Velikonoce a podzimní prázdniny — příprava na ZZVJ',
+            href: '/pobyty',
+          },
+          {
+            t: 'Kalendář akcí',
+            d: 'Jezdecké hry, závody a soustředění',
+            href: '/akce',
+          },
+        ].map((c) => (
+          <a href={c.href} class="card card-hover group block p-8">
+            <h3 class="font-display text-[1.375rem] transition-colors group-hover:text-brass-700">
+              {c.t}
+            </h3>
+            <p class="mt-2 text-[0.875rem] text-ink-3">{c.d}</p>
+            <span class="link-arrow mt-6">
+              Zobrazit
+              <Icon name="arrow-right" class="h-3.5 w-3.5" />
+            </span>
+          </a>
+        ))
+      }
+    </div>
+  </Section>
+
+  <!-- Kontakt -->
+  <Section tone="loden" space="md" id="prihlaseni">
+    <div class="grid gap-10 lg:grid-cols-12 lg:items-center">
+      <div class="lg:col-span-7">
+        <h2 class="t-2 text-white">Chcete přihlásit dítě do jezdecké školy?</h2>
+        <p class="lead mt-5 text-white/70">
+          Ozvěte se Miroslavě Skřivanové — poradí s termíny, vybavením i tím, jestli
+          je vaše dítě na ježdění připravené.
+        </p>
+      </div>
+      <div class="lg:col-span-5 lg:text-right">
+        <a href={`tel:${site.contacts[1]!.phoneHref}`} class="btn btn-brass">
+          <Icon name="phone" class="h-4 w-4" />
+          {site.contacts[1]!.phone}
+        </a>
+      </div>
+    </div>
+  </Section>
+</PageLayout>

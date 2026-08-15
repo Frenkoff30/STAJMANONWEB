@@ -1,0 +1,18 @@
+# V repozitáři normalizuj konce řádků na LF, v pracovní kopii nech na systému.
+* text=auto eol=lf
+
+# Binární soubory se nesmí normalizovat
+*.jpg   binary
+*.jpeg  binary
+*.png   binary
+*.gif   binary
+*.ico   binary
+*.webp  binary
+*.pdf   binary
+*.xls   binary
+*.xlsx  binary
+*.doc   binary
+*.docx  binary
+
+# Na Windows hostingu chce .htaccess CRLF nechat být
+.htaccess text eol=lf

@@ -1,0 +1,346 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { mainNav } from '@/data/navigation';
+import { site } from '@/data/site';
+
+interface Props {
+  /** Hlavička leží na fotce (homepage) → startuje průhledná a bílá. */
+  overlay?: boolean;
+}
+
+const { overlay = false } = Astro.props;
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+
+const isActive = (href: string) => path === href || path.startsWith(href + '/');
+const groupActive = (links: readonly { href: string }[]) => links.some((l) => isActive(l.href));
+---
+
+<header data-site-header data-overlay={String(overlay)} class="site-header">
+  <!-- Kontaktní lišta -->
+  <div class="header-topbar hidden lg:block">
+    <div class="container-x flex h-10 items-center justify-between text-[0.75rem]">
+      <div class="flex items-center gap-6">
+        <a href={`tel:${site.phoneHref}`} class="link-underline inline-flex items-center gap-2 opacity-85 hover:opacity-100">
+          <Icon name="phone" class="h-3.5 w-3.5" />
+          {site.phone}
+        </a>
+        <a href={`mailto:${site.email}`} class="link-underline opacity-85 hover:opacity-100">
+          {site.email}
+        </a>
+      </div>
+
+      <div class="flex items-center gap-5">
+        <span class="opacity-70">
+          {site.address.street} · {site.address.zip} {site.address.city}
+        </span>
+        <span class="h-3 w-px bg-current opacity-25"></span>
+        <a
+          href={site.social.facebook}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Stáj Manon na Facebooku"
+          class="opacity-80 transition-opacity hover:opacity-100"
+        >
+          <Icon name="facebook" class="h-4 w-4" />
+        </a>
+        <a
+          href={site.social.youtube}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Stáj Manon na YouTube"
+          class="opacity-80 transition-opacity hover:opacity-100"
+        >
+          <Icon name="youtube" class="h-4 w-4" />
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hlavní lišta -->
+  <div class="container-x flex h-18 items-center justify-between lg:h-20">
+    <a href="/" class="shrink-0 transition-opacity hover:opacity-80" aria-label="Stáj Manon — domů">
+      <Logo />
+    </a>
+
+    <nav class="hidden items-center lg:flex" aria-label="Hlavní navigace">
+      {
+        mainNav.map((group) => (
+          <div class="nav-group relative">
+            <button
+              type="button"
+              class="flex cursor-pointer items-center gap-1.5 px-4 py-3 text-[0.8125rem] font-semibold uppercase tracking-[0.1em] transition-colors hover:text-brass-500"
+              aria-expanded="false"
+              aria-haspopup="true"
+              data-nav-current={groupActive(group.links) ? 'true' : 'false'}
+            >
+              {group.label}
+              <Icon name="chevron-down" class="nav-chevron h-3 w-3 opacity-60" />
+            </button>
+
+            {/* Pozor: posun -50 % řeší CSS níže, ne utilita — jinak by se
+                v Tailwindu v4 sečetl `translate` s `transform`. */}
+            <div class="nav-panel absolute left-1/2 top-full w-max pt-2">
+              <div class="flex overflow-hidden border border-ink/10 bg-white text-ink shadow-[0_2px_4px_rgba(22,33,28,.08),0_30px_60px_-24px_rgba(22,33,28,.3)]">
+                <ul class="w-[21rem] shrink-0 p-2">
+                  {group.links.map((link) => (
+                    <li>
+                      <a
+                        href={link.href}
+                        class:list={[
+                          'block px-4 py-3 transition-colors',
+                          isActive(link.href) ? 'bg-paper-2' : 'hover:bg-paper-2',
+                        ]}
+                      >
+                        <span class="block text-[0.9375rem] font-semibold">{link.label}</span>
+                        {link.desc && (
+                          <span class="mt-0.5 block text-[0.8125rem] leading-snug text-ink-3">
+                            {link.desc}
+                          </span>
+                        )}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+
+                {group.feature && (
+                  <div class="hidden w-[19rem] shrink-0 border-l border-ink/10 bg-loden-900 p-6 text-white xl:block">
+                    <p class="eyebrow eyebrow--on-dark">Tip</p>
+                    <p class="mt-3 font-display text-[1.375rem] leading-tight">{group.feature.title}</p>
+                    <p class="mt-2 text-[0.875rem] leading-relaxed text-white/70">{group.feature.text}</p>
+                    <a href={group.feature.href} class="link-arrow mt-5 text-brass-300">
+                      {group.feature.cta}
+                      <Icon name="arrow-right" class="h-3.5 w-3.5" />
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ))
+      }
+
+      <a href="/kontakt" class="btn header-cta ml-4">Kontakt</a>
+    </nav>
+
+    <button
+      type="button"
+      id="nav-toggle"
+      class="-mr-2 flex h-12 w-12 cursor-pointer items-center justify-center lg:hidden"
+      aria-label="Otevřít menu"
+      aria-expanded="false"
+      aria-controls="mobile-nav"
+    >
+      <span class="relative block h-4 w-6">
+        <span class="absolute left-0 top-0 h-[1.5px] w-6 bg-current transition-transform duration-300" data-bar="top"></span>
+        <span class="absolute left-0 top-[7px] h-[1.5px] w-6 bg-current transition-opacity duration-200" data-bar="mid"></span>
+        <span class="absolute left-0 top-[14px] h-[1.5px] w-6 bg-current transition-transform duration-300" data-bar="bot"></span>
+      </span>
+    </button>
+  </div>
+</header>
+
+<!-- Mobilní menu -->
+<div
+  id="mobile-nav"
+  class="invisible fixed inset-0 z-40 overflow-y-auto overscroll-contain bg-loden-950 text-white opacity-0 transition-[opacity,visibility] duration-300 lg:hidden"
+  aria-hidden="true"
+>
+  <div class="container-x flex min-h-full flex-col pb-12 pt-28">
+    <nav aria-label="Mobilní navigace">
+      {
+        mainNav.map((group, gi) => (
+          <div class="border-b border-white/12 py-6">
+            <p class="eyebrow eyebrow--on-dark">
+              <span class="tabular-nums">{String(gi + 1).padStart(2, '0')}</span>
+              {group.label}
+            </p>
+            <ul class="mt-4 space-y-1">
+              {group.links.map((link) => (
+                <li>
+                  <a
+                    href={link.href}
+                    class:list={[
+                      'block py-2 font-display text-[1.5rem] leading-tight transition-colors',
+                      isActive(link.href) ? 'text-brass-300' : 'hover:text-brass-300',
+                    ]}
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </nav>
+
+    <div class="mt-auto pt-10">
+      <a href="/kontakt" class="btn btn-brass w-full">Kontakt a rezervace</a>
+      <div class="mt-8 space-y-2 text-sm text-white/70">
+        {
+          site.contacts.map((c) => (
+            <p>
+              <a href={`tel:${c.phoneHref}`} class="link-underline text-white">
+                {c.phone}
+              </a>
+              <span class="ml-2 opacity-70">{c.name}</span>
+            </p>
+          ))
+        }
+        <p class="pt-2">
+          <a href={`mailto:${site.email}`} class="link-underline text-white">{site.email}</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .site-header {
+    position: fixed;
+    inset-inline: 0;
+    top: 0;
+    z-index: 50;
+    color: var(--color-ink);
+    background-color: color-mix(in srgb, var(--color-paper) 94%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+    transition: background-color 320ms var(--ease-out-natural),
+      color 320ms var(--ease-out-natural),
+      border-color 320ms var(--ease-out-natural);
+  }
+
+  /* Nad hero fotkou: průhledná a bílá, dokud uživatel neodroluje. */
+  .site-header[data-overlay='true']:not(.is-solid) {
+    color: #fff;
+    background-color: transparent;
+    backdrop-filter: none;
+    border-bottom-color: transparent;
+    background-image: linear-gradient(
+      to bottom,
+      rgba(10, 16, 13, 0.55),
+      rgba(10, 16, 13, 0)
+    );
+  }
+
+  .header-topbar {
+    border-bottom: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  }
+
+  /* CTA v liště se přepíná spolu s podkladem */
+  .header-cta {
+    background: var(--color-loden-800);
+    color: var(--color-paper);
+  }
+  .header-cta:hover {
+    background: var(--color-brass-600);
+  }
+  .site-header[data-overlay='true']:not(.is-solid) .header-cta {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: #fff;
+  }
+  .site-header[data-overlay='true']:not(.is-solid) .header-cta:hover {
+    background: #fff;
+    color: var(--color-ink);
+  }
+
+  /* Aktivní skupina */
+  [data-nav-current='true'] {
+    color: var(--color-brass-600);
+  }
+  .site-header[data-overlay='true']:not(.is-solid) [data-nav-current='true'] {
+    color: var(--color-brass-300);
+  }
+
+  /* Rozbalovací panel — hover i klávesnice */
+  .nav-panel {
+    visibility: hidden;
+    opacity: 0;
+    transform: translate(-50%, 6px);
+    transition: opacity 200ms var(--ease-out-natural),
+      transform 200ms var(--ease-out-natural), visibility 200ms;
+  }
+  .nav-group:hover .nav-panel,
+  .nav-group:focus-within .nav-panel {
+    visibility: visible;
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  .nav-chevron {
+    transition: transform 200ms var(--ease-out-natural);
+  }
+  .nav-group:hover .nav-chevron,
+  .nav-group:focus-within .nav-chevron {
+    transform: rotate(180deg);
+  }
+
+  /* Otevřené mobilní menu → hlavička musí být bílá nad tmavým panelem */
+  :global(html.nav-open) .site-header {
+    color: #fff;
+    background-color: transparent;
+    border-bottom-color: transparent;
+    backdrop-filter: none;
+    background-image: none;
+  }
+</style>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-site-header]');
+  const toggle = document.getElementById('nav-toggle');
+  const panel = document.getElementById('mobile-nav');
+
+  /* Skutečnou výšku hlavičky si drží CSS proměnná — lepicí lišta s obsahem
+     stránky a scroll-padding u kotev na ni spoléhají na pixel přesně. */
+  if (header) {
+    const measure = () =>
+      document.documentElement.style.setProperty(
+        '--header-h',
+        `${header.offsetHeight}px`,
+      );
+    measure();
+    if (typeof ResizeObserver === 'function') {
+      new ResizeObserver(measure).observe(header);
+    } else {
+      window.addEventListener('resize', measure, { passive: true });
+    }
+  }
+
+  if (header?.dataset.overlay === 'true') {
+    const sync = () => header.classList.toggle('is-solid', window.scrollY > 40);
+    sync();
+    window.addEventListener('scroll', sync, { passive: true });
+  }
+
+  let open = false;
+
+  function setOpen(next: boolean) {
+    if (!panel || !toggle) return;
+    open = next;
+    panel.classList.toggle('invisible', !open);
+    panel.classList.toggle('opacity-0', !open);
+    panel.setAttribute('aria-hidden', String(!open));
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Zavřít menu' : 'Otevřít menu');
+    document.documentElement.classList.toggle('nav-open', open);
+    document.documentElement.style.overflow = open ? 'hidden' : '';
+
+    const top = toggle.querySelector<HTMLElement>('[data-bar="top"]');
+    const mid = toggle.querySelector<HTMLElement>('[data-bar="mid"]');
+    const bot = toggle.querySelector<HTMLElement>('[data-bar="bot"]');
+    if (top && mid && bot) {
+      top.style.transform = open ? 'translateY(7px) rotate(45deg)' : '';
+      mid.style.opacity = open ? '0' : '1';
+      bot.style.transform = open ? 'translateY(-7px) rotate(-45deg)' : '';
+    }
+  }
+
+  toggle?.addEventListener('click', () => setOpen(!open));
+  panel?.addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).closest('a')) setOpen(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && open) setOpen(false);
+  });
+</script>

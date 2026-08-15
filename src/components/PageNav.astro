@@ -1,0 +1,174 @@
+---
+/**
+ * Lišta s obsahem stránky. Lepí se pod hlavičku a zvýrazňuje sekci,
+ * ve které uživatel právě je. Na mobilu se vodorovně posouvá.
+ *
+ * Každá položka musí odpovídat `id` některé sekce na stránce.
+ */
+
+interface Props {
+  items: { id: string; label: string }[];
+  /** Volitelné tlačítko vpravo (rezervace, kontakt…) */
+  action?: { label: string; href: string };
+}
+
+const { items, action } = Astro.props;
+---
+
+<nav class="page-nav" aria-label="Obsah stránky">
+  <div class="container-x flex items-center gap-6">
+    <ul class="page-nav__list">
+      {
+        items.map((item) => (
+          <li>
+            <a href={`#${item.id}`} data-page-nav-link={item.id}>
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    {
+      action && (
+        <a href={action.href} class="page-nav__action">
+          {action.label}
+        </a>
+      )
+    }
+  </div>
+</nav>
+
+<style>
+  .page-nav {
+    position: sticky;
+    top: var(--header-h);
+    z-index: 30;
+    background: color-mix(in srgb, var(--color-paper) 92%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+  }
+
+  .page-nav__list {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    /* Naznačí, že vpravo pokračuje další obsah */
+    mask-image: linear-gradient(to right, #000 92%, transparent 100%);
+  }
+  .page-nav__list::-webkit-scrollbar {
+    display: none;
+  }
+
+  @media (min-width: 1024px) {
+    .page-nav__list {
+      mask-image: none;
+      overflow-x: visible;
+    }
+  }
+
+  .page-nav__list a {
+    display: block;
+    white-space: nowrap;
+    padding: 1rem 0.875rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-ink-3);
+    border-bottom: 2px solid transparent;
+    transition: color 200ms var(--ease-out-natural),
+      border-color 200ms var(--ease-out-natural);
+  }
+  .page-nav__list a:first-child {
+    padding-left: 0;
+  }
+  .page-nav__list a:hover {
+    color: var(--color-brass-700);
+  }
+  .page-nav__list a[aria-current='true'] {
+    color: var(--color-brass-700);
+    border-bottom-color: var(--color-brass-600);
+  }
+
+  .page-nav__action {
+    display: none;
+    flex-shrink: 0;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--color-loden-800);
+    color: var(--color-paper);
+    transition: background-color 200ms var(--ease-out-natural);
+  }
+  .page-nav__action:hover {
+    background: var(--color-brass-600);
+  }
+  @media (min-width: 768px) {
+    .page-nav__action {
+      display: block;
+    }
+  }
+
+  @media print {
+    .page-nav {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const links = Array.from(
+    document.querySelectorAll<HTMLAnchorElement>('[data-page-nav-link]'),
+  );
+
+  if (links.length) {
+    const sections = links
+      .map((l) => document.getElementById(l.dataset.pageNavLink!))
+      .filter((s): s is HTMLElement => Boolean(s));
+
+    const setActive = (id: string | null) => {
+      for (const link of links) {
+        link.setAttribute(
+          'aria-current',
+          link.dataset.pageNavLink === id ? 'true' : 'false',
+        );
+      }
+    };
+
+    const list = links[0]?.parentElement?.parentElement ?? null;
+
+    // Aktivní je poslední sekce, jejíž začátek je nad třetinou okna;
+    // nad první sekcí zůstává zvýrazněná ta první.
+    const sync = () => {
+      const line = window.innerHeight * 0.35;
+      let current = sections[0]?.id ?? null;
+      for (const section of sections) {
+        if (section.getBoundingClientRect().top <= line) current = section.id;
+      }
+      setActive(current);
+
+      // Na mobilu doroluj aktivní položku do zorného pole
+      if (!list || list.scrollWidth <= list.clientWidth) return;
+      const active = links.find((l) => l.dataset.pageNavLink === current);
+      if (!active) return;
+
+      const target =
+        active === links[0]
+          ? 0
+          : active.offsetLeft - list.clientWidth / 2 + active.clientWidth / 2;
+      list.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+    };
+
+    sync();
+    window.addEventListener('scroll', sync, { passive: true });
+    window.addEventListener('resize', sync, { passive: true });
+  }
+</script>

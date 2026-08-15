@@ -1,0 +1,37 @@
+---
+interface Props {
+  /** Vodorovná varianta s textem, nebo jen značka */
+  variant?: 'full' | 'mark';
+  class?: string;
+}
+
+const { variant = 'full', class: className = '' } = Astro.props;
+---
+
+{/* Monochrom — dědí barvu z rodiče, takže funguje na fotce i na papíru. */}
+<span class={`inline-flex items-center gap-3 ${className}`}>
+  {/* Značka: podkova — jediný symbol, který se v 32px nedá splést s ničím jiným. */}
+  <svg
+    viewBox="0 0 32 32"
+    fill="none"
+    stroke="currentColor"
+    stroke-linecap="round"
+    aria-hidden="true"
+    class="h-8 w-8 shrink-0 lg:h-9 lg:w-9"
+  >
+    <path d="M5.8 24.6V16.4a10.2 10.2 0 0 1 20.4 0v8.2" stroke-width="3"></path>
+  </svg>
+
+  {
+    variant === 'full' && (
+      <span class="flex flex-col leading-none">
+        <span class="font-display text-[1.3rem] font-semibold tracking-[0.01em] lg:text-[1.5rem]">
+          Stáj Manon
+        </span>
+        <span class="mt-[0.3rem] text-[0.5rem] font-semibold uppercase tracking-[0.3em] opacity-65 lg:text-[0.5625rem]">
+          Jízdárna Suchá
+        </span>
+      </span>
+    )
+  }
+</span>

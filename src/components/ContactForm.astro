@@ -1,0 +1,300 @@
+---
+import { site } from '@/data/site';
+
+const topics = [
+  'Ubytování v penzionu',
+  'Jezdecká škola',
+  'Prázdninový kurz pro dítě',
+  'Pobyt s výukou',
+  'Ustájení koně',
+  'Pronájem haly nebo kolbiště',
+  'Koupě nebo prodej koně',
+  'Něco jiného',
+];
+---
+
+<form
+  id="formular"
+  method="post"
+  action="/kontakt-odeslat.php"
+  class="card p-7 lg:p-10"
+  novalidate
+>
+  <h2 class="t-3">Kontaktní formulář</h2>
+  <p class="mt-3 text-[0.9375rem] text-ink-3">
+    Odpovíme v nejkratším možném čase. Pole označená
+    <span class="text-brass-700">*</span> jsou povinná.
+  </p>
+
+  <!-- Honeypot — skryté pole pro roboty -->
+  <div class="absolute left-[-9999px]" aria-hidden="true">
+    <label for="website">Nevyplňujte</label>
+    <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
+  </div>
+  <input type="hidden" name="ts" id="form-ts" value="0" />
+
+  <div class="mt-8 grid gap-5 sm:grid-cols-2">
+    <div class="sm:col-span-2">
+      <label for="topic" class="form-label">Téma</label>
+      <select id="topic" name="topic" class="form-control">
+        {topics.map((t) => <option value={t}>{t}</option>)}
+      </select>
+    </div>
+
+    <div>
+      <label for="name" class="form-label">
+        Jméno a příjmení <span class="text-brass-700">*</span>
+      </label>
+      <input
+        type="text"
+        id="name"
+        name="name"
+        required
+        autocomplete="name"
+        maxlength="120"
+        class="form-control"
+        aria-describedby="name-error"
+      />
+      <p id="name-error" class="form-error" hidden>Vyplňte prosím jméno.</p>
+    </div>
+
+    <div>
+      <label for="email" class="form-label">
+        E-mail <span class="text-brass-700">*</span>
+      </label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        required
+        autocomplete="email"
+        class="form-control"
+        aria-describedby="email-error"
+      />
+      <p id="email-error" class="form-error" hidden>Zadejte platnou e-mailovou adresu.</p>
+    </div>
+
+    <div class="sm:col-span-2">
+      <label for="phone" class="form-label">Telefon</label>
+      <input
+        type="tel"
+        id="phone"
+        name="phone"
+        autocomplete="tel"
+        class="form-control"
+        placeholder="+420"
+      />
+    </div>
+
+    <div class="sm:col-span-2">
+      <label for="message" class="form-label">
+        Zpráva <span class="text-brass-700">*</span>
+      </label>
+      <textarea
+        id="message"
+        name="message"
+        required
+        rows="6"
+        maxlength="5000"
+        class="form-control resize-y"
+        aria-describedby="message-error"
+        placeholder="Termín, počet osob, věk dítěte… čím konkrétnější dotaz, tím rychlejší odpověď."
+      ></textarea>
+      <p id="message-error" class="form-error" hidden>Napište nám prosím, o co jde.</p>
+    </div>
+  </div>
+
+  <div class="mt-8 flex flex-wrap items-center gap-4">
+    <button type="submit" class="btn btn-primary" data-submit>
+      <span data-submit-label>Odeslat zprávu</span>
+    </button>
+    <p class="text-[0.8125rem] text-ink-3">
+      nebo rovnou na
+      <a href={`mailto:${site.email}`} class="link-underline font-semibold text-brass-700">
+        {site.email}
+      </a>
+    </p>
+  </div>
+
+  <p
+    role="status"
+    aria-live="polite"
+    class="mt-6 hidden items-start gap-3 border p-5 text-[0.9375rem]"
+    data-form-status
+  >
+    <span data-status-icon class="mt-0.5 shrink-0"></span>
+    <span data-status-text></span>
+  </p>
+</form>
+
+<style>
+  .form-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-ink-3);
+    margin-bottom: 0.5rem;
+  }
+
+  .form-control {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    font-family: inherit;
+    color: var(--color-ink);
+    background: var(--color-paper);
+    border: 1px solid color-mix(in srgb, var(--color-ink) 18%, transparent);
+    transition: border-color 200ms var(--ease-out-natural),
+      box-shadow 200ms var(--ease-out-natural);
+  }
+  .form-control:hover {
+    border-color: color-mix(in srgb, var(--color-ink) 32%, transparent);
+  }
+  .form-control:focus {
+    outline: none;
+    border-color: var(--color-brass-600);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brass-500) 22%, transparent);
+  }
+  .form-control[aria-invalid='true'] {
+    border-color: #a13a2a;
+  }
+
+  select.form-control {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233a4a42' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1.1rem;
+    padding-right: 2.75rem;
+    cursor: pointer;
+  }
+
+  .form-error {
+    margin-top: 0.4rem;
+    font-size: 0.8125rem;
+    color: #a13a2a;
+  }
+</style>
+
+<script>
+  const formEl = document.getElementById('formular') as HTMLFormElement | null;
+
+  if (formEl) {
+    const form = formEl;
+    const ts = document.getElementById('form-ts') as HTMLInputElement | null;
+    if (ts) ts.value = String(Math.floor(Date.now() / 1000));
+
+    const status = form.querySelector<HTMLElement>('[data-form-status]')!;
+    const statusText = status.querySelector<HTMLElement>('[data-status-text]')!;
+    const statusIcon = status.querySelector<HTMLElement>('[data-status-icon]')!;
+    const submit = form.querySelector<HTMLButtonElement>('[data-submit]')!;
+    const submitLabel = submit.querySelector<HTMLElement>('[data-submit-label]')!;
+
+    const CHECK =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>';
+    const ALERT =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="h-5 w-5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.01"/></svg>';
+
+    function setStatus(ok: boolean, message: string) {
+      status.classList.remove('hidden');
+      status.classList.add('flex');
+      status.style.borderColor = ok ? 'var(--color-loden-600)' : '#a13a2a';
+      status.style.background = ok
+        ? 'color-mix(in srgb, var(--color-loden-100) 60%, transparent)'
+        : 'color-mix(in srgb, #a13a2a 8%, transparent)';
+      status.style.color = ok ? 'var(--color-loden-800)' : '#7d2b1f';
+      statusIcon.innerHTML = ok ? CHECK : ALERT;
+      statusText.textContent = message;
+    }
+
+    /** Vlastní validace — hlášky česky a u konkrétního pole. */
+    function validate(): boolean {
+      let valid = true;
+
+      const checks: [string, () => boolean][] = [
+        [
+          'name',
+          () =>
+            (form.elements.namedItem('name') as HTMLInputElement).value.trim().length >
+            0,
+        ],
+        [
+          'email',
+          () => {
+            const v = (form.elements.namedItem('email') as HTMLInputElement).value.trim();
+            return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+          },
+        ],
+        [
+          'message',
+          () =>
+            (form.elements.namedItem('message') as HTMLTextAreaElement).value.trim()
+              .length >= 5,
+        ],
+      ];
+
+      for (const [id, test] of checks) {
+        const field = document.getElementById(id) as
+          | HTMLInputElement
+          | HTMLTextAreaElement
+          | null;
+        const error = document.getElementById(`${id}-error`);
+        const ok = test();
+        field?.setAttribute('aria-invalid', String(!ok));
+        if (error) error.hidden = ok;
+        if (!ok && valid) {
+          field?.focus();
+          valid = false;
+        }
+      }
+
+      return valid;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!validate()) return;
+
+      submit.disabled = true;
+      const original = submitLabel.textContent;
+      submitLabel.textContent = 'Odesílám…';
+
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { 'X-Requested-With': 'fetch' },
+        });
+
+        // Statický hosting bez PHP vrátí HTML/404 — poznáme to podle typu odpovědi
+        const type = res.headers.get('content-type') ?? '';
+        if (!type.includes('application/json')) {
+          throw new Error('no-endpoint');
+        }
+
+        const data = (await res.json()) as { ok: boolean; message: string };
+        setStatus(data.ok, data.message);
+        if (data.ok) form.reset();
+      } catch {
+        setStatus(
+          false,
+          'Formulář se nepodařilo odeslat. Napište nám prosím přímo na manon@wo.cz nebo zavolejte na +420 602 451 918.',
+        );
+      } finally {
+        submit.disabled = false;
+        submitLabel.textContent = original;
+      }
+    });
+
+    /* Návrat z PHP bez JS (?odeslano=1 / ?chyba=…) */
+    const params = new URLSearchParams(location.search);
+    if (params.get('odeslano') === '1') {
+      setStatus(true, 'Děkujeme, zpráva byla odeslána. Ozveme se v nejkratším možném čase.');
+    } else if (params.get('chyba')) {
+      setStatus(false, params.get('chyba')!);
+    }
+  }
+</script>

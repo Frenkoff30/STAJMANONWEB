@@ -1,0 +1,63 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { mainNav } from '@/data/navigation';
+import { site } from '@/data/site';
+---
+
+<BaseLayout
+  title="Stránka nenalezena"
+  description="Požadovaná stránka na webu Stáje Manon neexistuje."
+  noindex
+>
+  <section class="bg-loden-950 grain relative overflow-hidden">
+    <div class="container-x relative z-10 py-28 lg:py-40">
+      <h1 class="t-display text-white">Tudy cesta nevede.</h1>
+      <p class="lead mt-7 max-w-xl text-white/70">
+        Stránku, kterou hledáte, jsme nenašli. Web jsme nedávno přestavěli — je
+        možné, že se adresa změnila.
+      </p>
+
+      <div class="mt-10 flex flex-wrap gap-3">
+        <a href="/" class="btn btn-brass">Zpět na úvod</a>
+        <a href="/kontakt" class="btn btn-ghost-light">Kontakt</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-paper py-20 lg:py-28">
+    <div class="container-x">
+      <div class="mt-10 grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          mainNav.map((group) => (
+            <div>
+              <h2 class="font-display text-[1.375rem]">{group.label}</h2>
+              <ul class="mt-4 space-y-2">
+                {group.links.map((l) => (
+                  <li>
+                    <a
+                      href={l.href}
+                      class="link-underline text-[0.9375rem] text-ink-3 hover:text-brass-700"
+                    >
+                      {l.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+
+      <p class="mt-14 text-[0.9375rem] text-ink-3">
+        Nemůžete něco najít? Zavolejte na
+        <a href={`tel:${site.phoneHref}`} class="link-underline font-semibold text-brass-700">
+          {site.phone}
+        </a>
+        nebo napište na
+        <a href={`mailto:${site.email}`} class="link-underline font-semibold text-brass-700">
+          {site.email}
+        </a>.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

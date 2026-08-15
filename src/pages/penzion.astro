@@ -1,0 +1,324 @@
+---
+import { Image } from 'astro:assets';
+import PageLayout from '@/layouts/PageLayout.astro';
+import Section from '@/components/Section.astro';
+import SectionHead from '@/components/SectionHead.astro';
+import Icon from '@/components/Icon.astro';
+import Lightbox from '@/components/Lightbox.astro';
+import { site } from '@/data/site';
+import {
+  rooms,
+  petPolicy,
+  penzionHighlights,
+  nearby,
+} from '@/data/accommodation';
+import { photosByTag } from '@/data/gallery';
+
+import heroImg from '@/assets/photos/penzion-exterier.jpg';
+import pokojImg from '@/assets/photos/pokoj-01.jpg';
+import restauraceImg from '@/assets/photos/restaurace-02.jpg';
+import terasaImg from '@/assets/photos/terasa-01.jpg';
+import okoliImg from '@/assets/photos/kolbiste-vecer.jpg';
+
+/** Pokoje napřed, pak restaurace, terasa a exteriér. */
+const penzionPhotos = photosByTag('penzion');
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'LodgingBusiness',
+  name: 'Penzion Jízdárna Suchá',
+  description:
+    'Penzion v jezdeckém areálu 3 km od Litomyšle. 2–4lůžkové pokoje s vlastní koupelnou, kapacita 24 lůžek, restaurace s terasou nad kolbištěm.',
+  url: `${site.url}/penzion`,
+  telephone: '+420 739 057 775',
+  email: site.emailPenzion,
+  petsAllowed: true,
+  numberOfRooms: 8,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: site.address.street,
+    addressLocality: site.address.city,
+    postalCode: site.address.zip,
+    addressCountry: site.address.country,
+  },
+  geo: {
+    '@type': 'GeoCoordinates',
+    latitude: site.address.lat,
+    longitude: site.address.lng,
+  },
+  priceRange: '740–940 Kč / osoba / noc',
+  amenityFeature: [
+    'Vlastní koupelna a WC',
+    'Restaurace',
+    'Venkovní terasa',
+    'Snídaně na objednávku',
+    'Parkování',
+  ].map((n) => ({ '@type': 'LocationFeatureSpecification', name: n, value: true })),
+};
+---
+
+<PageLayout
+  title="Penzion a restaurace Jízdárna Suchá"
+  heading="Penzion &amp; restaurace"
+  description="Ubytování v moderním jezdeckém areálu 3 km od Litomyšle. 2–4lůžkové pokoje s vlastní koupelnou, 24 lůžek, restaurace se snídaněmi a terasa s výhledem na kolbiště. Od 740 Kč za osobu a noc."
+  lead="Klidné prostředí, vlastní koupelna na každém pokoji a terasa s výhledem na koně. Do centra Litomyšle tři kilometry."
+  image={heroImg}
+  imageAlt="Budova penzionu v areálu Jízdárna Suchá"
+  crumbs={[{ label: 'Areál', href: '/areal' }, { label: 'Penzion & restaurace' }]}
+  nav={[
+    { id: 'prehled', label: 'Přehled' },
+    { id: 'cenik', label: 'Ceník' },
+    { id: 'pokoje', label: 'Fotky pokojů' },
+    { id: 'okoli', label: 'Okolí' },
+    { id: 'rezervace', label: 'Rezervace' },
+  ]}
+  navAction={{ label: 'Rezervovat', href: '#rezervace' }}
+  heroSize="tall"
+  jsonLd={jsonLd}
+>
+  <!-- Rychlé shrnutí -->
+  <Section tone="paper" space="md" id="prehled">
+    <div class="grid gap-px border border-ink/12 bg-ink/12 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        [
+          { icon: 'bed' as const, k: '24 lůžek', v: '2–4lůžkové pokoje' },
+          { icon: 'utensils' as const, k: '40 míst', v: 'restaurace s obsluhou' },
+          { icon: 'home' as const, k: 'Vlastní koupelna', v: 'a WC na každém pokoji' },
+          { icon: 'pin' as const, k: '3 km', v: 'do centra Litomyšle' },
+        ].map((s, i) => (
+          <div class="bg-paper p-7" data-reveal style={`--reveal-delay:${i * 70}ms`}>
+            <Icon name={s.icon} class="h-6 w-6 text-brass-600" />
+            <p class="mt-5 font-display text-[1.625rem] leading-none">{s.k}</p>
+            <p class="mt-2 text-[0.875rem] text-ink-3">{s.v}</p>
+          </div>
+        ))
+      }
+    </div>
+  </Section>
+
+  <!-- Co u nás najdete -->
+  <Section tone="paper" space="md">
+    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+      <div class="lg:col-span-5">
+        <SectionHead
+          title="Ubytování v klidu, kousek od všeho."
+          lead="Penzion je součástí jezdeckého areálu dokončeného v roce 2007. Hodí se pro jezdce na závodech, rodiny s dětmi i firemní akce mimo městský ruch."
+        />
+
+        <dl class="mt-10 space-y-8">
+          {
+            penzionHighlights.map((h) => (
+              <div class="border-t border-ink/12 pt-6">
+                <dt class="font-display text-[1.25rem]">{h.title}</dt>
+                <dd class="mt-2 text-[0.9375rem] leading-relaxed text-ink-3">{h.text}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+
+      <div class="lg:col-span-7">
+        <div class="img-zoom overflow-hidden" data-reveal>
+          <Image
+            src={pokojImg}
+            alt="Dvoulůžkový pokoj penzionu s vlastní koupelnou"
+            widths={[640, 1024, 1400]}
+            sizes="(min-width: 1024px) 55vw, 100vw"
+            class="aspect-[3/2] w-full object-cover"
+          />
+        </div>
+        <div class="mt-4 grid grid-cols-2 gap-4">
+          <div class="img-zoom overflow-hidden" data-reveal style="--reveal-delay:80ms">
+            <Image
+              src={restauraceImg}
+              alt="Interiér restaurace penzionu"
+              widths={[400, 800]}
+              sizes="(min-width: 1024px) 27vw, 45vw"
+              class="aspect-[4/3] w-full object-cover"
+            />
+          </div>
+          <div class="img-zoom overflow-hidden" data-reveal style="--reveal-delay:160ms">
+            <Image
+              src={terasaImg}
+              alt="Venkovní terasa s výhledem na kolbiště"
+              widths={[400, 800]}
+              sizes="(min-width: 1024px) 27vw, 45vw"
+              class="aspect-[4/3] w-full object-cover"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </Section>
+
+  <!-- Ceník -->
+  <Section tone="dark" space="lg" id="cenik">
+    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+      <div class="lg:col-span-4">
+        <SectionHead
+          title="Ceny ubytování"
+          lead="Ceny jsou uvedené za osobu a noc. Lůžkoviny a povlečení jsou součástí vybavení pokoje."
+          tone="light"
+        />
+        <div class="mt-10 border border-white/15 p-6">
+          <p class="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-brass-300">
+            Rezervace ubytování
+          </p>
+          <a
+            href="mailto:penzionsucha@email.cz"
+            class="link-underline mt-4 block font-display text-[1.375rem] text-white"
+          >
+            penzionsucha@email.cz
+          </a>
+          <a
+            href="tel:+420739057775"
+            class="link-underline mt-2 block text-white/75"
+          >
+            +420 739 057 775
+          </a>
+        </div>
+      </div>
+
+      <div class="lg:col-span-8">
+        <table class="w-full border-collapse text-left">
+          <caption class="sr-only">Ceník ubytování v penzionu Jízdárna Suchá</caption>
+          <thead>
+            <tr class="border-b border-white/20">
+              <th
+                scope="col"
+                class="pb-4 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-white/50"
+              >
+                Typ pokoje
+              </th>
+              <th
+                scope="col"
+                class="pb-4 text-right text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-white/50"
+              >
+                Cena
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              rooms.map((r, i) => (
+                <tr
+                  class="border-b border-white/12"
+                  data-reveal
+                  style={`--reveal-delay:${i * 60}ms`}
+                >
+                  <th scope="row" class="py-6 pr-6 font-display text-[1.125rem] font-normal text-white sm:text-[1.375rem]">
+                    {r.type}
+                  </th>
+                  <td class="py-6 text-right">
+                    <span class="font-display text-[1.5rem] text-brass-300 sm:text-[1.875rem]">
+                      {r.price}
+                    </span>
+                    <span class="mt-1 block text-[0.75rem] text-white/50">{r.perNote}</span>
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+
+        <div class="mt-10 border border-white/15 p-6">
+          <p class="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-brass-300">
+            Domácí mazlíčci
+          </p>
+          <p class="mt-3 text-[0.9375rem] text-white/75">
+            Psi jsou u nás vítáni — za poplatek:
+          </p>
+          <ul class="mt-4 flex flex-wrap gap-x-10 gap-y-2">
+            {
+              petPolicy.map((p) => (
+                <li class="text-[0.9375rem] text-white/80">
+                  {p.size} — <span class="text-brass-300">{p.price}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+    </div>
+  </Section>
+
+  <!-- Fotky pokojů -->
+  <Section tone="paper" space="lg" id="pokoje">
+    <SectionHead
+      title="Jak to u nás vypadá"
+      lead="Kliknutím na fotku ji zvětšíte."
+    />
+    <Lightbox photos={penzionPhotos} class="mt-12" />
+  </Section>
+
+  <!-- Okolí -->
+  <Section tone="paper-2" space="lg" id="okoli">
+    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+      <div class="lg:col-span-4">
+        <SectionHead
+          title="Litomyšlsko na malém území."
+          lead="Výhodou oblasti je množství zajímavých pamětihodností a přírodních krás v dosahu krátké vyjížďky."
+        />
+        <div class="img-zoom mt-10 overflow-hidden" data-reveal>
+          <Image
+            src={okoliImg}
+            alt="Podvečer v areálu Jízdárna Suchá"
+            widths={[400, 800]}
+            sizes="(min-width: 1024px) 30vw, 100vw"
+            class="aspect-[4/3] w-full object-cover"
+          />
+        </div>
+      </div>
+
+      <div class="lg:col-span-8">
+        <ul class="grid gap-px border border-ink/12 bg-ink/12 sm:grid-cols-2">
+          {
+            nearby.map((n, i) => (
+              <li
+                class="bg-paper-2 p-7"
+                data-reveal
+                style={`--reveal-delay:${Math.min(i * 50, 250)}ms`}
+              >
+                <span class="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-brass-700">
+                  {n.tag}
+                </span>
+                <h3 class="mt-3 font-display text-[1.25rem]">{n.title}</h3>
+                <p class="mt-2 text-[0.875rem] leading-relaxed text-ink-3">{n.text}</p>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </Section>
+
+  <!-- Rezervace -->
+  <Section tone="loden" space="lg" id="rezervace">
+    <div class="grid gap-12 lg:grid-cols-12 lg:items-center">
+      <div class="lg:col-span-7">
+        <h2 class="t-1 text-white">Napište nám termín, ozveme se obratem.</h2>
+        <p class="lead mt-6 max-w-2xl text-white/70">
+          Ubytování rezervujeme e-mailem nebo telefonicky. Dejte nám vědět počet
+          osob, termín a jestli přijedete s koněm nebo se psem.
+        </p>
+      </div>
+
+      <div class="lg:col-span-5">
+        <div class="space-y-3">
+          <a
+            href={`mailto:${site.emailPenzion}?subject=Rezervace%20ubytov%C3%A1n%C3%AD%20-%20Penzion%20J%C3%ADzd%C3%A1rna%20Such%C3%A1`}
+            class="btn btn-brass w-full"
+          >
+            <Icon name="mail" class="h-4 w-4" />
+            {site.emailPenzion}
+          </a>
+          <a href="tel:+420739057775" class="btn btn-ghost-light w-full">
+            <Icon name="phone" class="h-4 w-4" />
+            +420 739 057 775
+          </a>
+          <a href="/kontakt" class="btn btn-ghost-light w-full">Kontaktní formulář</a>
+        </div>
+      </div>
+    </div>
+  </Section>
+</PageLayout>

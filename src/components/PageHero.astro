@@ -1,0 +1,71 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  title: string;
+  lead?: string;
+  image: ImageMetadata;
+  imageAlt: string;
+  /** Drobečky bez domovské stránky — ta se doplní sama */
+  crumbs?: { label: string; href?: string }[];
+  /** Kompaktní varianta pro obsahové stránky */
+  size?: 'default' | 'tall';
+}
+
+const { title, lead, image, imageAlt, crumbs = [], size = 'default' } = Astro.props;
+---
+
+<section
+  class:list={[
+    'relative isolate flex items-end overflow-hidden bg-loden-950',
+    size === 'tall' ? 'min-h-[54vh] lg:min-h-[62vh]' : 'min-h-[42vh] lg:min-h-[48vh]',
+  ]}
+>
+  <Image
+    src={image}
+    alt={imageAlt}
+    widths={[640, 1024, 1600, 2000]}
+    sizes="100vw"
+    loading="eager"
+    fetchpriority="high"
+    class="absolute inset-0 -z-10 h-full w-full object-cover"
+  />
+  <div
+    class="absolute inset-0 -z-10 bg-[linear-gradient(to_top,rgba(10,16,13,.92)_0%,rgba(10,16,13,.55)_45%,rgba(10,16,13,.3)_100%)]"
+  >
+  </div>
+
+  <div class="container-x relative w-full pb-10 pt-28 lg:pb-14 lg:pt-32">
+    <nav aria-label="Drobečková navigace" class="mb-5">
+      <ol class="flex flex-wrap items-center gap-2 text-[0.75rem] text-white/55">
+        <li><a href="/" class="link-underline hover:text-white">Domů</a></li>
+        {
+          crumbs.map((c) => (
+            <>
+              <li aria-hidden="true" class="opacity-50">
+                <Icon name="chevron-right" class="h-3 w-3" />
+              </li>
+              <li>
+                {c.href ? (
+                  <a href={c.href} class="link-underline hover:text-white">
+                    {c.label}
+                  </a>
+                ) : (
+                  <span class="text-white/85">{c.label}</span>
+                )}
+              </li>
+            </>
+          ))
+        }
+      </ol>
+    </nav>
+    <h1 class="t-1 max-w-4xl text-white text-shadow-hero">{title}</h1>
+    {
+      lead && (
+        <p class="lead mt-5 max-w-2xl text-white/80">{lead}</p>
+      )
+    }
+  </div>
+</section>

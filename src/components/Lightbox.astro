@@ -1,0 +1,189 @@
+---
+import { Image, getImage } from 'astro:assets';
+import type { GalleryPhoto } from '@/data/gallery';
+
+interface Props {
+  photos: GalleryPhoto[];
+  /** Počet sloupců na desktopu */
+  cols?: 2 | 3 | 4;
+  class?: string;
+}
+
+const { photos, cols = 3, class: className = '' } = Astro.props;
+
+/**
+ * Pro zvětšeninu generujeme vlastní 1600px WebP — originály z galerie mají
+ * i 5 000 px a v lightboxu by se stahovaly zbytečně megabajty.
+ */
+const large = await Promise.all(
+  photos.map(async (p) => {
+    const img = await getImage({
+      src: p.src,
+      width: Math.min(1600, p.src.width),
+      format: 'webp',
+      quality: 82,
+    });
+    return { src: img.src, w: img.attributes.width ?? img.options.width, h: img.attributes.height, alt: p.alt };
+  }),
+);
+
+const colClass = {
+  2: 'sm:grid-cols-2',
+  3: 'sm:grid-cols-2 lg:grid-cols-3',
+  4: 'sm:grid-cols-2 lg:grid-cols-4',
+}[cols];
+---
+
+<div class={className}>
+  <ul class={`grid grid-cols-2 gap-3 ${colClass} lg:gap-4`} data-lightbox-grid>
+    {
+      photos.map((p, i) => (
+        <li data-photo-tag={p.tag}>
+          <button
+            type="button"
+            class="img-zoom group relative block w-full cursor-pointer overflow-hidden bg-sand-300"
+            data-lightbox-open={String(i)}
+            aria-label={`Zvětšit fotku: ${p.alt}`}
+          >
+            <Image
+              src={p.src}
+              alt={p.alt}
+              widths={[320, 640, 900]}
+              sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 48vw"
+              loading={i < 6 ? 'eager' : 'lazy'}
+              class="aspect-[4/3] h-full w-full object-cover"
+            />
+            <span class="pointer-events-none absolute inset-0 bg-loden-950/0 transition-colors duration-300 group-hover:bg-loden-950/20" />
+          </button>
+        </li>
+      ))
+    }
+  </ul>
+
+  {/* Data pro lightbox — plné rozlišení */}
+  <script
+    is:inline
+    type="application/json"
+    data-lightbox-data
+    set:html={JSON.stringify(large)}
+  />
+</div>
+
+<dialog
+  id="lightbox"
+  class="fixed inset-0 z-[90] m-0 h-full max-h-none w-full max-w-none bg-transparent p-0 backdrop:bg-loden-950/95 backdrop:backdrop-blur-sm"
+  aria-label="Zvětšená fotografie"
+>
+  <div class="relative flex h-full w-full flex-col bg-loden-950/95">
+    <div class="flex items-center justify-between px-5 py-4 text-white/70 sm:px-8">
+      <span data-lb-counter class="text-[0.8125rem] tabular-nums"></span>
+      <button
+        type="button"
+        data-lb-close
+        class="flex h-11 w-11 cursor-pointer items-center justify-center border border-white/25 transition-colors hover:bg-white hover:text-loden-950"
+        aria-label="Zavřít"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5" aria-hidden="true">
+          <path d="m6 6 12 12M18 6 6 18" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="relative flex min-h-0 flex-1 items-center justify-center px-4 pb-4 sm:px-16">
+      <button
+        type="button"
+        data-lb-prev
+        class="absolute left-2 top-1/2 flex h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center border border-white/25 text-white transition-colors hover:bg-white hover:text-loden-950 sm:left-4"
+        aria-label="Předchozí fotka"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5" aria-hidden="true">
+          <path d="m15 6-6 6 6 6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+
+      <img data-lb-img alt="" class="max-h-full max-w-full object-contain" />
+
+      <button
+        type="button"
+        data-lb-next
+        class="absolute right-2 top-1/2 flex h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center border border-white/25 text-white transition-colors hover:bg-white hover:text-loden-950 sm:right-4"
+        aria-label="Další fotka"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5" aria-hidden="true">
+          <path d="m9 6 6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+
+    <p data-lb-caption class="px-5 pb-6 text-center text-[0.875rem] text-white/65 sm:px-8"></p>
+  </div>
+</dialog>
+
+<script>
+  interface LbPhoto {
+    src: string;
+    w: number;
+    h: number;
+    alt: string;
+  }
+
+  const dialog = document.getElementById('lightbox') as HTMLDialogElement | null;
+  if (dialog) {
+    const img = dialog.querySelector<HTMLImageElement>('[data-lb-img]')!;
+    const caption = dialog.querySelector<HTMLElement>('[data-lb-caption]')!;
+    const counter = dialog.querySelector<HTMLElement>('[data-lb-counter]')!;
+
+    let photos: LbPhoto[] = [];
+    let index = 0;
+
+    function show(i: number) {
+      if (!photos.length) return;
+      index = (i + photos.length) % photos.length;
+      const p = photos[index]!;
+      img.src = p.src;
+      img.alt = p.alt;
+      img.width = p.w;
+      img.height = p.h;
+      caption.textContent = p.alt;
+      counter.textContent = `${index + 1} / ${photos.length}`;
+    }
+
+    function open(grid: HTMLElement, i: number) {
+      const json = grid.parentElement?.querySelector('[data-lightbox-data]')?.textContent;
+      photos = json ? (JSON.parse(json) as LbPhoto[]) : [];
+      show(i);
+      dialog!.showModal();
+      document.documentElement.style.overflow = 'hidden';
+    }
+
+    document.querySelectorAll<HTMLElement>('[data-lightbox-grid]').forEach((grid) => {
+      grid.addEventListener('click', (e) => {
+        const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-lightbox-open]');
+        if (!btn) return;
+        open(grid, Number(btn.dataset.lightboxOpen));
+      });
+    });
+
+    dialog.querySelector('[data-lb-close]')?.addEventListener('click', () => dialog.close());
+    dialog.querySelector('[data-lb-prev]')?.addEventListener('click', () => show(index - 1));
+    dialog.querySelector('[data-lb-next]')?.addEventListener('click', () => show(index + 1));
+
+    dialog.addEventListener('click', (e) => {
+      // klik mimo obrázek zavře
+      const t = e.target as HTMLElement;
+      if (t === dialog || t.dataset.lbImg === undefined && t.tagName === 'DIV' && t.parentElement === dialog) {
+        dialog.close();
+      }
+    });
+
+    dialog.addEventListener('close', () => {
+      document.documentElement.style.overflow = '';
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (!dialog.open) return;
+      if (e.key === 'ArrowRight') show(index + 1);
+      if (e.key === 'ArrowLeft') show(index - 1);
+    });
+  }
+</script>

@@ -1,0 +1,145 @@
+---
+import { Image } from 'astro:assets';
+import PageLayout from '@/layouts/PageLayout.astro';
+import Section from '@/components/Section.astro';
+import SectionHead from '@/components/SectionHead.astro';
+import Icon from '@/components/Icon.astro';
+import { site } from '@/data/site';
+import { horsesForSale } from '@/data/horses';
+
+import heroImg from '@/assets/photos/portret-kun.jpg';
+---
+
+<PageLayout
+  title="Koně na prodej"
+  description="Prodej koní s kvalitní průpravou ze Stáje Manon. Rádi projednáme výběr koně z naší nabídky i prodej koně, který pro vás už není vhodný."
+  heading="Koně na prodej"
+  lead="Koně s kvalitní průpravou od trenéra s třiceti lety zkušeností na domácích i zahraničních kolbištích."
+  image={heroImg}
+  imageAlt="Bělouš ve stáji Manon"
+  crumbs={[{ label: 'Jezdectví' }, { label: 'Koně na prodej' }]}
+>
+  <Section tone="paper" space="lg">
+    {
+      horsesForSale.length > 0 ? (
+        <>
+          <SectionHead
+            title={`${horsesForSale.length} koní k dispozici`}
+          />
+          <ul class="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {horsesForSale.map((h, i) => (
+              <li class="card card-hover" data-reveal style={`--reveal-delay:${i * 70}ms`}>
+                {h.image && (
+                  <div class="img-zoom overflow-hidden">
+                    <Image
+                      src={h.image}
+                      alt={h.name}
+                      widths={[400, 800]}
+                      sizes="(min-width: 1024px) 30vw, 100vw"
+                      class="aspect-[4/3] w-full object-cover"
+                    />
+                  </div>
+                )}
+                <div class="p-7">
+                  <h2 class="font-display text-[1.5rem]">{h.name}</h2>
+                  <p class="mt-1 text-[0.8125rem] uppercase tracking-[0.12em] text-brass-700">
+                    {[h.year, h.breed, h.sex].filter(Boolean).join(' · ')}
+                  </p>
+                  <p class="mt-4 text-[0.9375rem] leading-relaxed text-ink-3">
+                    {h.description}
+                  </p>
+                  {h.price && (
+                    <p class="mt-5 font-display text-[1.375rem] text-brass-700">{h.price}</p>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+          <div class="lg:col-span-7">
+            <SectionHead
+              title="Právě teď nemáme volného koně."
+              lead="Nabídka se mění průběžně — ozvěte se nám a řekněte, co hledáte. Často víme o koni dřív, než se objeví v inzerci."
+            />
+
+            <div class="prose-manon mt-8">
+              <p>
+                Neváhejte nás kontaktovat v případě zájmu o koupi či prodej koní. Rádi
+                s vámi osobně projednáme možnosti výběru koně z naší nabídky nebo
+                možnost prodeje koně, který už pro vás není vhodný.
+              </p>
+              <p>
+                Koně si u nás lze také <strong>pronajmout</strong> — dlouhodobě, na
+                jednotlivé hodiny nebo na soustředění, včetně možnosti následného
+                odkoupení.
+              </p>
+            </div>
+
+            <div class="mt-10 flex flex-wrap gap-3">
+              <a href={`tel:${site.phoneHref}`} class="btn btn-primary">
+                <Icon name="phone" class="h-4 w-4" />
+                {site.phone}
+              </a>
+              <a href="/kontakt" class="btn btn-outline">Napsat nám</a>
+            </div>
+          </div>
+
+          <div class="lg:col-span-5">
+            <div class="card p-8">
+              <h2 class="t-3">Co od nás můžete čekat</h2>
+              <ul class="mt-6 space-y-4">
+                {[
+                  {
+                    t: 'Kvalitní průprava',
+                    d: 'Denní trénink vedený podle individuality koně, profesionální přístup a vyvážené krmení.',
+                  },
+                  {
+                    t: 'Otevřená komunikace',
+                    d: 'Řekneme vám, na co se kůň hodí a na co ne. Prodat nevhodného koně nikomu neprospěje.',
+                  },
+                  {
+                    t: 'Možnost vyzkoušení',
+                    d: 'Přijeďte se svým trenérem, koně si vyzkoušejte v hale i venku.',
+                  },
+                  {
+                    t: 'Prodej za vás',
+                    d: 'Zprostředkujeme i prodej koně, který už pro vás není vhodný.',
+                  },
+                ].map((x) => (
+                  <li class="border-t border-ink/12 pt-4">
+                    <p class="font-display text-[1.125rem]">{x.t}</p>
+                    <p class="mt-1.5 text-[0.875rem] leading-relaxed text-ink-3">{x.d}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )
+    }
+  </Section>
+
+  <Section tone="loden" space="md">
+    <div class="grid gap-10 lg:grid-cols-12 lg:items-center">
+      <div class="lg:col-span-7">
+        <h2 class="t-2 text-white">Hledáte konkrétní typ koně?</h2>
+        <p class="lead mt-5 text-white/70">
+          Napište nám, co potřebujete — disciplínu, úroveň jezdce, rozpočet. Ozveme
+          se, jakmile budeme mít vhodného koně.
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-3 lg:col-span-5 lg:justify-end">
+        <a
+          href={`mailto:${site.email}?subject=Popt%C3%A1vka%20-%20k%C5%AF%C5%88`}
+          class="btn btn-brass"
+        >
+          <Icon name="mail" class="h-4 w-4" />
+          Poslat poptávku
+        </a>
+        <a href="/sluzby" class="btn btn-ghost-light">Pronájem koní</a>
+      </div>
+    </div>
+  </Section>
+</PageLayout>

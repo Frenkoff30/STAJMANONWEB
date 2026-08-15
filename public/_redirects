@@ -1,0 +1,24 @@
+# Přesměrování ze starých .php adres — formát pro Netlify / Cloudflare Pages.
+# Na Apache hostingu se použije public/.htaccess.
+
+/index.php                    /                 301
+/aktuality.php                /akce             301
+/penzion-jizdarna-sucha.php   /penzion          301
+/akce.php                     /akce             301
+/vysledky.php                 /vysledky         301
+/sluzby.php                   /sluzby           301
+/kone-na-prodej.php           /kone-na-prodej   301
+/testacni-odchovna-hrebcu.php /odchovna         301
+/jezdecka-skola.php           /pobyty           301
+/jezdecky-klub.php            /jezdecka-skola   301
+/prazdninove-kurzy.php        /kurzy            301
+/fotogalerie.php              /galerie          301
+/staj-manon.php               /o-nas            301
+/uspechy.php                  /uspechy          301
+/jiri-skrivan.php             /jiri-skrivan     301
+/kontakt.php                  /kontakt          301
+/cs/index.php                 /                 301
+/en/index.php                 /                 301
+/de/index.php                 /                 301
+/fotogalerie/*                /galerie          301
+/gallery2/*                   /galerie          301

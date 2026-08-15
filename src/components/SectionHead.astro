@@ -1,0 +1,63 @@
+---
+interface Props {
+  title: string;
+  lead?: string;
+  align?: 'left' | 'center';
+  tone?: 'dark' | 'light';
+  /** Odkaz vpravo (desktop) */
+  action?: { label: string; href: string };
+  class?: string;
+}
+
+const {
+  title,
+  lead,
+  align = 'left',
+  tone = 'dark',
+  action,
+  class: className = '',
+} = Astro.props;
+
+const onDark = tone === 'light';
+---
+
+<div
+  class:list={[
+    'flex flex-col gap-6 md:flex-row md:items-end md:justify-between',
+    align === 'center' && 'md:flex-col md:items-center',
+    className,
+  ]}
+  data-reveal
+>
+  <div class={align === 'center' ? 'max-w-3xl text-center' : 'max-w-3xl'}>
+    <h2 class:list={['t-2', onDark && 'text-white']}>{title}</h2>
+    {
+      lead && (
+        <p class:list={['lead mt-4', onDark && 'text-white/70']}>{lead}</p>
+      )
+    }
+  </div>
+
+  {
+    action && (
+      <a
+        href={action.href}
+        class:list={['link-arrow shrink-0', onDark && 'text-brass-300']}
+      >
+        {action.label}
+        <svg
+          class="h-3.5 w-3.5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
+      </a>
+    )
+  }
+</div>

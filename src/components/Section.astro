@@ -1,0 +1,45 @@
+---
+interface Props {
+  tone?: 'paper' | 'paper-2' | 'white' | 'dark' | 'loden';
+  /** Vertikální rytmus */
+  space?: 'sm' | 'md' | 'lg';
+  id?: string;
+  class?: string;
+  /** Odstraní vnitřní kontejner (pro full-bleed obsah) */
+  bleed?: boolean;
+}
+
+const {
+  tone = 'paper',
+  space = 'md',
+  id,
+  class: className = '',
+  bleed = false,
+} = Astro.props;
+
+const tones: Record<string, string> = {
+  paper: 'bg-paper text-ink',
+  'paper-2': 'bg-paper-2 text-ink',
+  white: 'bg-white text-ink',
+  dark: 'bg-loden-950 text-white grain relative overflow-hidden',
+  loden: 'bg-loden-900 text-white grain relative overflow-hidden',
+};
+
+const spaces: Record<string, string> = {
+  sm: 'py-10 lg:py-14',
+  md: 'py-14 lg:py-20',
+  lg: 'py-16 lg:py-24',
+};
+---
+
+<section id={id} class={`${tones[tone]} ${spaces[space]} ${className}`}>
+  {
+    bleed ? (
+      <slot />
+    ) : (
+      <div class="container-x relative z-10">
+        <slot />
+      </div>
+    )
+  }
+</section>

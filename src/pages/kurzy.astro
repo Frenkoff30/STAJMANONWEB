@@ -1,0 +1,321 @@
+---
+import { Image } from 'astro:assets';
+import PageLayout from '@/layouts/PageLayout.astro';
+import Section from '@/components/Section.astro';
+import SectionHead from '@/components/SectionHead.astro';
+import Icon from '@/components/Icon.astro';
+import { site } from '@/data/site';
+import {
+  turnusy,
+  turnusStatusLabels,
+  kurzCena,
+  kurzProgram,
+  kurzIncluded,
+  kurzPacking,
+  stornoPodminky,
+} from '@/data/courses';
+import { formatRange } from '@/data/events';
+
+import heroImg from '@/assets/photos/kurzy-pony.jpg';
+import programImg from '@/assets/photos/deti-kun.jpg';
+import pokojImg from '@/assets/photos/pokoj-06.jpg';
+
+const statusStyle: Record<string, string> = {
+  volno: 'bg-loden-800 text-paper',
+  posledni: 'bg-brass-600 text-white',
+  obsazeno: 'bg-ink/10 text-ink-3',
+  uzavreno: 'bg-ink/10 text-ink-3',
+};
+
+const bookable = (s: string) => s === 'volno' || s === 'posledni';
+const freeCount = turnusy.filter((t) => bookable(t.status)).length;
+---
+
+<PageLayout
+  title="Prázdninové jezdecké kurzy 2026"
+  heading="Prázdninové jezdecké kurzy"
+  description="Týdenní jezdecké kurzy pro děti od 8 let v areálu Jízdárna Suchá. Osm turnusů, 6 výukových lekcí, teorie, plná penze a celodenní program. Cena 11 400 Kč."
+  lead="Osm týdenních turnusů intenzivní výuky jízdy na koni. Šest lekcí, teorie dvakrát denně, plná penze a program od rána do večera."
+  image={heroImg}
+  imageAlt="Dvě dívky na ponym během prázdninového kurzu"
+  crumbs={[{ label: 'Jezdectví' }, { label: 'Prázdninové kurzy' }]}
+  nav={[
+    { id: 'turnusy', label: 'Termíny' },
+    { id: 'program', label: 'Program' },
+    { id: 'cena', label: 'Cena a platba' },
+    { id: 'zabalit', label: 'Co s sebou' },
+  ]}
+  navAction={{ label: 'Přihlásit', href: '#turnusy' }}
+  heroSize="tall"
+>
+  <!-- Turnusy -->
+  <Section tone="paper" space="lg" id="turnusy">
+    <SectionHead
+      title="Termíny 2026"
+      lead={`Volná místa má ${freeCount} z ${turnusy.length} turnusů. Nástup v neděli do 10.00, ukončení s vyhodnocením v sobotu ve 12.00, odjezd zhruba ve 13.30.`}
+      action={{ label: 'Poptat termín', href: `mailto:${site.email}` }}
+    />
+
+    <ul class="mt-10 space-y-px">
+      {
+        turnusy.map((t, i) => (
+          <li
+            class:list={[
+              'grid grid-cols-[auto_1fr] items-center gap-x-5 gap-y-2 border-t border-ink/12 py-6 last:border-b sm:grid-cols-[auto_1fr_auto_auto] sm:gap-8',
+              !bookable(t.status) && 'opacity-55',
+            ]}
+            data-reveal
+            style={`--reveal-delay:${i * 55}ms`}
+          >
+            <span class="index-num">{String(t.n).padStart(2, '0')}</span>
+
+            <div class="min-w-0">
+              <p class="font-display text-[1.25rem] leading-snug sm:text-[1.5rem]">
+                {formatRange({ start: t.start, end: t.end, title: '', kind: 'pobyt' })}
+              </p>
+              {t.note && (
+                <p class="mt-1 text-[0.875rem] text-ink-3">{t.note}</p>
+              )}
+            </div>
+
+            <span
+              class:list={[
+                'col-span-2 justify-self-start px-3 py-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.12em] sm:col-span-1 sm:justify-self-end',
+                statusStyle[t.status],
+              ]}
+            >
+              {turnusStatusLabels[t.status]}
+            </span>
+
+            <div class="col-span-2 sm:col-span-1 sm:w-32 sm:text-right">
+              {bookable(t.status) ? (
+                <a
+                  href={`mailto:${site.email}?subject=P%C5%99ihl%C3%A1%C5%A1ka%20-%20${t.n}.%20turnus%202026`}
+                  class="link-arrow"
+                >
+                  Přihlásit
+                  <Icon name="arrow-right" class="h-3.5 w-3.5" />
+                </a>
+              ) : (
+                <span class="text-[0.75rem] uppercase tracking-[0.12em] text-ink-3/60">
+                  —
+                </span>
+              )}
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="mt-8 text-[0.9375rem] text-ink-3">
+      V případě zájmu nás kontaktujte na
+      <a href={`mailto:${site.email}`} class="link-underline font-semibold text-brass-700">
+        {site.email}
+      </a>
+      — zašleme vám přihlášku a bližší informace.
+    </p>
+  </Section>
+
+  <!-- Program -->
+  <Section tone="dark" space="lg" id="program">
+    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+      <div class="lg:col-span-5">
+        <SectionHead
+          title="Týden, ze kterého si dítě něco odnese."
+          lead="Naší snahou je podporovat mladé jezdce od nejútlejšího věku, naučit je dobrým základům a dál prohlubovat jejich praktické i teoretické znalosti."
+          tone="light"
+        />
+        <div class="img-zoom mt-10 overflow-hidden" data-reveal>
+          <Image
+            src={programImg}
+            alt="Dívka s koněm na prázdninovém kurzu"
+            widths={[400, 800]}
+            sizes="(min-width: 1024px) 36vw, 100vw"
+            class="aspect-[4/3] w-full object-cover"
+          />
+        </div>
+      </div>
+
+      <div class="lg:col-span-7">
+        <dl class="space-y-px">
+          {
+            kurzProgram.map((p, i) => (
+              <div
+                class="border-t border-white/12 py-8 last:border-b"
+                data-reveal
+                style={`--reveal-delay:${i * 80}ms`}
+              >
+                <dt class="font-display text-[1.5rem] text-white">{p.title}</dt>
+                <dd class="mt-3 text-[0.9375rem] leading-relaxed text-white/65">
+                  {p.text}
+                </dd>
+              </div>
+            ))
+          }
+        </dl>
+
+        <p class="mt-8 border-l-2 border-brass-500 pl-5 text-[0.9375rem] text-white/65">
+          Všechny lekce jsou přizpůsobeny jezdeckým zkušenostem dětí, které jsou
+          rozdělené do tří skupin podle dovedností. Věnujeme se i úplným
+          začátečníkům — u nich výcvik probíhá na lonži.
+        </p>
+      </div>
+    </div>
+  </Section>
+
+  <!-- Cena -->
+  <Section tone="paper" space="lg" id="cena">
+    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+      <div class="lg:col-span-5">
+        <SectionHead title="Kolik to stojí" />
+
+        <div class="mt-10 grid gap-px border border-ink/12 bg-ink/12 sm:grid-cols-2">
+          <div class="bg-paper p-7">
+            <p class="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-ink-3/70">
+              Základní cena
+            </p>
+            <p class="mt-3 font-display text-[2.25rem] leading-none">{kurzCena.main}</p>
+          </div>
+          <div class="bg-paper p-7">
+            <p class="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-brass-700">
+              Zvýhodněná
+            </p>
+            <p class="mt-3 font-display text-[2.25rem] leading-none text-brass-700">
+              {kurzCena.discounted}
+            </p>
+            <p class="mt-3 text-[0.8125rem] leading-relaxed text-ink-3">
+              {kurzCena.discountNote}
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-8 space-y-4 text-[0.9375rem] text-ink-3">
+          <p>
+            <strong class="text-ink">Ustájení vlastního koně:</strong>{' '}
+            {kurzCena.ownHorse} — včetně steliva a sena. Místování, jadrné krmivo
+            nebo granule si zajišťuje každý účastník sám. Vhodný je stojan na sedlo,
+            k dispozici jsou i výběhy.
+          </p>
+          <p>
+            <strong class="text-ink">Platba:</strong> nejpozději měsíc před nástupem
+            na účet <span class="whitespace-nowrap font-semibold text-ink">{kurzCena.account}</span>{' '}
+            (Komerční banka). Do poznámky pro příjemce uveďte jméno dítěte a termín
+            pobytu. Bez včasné platby se pobyt automaticky stornuje.
+          </p>
+          <p>
+            <strong class="text-ink">Pojištění:</strong> pokud dítě nemá sjednané
+            úrazové pojištění, doporučujeme ho na dobu kurzu připojistit.
+          </p>
+        </div>
+      </div>
+
+      <div class="lg:col-span-7">
+        <div class="card p-8 lg:p-10">
+          <h3 class="t-3">Cena zahrnuje</h3>
+          <ul class="mt-6 space-y-3">
+            {
+              kurzIncluded.map((t) => (
+                <li class="flex gap-3 text-[0.9375rem] text-ink-3">
+                  <Icon name="check" class="mt-1 h-4 w-4 shrink-0 text-brass-600" strokeWidth={2.2} />
+                  {t}
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+
+        <div class="card mt-4 p-8 lg:p-10">
+          <h3 class="t-3">Storno podmínky</h3>
+          <dl class="mt-6 space-y-px">
+            {
+              stornoPodminky.map((s) => (
+                <div class="flex flex-wrap items-baseline justify-between gap-3 border-t border-ink/12 py-4 first:border-t-0 first:pt-0">
+                  <dt class="text-[0.9375rem] text-ink-3">{s.when}</dt>
+                  <dd class="font-display text-[1.25rem] text-brass-700">{s.fee}</dd>
+                </div>
+              ))
+            }
+          </dl>
+          <p class="mt-5 text-[0.8125rem] text-ink-3">
+            Storno neplatí v případě, že za sebe zajistíte náhradníka.
+          </p>
+        </div>
+      </div>
+    </div>
+  </Section>
+
+  <!-- Co s sebou -->
+  <Section tone="paper-2" space="lg" id="zabalit">
+    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+      <div class="lg:col-span-5">
+        <SectionHead
+          title="Co si zabalit"
+          lead="Ubytování je v nově zařízených třílůžkových pokojích, jeden pokoj je čtyřlůžkový s palandami. Lůžkoviny a povlečení jsou součástí vybavení."
+        />
+        <div class="img-zoom mt-10 overflow-hidden" data-reveal>
+          <Image
+            src={pokojImg}
+            alt="Pokoj s patrovými postelemi pro účastníky kurzů"
+            widths={[400, 800]}
+            sizes="(min-width: 1024px) 36vw, 100vw"
+            class="aspect-[3/2] w-full object-cover"
+          />
+        </div>
+      </div>
+
+      <div class="lg:col-span-7">
+        <ul class="grid gap-x-8 gap-y-3 sm:grid-cols-2">
+          {
+            kurzPacking.map((t, i) => (
+              <li
+                class="flex gap-3 border-b border-ink/10 pb-3 text-[0.9375rem] text-ink-3"
+                data-reveal
+                style={`--reveal-delay:${Math.min(i * 40, 240)}ms`}
+              >
+                <span class="mt-2.5 h-px w-3 shrink-0 bg-brass-600" />
+                {t}
+              </li>
+            ))
+          }
+        </ul>
+
+        <div class="mt-10 border border-ink/12 bg-white p-7">
+          <p class="flex items-start gap-3 text-[0.9375rem] leading-relaxed text-ink-3">
+            <Icon name="info" class="mt-0.5 h-5 w-5 shrink-0 text-brass-600" />
+            <span>
+              <strong class="text-ink">Odpovědná osoba:</strong> Miroslava Skřivanová,
+              <a href="tel:+420606836449" class="link-underline text-brass-700">
+                606 836 449
+              </a>
+              , <a href={`mailto:${site.email}`} class="link-underline text-brass-700">{site.email}</a>.
+              Licence: cvičitel, rozhodčí, stylový komisař, stavitel parkuru.
+            </span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </Section>
+
+  <!-- CTA -->
+  <Section tone="loden" space="md">
+    <div class="grid gap-10 lg:grid-cols-12 lg:items-center">
+      <div class="lg:col-span-7">
+        <h2 class="t-2 text-white">Zbývají poslední místa.</h2>
+        <p class="lead mt-5 text-white/70">
+          Napište nám, o který turnus máte zájem — obratem pošleme přihlášku
+          a všechny podrobnosti.
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-3 lg:col-span-5 lg:justify-end">
+        <a
+          href={`mailto:${site.email}?subject=P%C5%99ihl%C3%A1%C5%A1ka%20na%20jezdeck%C3%BD%20kurz%202026`}
+          class="btn btn-brass"
+        >
+          <Icon name="mail" class="h-4 w-4" />
+          Napsat e-mail
+        </a>
+        <a href="tel:+420606836449" class="btn btn-ghost-light">606 836 449</a>
+      </div>
+    </div>
+  </Section>
+</PageLayout>

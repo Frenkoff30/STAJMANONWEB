@@ -1,0 +1,44 @@
+---
+import { site } from '@/data/site';
+
+interface Props {
+  class?: string;
+  height?: string;
+}
+
+const { class: className = '', height = 'h-[26rem] lg:h-[34rem]' } = Astro.props;
+
+/** OpenStreetMap embed — bez API klíče, bez trackovacích cookies. */
+const d = 0.012;
+const bbox = [
+  site.address.lng - d,
+  site.address.lat - d / 2,
+  site.address.lng + d,
+  site.address.lat + d / 2,
+].join('%2C');
+
+const src = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${site.address.lat}%2C${site.address.lng}`;
+---
+
+<div class={`relative border border-ink/12 bg-paper-2 ${className}`}>
+  <iframe
+    {src}
+    title="Mapa — Areál Jízdárna Suchá, Suchá u Litomyšle"
+    loading="lazy"
+    referrerpolicy="no-referrer-when-downgrade"
+    class={`w-full ${height} grayscale-[0.35] contrast-[1.05]`}></iframe>
+
+  <div class="flex flex-wrap items-center justify-between gap-3 border-t border-ink/12 px-5 py-4 text-[0.8125rem]">
+    <span class="text-ink-3">
+      {site.address.street}, {site.address.zip} {site.address.city}
+    </span>
+    <a
+      href={`https://www.openstreetmap.org/?mlat=${site.address.lat}&mlon=${site.address.lng}#map=15/${site.address.lat}/${site.address.lng}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="link-underline font-semibold text-brass-700"
+    >
+      Otevřít větší mapu
+    </a>
+  </div>
+</div>
