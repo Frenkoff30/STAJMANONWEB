@@ -210,6 +210,30 @@ a na mobilu se posouvá vodorovně.
 Skutečnou výšku hlavičky měří JavaScript do proměnné `--header-h`, aby lišta
 seděla na pixel a kotvy neschovávaly nadpis pod ní.
 
+### Pohyb při scrollování
+
+Postavené na CSS scroll-driven animacích (`animation-timeline: view()`), takže
+běží mimo hlavní vlákno a nestojí ani řádek JavaScriptu. Prohlížeč bez podpory
+prostě nic neanimuje a web vypadá normálně.
+
+| Třída | Co dělá | Kam se dává |
+| --- | --- | --- |
+| `.parallax` | vnitřní obrázek se posouvá pomaleji než stránka | obal fotky v hero a v celoplošných pásech |
+| `.reveal-rise` | sekce dojede zespodu | přes prop `rise` na `<Section>` |
+| `.reveal-wipe` | obsah se odkryje odspodu | volitelně na jednotlivé bloky |
+
+`.reveal-rise` animuje `transform`, což vytváří containing block. **Nezapínat na
+sekcích, které uvnitř mají `position: sticky`** — rozbilo by to lepicí sloupce
+na `/o-nas`, `/jiri-skrivan`, `/areal` a úvodní stránce.
+
+Vše respektuje `prefers-reduced-motion`.
+
+### Texty bez pomlček
+
+V textech se nepoužívá dlouhá pomlčka (—). Věty jsou rozdělené čárkou, dvojtečkou
+nebo tečkou. Krátká pomlčka (–) zůstává jen v rozsazích, kde nese význam:
+`Z–ST`, `2–4lůžkové`, `3.–6. září`, `740–940 Kč`.
+
 ### Dlouhé výpisy
 
 Archivy (výsledkové listiny, proběhlé akce, úspěchy po letech) jsou sbalené do

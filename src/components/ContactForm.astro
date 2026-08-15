@@ -26,7 +26,8 @@ const topics = [
     <span class="text-brass-700">*</span> jsou povinná.
   </p>
 
-  <!-- Honeypot — skryté pole pro roboty -->
+  {/* Honeypot. Astro komentář, ne HTML: do výstupu se nedostane a robot
+      se z něj tedy nedozví, které pole má přeskočit. */}
   <div class="absolute left-[-9999px]" aria-hidden="true">
     <label for="website">Nevyplňujte</label>
     <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />

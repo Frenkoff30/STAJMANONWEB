@@ -430,15 +430,6 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
   }
 
-  /* --- Obrázek s jemným ken-burns při hoveru ----------------------------- */
-  .img-zoom img {
-    transition: transform 900ms var(--ease-out-natural);
-    will-change: transform;
-  }
-  .img-zoom:hover img {
-    transform: scale(1.045);
-  }
-
   /* --- Číslovaný index (editorial) --------------------------------------- */
   .index-num {
     font-family: var(--font-display);
@@ -466,6 +457,69 @@
     transform: none;
   }
 
+  /* ------------------------------------------------------------------------
+     PŘECHODY PŘI SCROLLOVÁNÍ
+
+     Postavené na CSS scroll-driven animacích (`animation-timeline: view()`).
+     Běží mimo hlavní vlákno, takže nezdržují scroll a nestojí ani řádek JS.
+     Prohlížeče bez podpory prostě nic neanimují a web vypadá normálně.
+     ------------------------------------------------------------------------ */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      /* Fotka v pásu se hýbe pomaleji než stránka */
+      .parallax > img,
+      .parallax > picture > img {
+        animation: parallax-shift linear both;
+        animation-timeline: view();
+        animation-range: cover 0% cover 100%;
+        will-change: transform;
+      }
+
+      /* Sekce se odkryje odspodu, jak vplouvá do okna */
+      .reveal-wipe {
+        animation: wipe-up linear both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 65%;
+      }
+
+      /* Tmavý pás dojede zespodu a lehce se dorovná */
+      .reveal-rise {
+        animation: rise linear both;
+        animation-timeline: view();
+        animation-range: entry 10% entry 85%;
+      }
+    }
+  }
+
+  @keyframes parallax-shift {
+    from {
+      transform: scale(1.12) translateY(-4%);
+    }
+    to {
+      transform: scale(1.12) translateY(4%);
+    }
+  }
+
+  @keyframes wipe-up {
+    from {
+      clip-path: inset(18% 0 0 0);
+      opacity: 0.35;
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes rise {
+    from {
+      transform: translateY(3.5rem);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
   .text-shadow-hero {
     text-shadow: 0 2px 24px rgba(10, 16, 13, 0.45);
   }
@@ -481,10 +535,13 @@
     transform: none !important;
     transition: none !important;
   }
-  .img-zoom img,
-  .img-zoom:hover img {
-    transition: none;
-    transform: none;
+  .parallax > img,
+  .reveal-wipe,
+  .reveal-rise {
+    animation: none !important;
+    transform: none !important;
+    clip-path: none !important;
+    opacity: 1 !important;
   }
   *,
   *::before,

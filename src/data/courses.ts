@@ -72,7 +72,7 @@ export const kurzProgram = [
   },
   {
     title: 'Teorie 2× denně',
-    text: 'Výuka ve skupinách podle okruhů ZZVJ — bezpečnost, ošetřování a péče o koně, základy chovu, pravidla jezdeckých soutěží.',
+    text: 'Výuka ve skupinách podle okruhů ZZVJ: bezpečnost, ošetřování a péče o koně, základy chovu, pravidla jezdeckých soutěží.',
   },
   {
     title: 'Ubytování a strava',

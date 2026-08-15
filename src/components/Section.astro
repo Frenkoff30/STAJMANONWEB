@@ -7,6 +7,13 @@ interface Props {
   class?: string;
   /** Odstraní vnitřní kontejner (pro full-bleed obsah) */
   bleed?: boolean;
+  /**
+   * Sekce při scrollování dojede zespodu.
+   *
+   * Pozor: animace používá `transform`, což vytváří containing block —
+   * nezapínat na sekcích, které uvnitř mají `position: sticky`.
+   */
+  rise?: boolean;
 }
 
 const {
@@ -15,6 +22,7 @@ const {
   id,
   class: className = '',
   bleed = false,
+  rise = false,
 } = Astro.props;
 
 const tones: Record<string, string> = {
@@ -26,13 +34,16 @@ const tones: Record<string, string> = {
 };
 
 const spaces: Record<string, string> = {
-  sm: 'py-10 lg:py-14',
-  md: 'py-14 lg:py-20',
-  lg: 'py-16 lg:py-24',
+  sm: 'py-8 lg:py-10',
+  md: 'py-10 lg:py-14',
+  lg: 'py-12 lg:py-16',
 };
 ---
 
-<section id={id} class={`${tones[tone]} ${spaces[space]} ${className}`}>
+<section
+  id={id}
+  class={`${tones[tone]} ${spaces[space]} ${rise ? 'reveal-rise' : ''} ${className}`}
+>
   {
     bleed ? (
       <slot />

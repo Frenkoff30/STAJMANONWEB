@@ -30,7 +30,7 @@ import heroImg from '@/assets/photos/portret-kun.jpg';
             {horsesForSale.map((h, i) => (
               <li class="card card-hover" data-reveal style={`--reveal-delay:${i * 70}ms`}>
                 {h.image && (
-                  <div class="img-zoom overflow-hidden">
+                  <div class="overflow-hidden">
                     <Image
                       src={h.image}
                       alt={h.name}
@@ -61,7 +61,7 @@ import heroImg from '@/assets/photos/portret-kun.jpg';
           <div class="lg:col-span-7">
             <SectionHead
               title="Právě teď nemáme volného koně."
-              lead="Nabídka se mění průběžně — ozvěte se nám a řekněte, co hledáte. Často víme o koni dřív, než se objeví v inzerci."
+              lead="Nabídka se mění průběžně. Ozvěte se nám a řekněte, co hledáte. Často víme o koni dřív, než se objeví v inzerci."
             />
 
             <div class="prose-manon mt-8">
@@ -71,7 +71,7 @@ import heroImg from '@/assets/photos/portret-kun.jpg';
                 možnost prodeje koně, který už pro vás není vhodný.
               </p>
               <p>
-                Koně si u nás lze také <strong>pronajmout</strong> — dlouhodobě, na
+                Koně si u nás lze také <strong>pronajmout</strong> dlouhodobě, na
                 jednotlivé hodiny nebo na soustředění, včetně možnosti následného
                 odkoupení.
               </p>
@@ -126,7 +126,7 @@ import heroImg from '@/assets/photos/portret-kun.jpg';
       <div class="lg:col-span-7">
         <h2 class="t-2 text-white">Hledáte konkrétní typ koně?</h2>
         <p class="lead mt-5 text-white/70">
-          Napište nám, co potřebujete — disciplínu, úroveň jezdce, rozpočet. Ozveme
+          Napište nám, co potřebujete: disciplínu, úroveň jezdce, rozpočet. Ozveme
           se, jakmile budeme mít vhodného koně.
         </p>
       </div>

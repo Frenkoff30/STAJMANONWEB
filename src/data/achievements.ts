@@ -34,7 +34,7 @@ export const achievements: AchievementYear[] = [
   {
     year: 2012,
     items: [
-      { event: 'Finále Českého skokového poháru — 3. místo', rider: 'Jiří Skřivan', horse: 'Kalisto', major: true },
+      { event: 'Finále Českého skokového poháru, 3. místo', rider: 'Jiří Skřivan', horse: 'Kalisto', major: true },
       { place: '1.', event: 'Finále KMK 5letých', rider: 'Jiří Skřivan', horse: 'Eben' },
       { place: '1.', event: 'Velká cena Opavy', rider: 'Jiří Skřivan', horse: 'Kalisto' },
       { place: '2.', event: 'ČP Velká cena Martinic', rider: 'Jiří Skřivan', horse: 'Kalisto' },
@@ -54,8 +54,8 @@ export const achievements: AchievementYear[] = [
       { place: '3.', event: 'DaJ Junior Cup Kolín', rider: 'Petra Skřivanová', horse: 'Andromeda' },
       { place: '4.', event: 'Velká cena Brna', rider: 'Jiří Skřivan', horse: 'Kalisto' },
       { place: '4.', event: 'Velká cena Ostravy', rider: 'Jiří Skřivan', horse: 'Mercedes' },
-      { place: '5.', event: 'MČR Ptýrov — senioři', rider: 'Jiří Skřivan', horse: 'Kalisto' },
-      { place: '5.', event: 'MČR Ptýrov — mladí jezdci', rider: 'Petra Skřivanová', horse: 'Andromeda' },
+      { place: '5.', event: 'MČR Ptýrov, senioři', rider: 'Jiří Skřivan', horse: 'Kalisto' },
+      { place: '5.', event: 'MČR Ptýrov, mladí jezdci', rider: 'Petra Skřivanová', horse: 'Andromeda' },
       { place: '7.', event: 'Grand Prix Linec', rider: 'Jiří Skřivan', horse: 'Kalisto' },
     ],
   },
@@ -205,6 +205,6 @@ export const majorTitles = [
   { year: '1993', text: 'Mistr ČR v parkurovém skákání' },
   { year: '2004', text: 'Vítěz Českého skokového poháru' },
   { year: '2006', text: 'Vítěz Českého skokového poháru' },
-  { year: '2010', text: 'Mistryně ČR mladých jezdců — Petra Skřivanová' },
+  { year: '2010', text: 'Mistryně ČR mladých jezdců, Petra Skřivanová' },
   { year: '2011', text: 'Vítěz Českého skokového poháru' },
 ];

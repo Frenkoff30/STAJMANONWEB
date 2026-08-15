@@ -23,15 +23,17 @@ const { title, lead, image, imageAlt, crumbs = [], size = 'default' } = Astro.pr
     size === 'tall' ? 'min-h-[54vh] lg:min-h-[62vh]' : 'min-h-[42vh] lg:min-h-[48vh]',
   ]}
 >
-  <Image
-    src={image}
-    alt={imageAlt}
-    widths={[640, 1024, 1600, 2000]}
-    sizes="100vw"
-    loading="eager"
-    fetchpriority="high"
-    class="absolute inset-0 -z-10 h-full w-full object-cover"
-  />
+  <div class="parallax absolute inset-0 -z-10 overflow-hidden">
+    <Image
+      src={image}
+      alt={imageAlt}
+      widths={[640, 1024, 1600, 2000]}
+      sizes="100vw"
+      loading="eager"
+      fetchpriority="high"
+      class="h-full w-full object-cover"
+    />
+  </div>
   <div
     class="absolute inset-0 -z-10 bg-[linear-gradient(to_top,rgba(10,16,13,.92)_0%,rgba(10,16,13,.55)_45%,rgba(10,16,13,.3)_100%)]"
   >

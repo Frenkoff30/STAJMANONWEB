@@ -98,7 +98,7 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
                 </a>
               ) : (
                 <span class="text-[0.75rem] uppercase tracking-[0.12em] text-ink-3/60">
-                  —
+                  ·
                 </span>
               )}
             </div>
@@ -111,13 +111,12 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
       V případě zájmu nás kontaktujte na
       <a href={`mailto:${site.email}`} class="link-underline font-semibold text-brass-700">
         {site.email}
-      </a>
-      — zašleme vám přihlášku a bližší informace.
+      </a>. Zašleme vám přihlášku a bližší informace.
     </p>
   </Section>
 
   <!-- Program -->
-  <Section tone="dark" space="lg" id="program">
+  <Section tone="dark" space="lg" id="program" rise>
     <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
       <div class="lg:col-span-5">
         <SectionHead
@@ -125,7 +124,7 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
           lead="Naší snahou je podporovat mladé jezdce od nejútlejšího věku, naučit je dobrým základům a dál prohlubovat jejich praktické i teoretické znalosti."
           tone="light"
         />
-        <div class="img-zoom mt-10 overflow-hidden" data-reveal>
+        <div class="mt-10 overflow-hidden" data-reveal>
           <Image
             src={programImg}
             alt="Dívka s koněm na prázdninovém kurzu"
@@ -157,7 +156,7 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
         <p class="mt-8 border-l-2 border-brass-500 pl-5 text-[0.9375rem] text-white/65">
           Všechny lekce jsou přizpůsobeny jezdeckým zkušenostem dětí, které jsou
           rozdělené do tří skupin podle dovedností. Věnujeme se i úplným
-          začátečníkům — u nich výcvik probíhá na lonži.
+          začátečníkům, u nich výcvik probíhá na lonži.
         </p>
       </div>
     </div>
@@ -192,7 +191,7 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
         <div class="mt-8 space-y-4 text-[0.9375rem] text-ink-3">
           <p>
             <strong class="text-ink">Ustájení vlastního koně:</strong>{' '}
-            {kurzCena.ownHorse} — včetně steliva a sena. Místování, jadrné krmivo
+            {kurzCena.ownHorse}, včetně steliva a sena. Místování, jadrné krmivo
             nebo granule si zajišťuje každý účastník sám. Vhodný je stojan na sedlo,
             k dispozici jsou i výběhy.
           </p>
@@ -252,7 +251,7 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
           title="Co si zabalit"
           lead="Ubytování je v nově zařízených třílůžkových pokojích, jeden pokoj je čtyřlůžkový s palandami. Lůžkoviny a povlečení jsou součástí vybavení."
         />
-        <div class="img-zoom mt-10 overflow-hidden" data-reveal>
+        <div class="mt-10 overflow-hidden" data-reveal>
           <Image
             src={pokojImg}
             alt="Pokoj s patrovými postelemi pro účastníky kurzů"
@@ -302,7 +301,7 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
       <div class="lg:col-span-7">
         <h2 class="t-2 text-white">Zbývají poslední místa.</h2>
         <p class="lead mt-5 text-white/70">
-          Napište nám, o který turnus máte zájem — obratem pošleme přihlášku
+          Napište nám, o který turnus máte zájem, obratem pošleme přihlášku
           a všechny podrobnosti.
         </p>
       </div>

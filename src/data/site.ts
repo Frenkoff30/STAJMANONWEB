@@ -30,7 +30,7 @@ export const site = {
   contacts: [
     {
       name: 'Jiří Skřivan',
-      role: 'Stáj Manon — sport, ustájení, prodej koní',
+      role: 'Stáj Manon, sport, ustájení, prodej koní',
       phone: '+420 602 451 918',
       phoneHref: '+420602451918',
       email: 'manon@wo.cz',

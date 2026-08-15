@@ -37,7 +37,7 @@ export const penzionHighlights = [
   },
   {
     title: 'Venkovní terasa',
-    text: 'Posezení s výhledem přímo na kolbiště a pastviny — nejlepší místo na sledování závodů.',
+    text: 'Posezení s výhledem přímo na kolbiště a pastviny. Nejlepší místo na sledování závodů.',
   },
   {
     title: 'Firemní a společenské akce',
@@ -59,7 +59,7 @@ export const nearby = [
   },
   {
     title: 'Hrad Svojanov a Nové Hrady',
-    text: 'Historická města a hrady v dosahu krátké vyjížďky — Moravská Třebová, Nové Hrady, Svojanov.',
+    text: 'Historická města a hrady v dosahu krátké vyjížďky: Moravská Třebová, Nové Hrady, Svojanov.',
     tag: 'Památky',
   },
   {
@@ -74,7 +74,7 @@ export const nearby = [
   },
   {
     title: 'Pinguin park Přívrat',
-    text: 'Dětský park — trampolíny, autíčka, minigolf, bowling a jízda na motokárách po sjezdovce.',
+    text: 'Dětský park s trampolínami, autíčka, minigolf, bowling a jízda na motokárách po sjezdovce.',
     tag: 'Pro děti',
   },
   {

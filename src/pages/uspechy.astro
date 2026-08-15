@@ -19,9 +19,9 @@ const span = `${achievements[achievements.length - 1]!.year}–${achievements[0]
 
 <PageLayout
   title="Úspěchy"
-  description="Sportovní úspěchy Stáje Manon od roku 1993 — mistrovské tituly, vítězství ve Velkých cenách a tři celkové triumfy v Českém skokovém poháru."
+  description="Sportovní úspěchy Stáje Manon od roku 1993: mistrovské tituly, vítězství ve Velkých cenách a tři celkové triumfy v Českém skokovém poháru."
   heading="Úspěchy"
-  lead="Třicet let výsledků na domácích i zahraničních kolbištích — od prvního mistrovského titulu v roce 1993 po Český skokový pohár."
+  lead="Třicet let výsledků na domácích i zahraničních kolbištích, od prvního mistrovského titulu v roce 1993 po Český skokový pohár."
   image={heroImg}
   imageAlt="Velká cena Litomyšle v areálu Jízdárna Suchá"
   crumbs={[{ label: 'Sport' }, { label: 'Úspěchy' }]}
@@ -54,10 +54,10 @@ const span = `${achievements[achievements.length - 1]!.year}–${achievements[0]
   </Section>
 
   <!-- Milníky -->
-  <Section tone="dark" space="lg" id="milniky">
+  <Section tone="dark" space="lg" id="milniky" rise>
     <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
       <div class="lg:col-span-5">
-        <div class="img-zoom overflow-hidden" data-reveal>
+        <div class="overflow-hidden" data-reveal>
           <Image
             src={portraitImg}
             alt="Dekorování vítězů Volvo World Cupu"

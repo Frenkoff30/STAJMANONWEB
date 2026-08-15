@@ -29,7 +29,7 @@ const meta: Record<string, { alt: string; tag: GalleryTag }> = {
 
   /* --- Penzion a restaurace -------------------------------------------- */
   'penzion-exterier.jpg': { alt: 'Budova penzionu Jízdárna Suchá s venkovní terasou', tag: 'penzion' },
-  'penzion-detail.jpg': { alt: 'Vybavení pokoje — konvice a čajový koutek', tag: 'penzion' },
+  'penzion-detail.jpg': { alt: 'Vybavení pokoje, konvice a čajový koutek', tag: 'penzion' },
   'pokoj-01.jpg': { alt: 'Dvoulůžkový pokoj penzionu s vlastní koupelnou', tag: 'penzion' },
   'pokoj-02.jpg': { alt: 'Pokoj penzionu s televizí a psacím stolem', tag: 'penzion' },
   'pokoj-03.jpg': { alt: 'Třílůžkový pokoj s oddělenými postelemi', tag: 'penzion' },
@@ -90,7 +90,7 @@ const meta: Record<string, { alt: string; tag: GalleryTag }> = {
   'gal-23.jpg': { alt: 'Účastnice jezdeckého kurzu', tag: 'kurzy' },
   'gal-24.jpg': { alt: 'Mladá jezdkyně v helmě', tag: 'kurzy' },
   'gal-25.jpg': { alt: 'Jezdci Stáje Manon v klubových barvách', tag: 'zavody' },
-  'gal-26.jpg': { alt: 'Volvo World Cup — společné foto', tag: 'zavody' },
+  'gal-26.jpg': { alt: 'Volvo World Cup, společné foto', tag: 'zavody' },
   'gal-27.jpg': { alt: 'Areál z výšky', tag: 'areal' },
   'gal-28.jpg': { alt: 'Letecký pohled na kolbiště a stáje', tag: 'areal' },
   'gal-29.jpg': { alt: 'Venkovní kolbiště s překážkami', tag: 'areal' },

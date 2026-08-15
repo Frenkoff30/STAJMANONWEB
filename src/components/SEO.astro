@@ -21,8 +21,14 @@ const {
 
 const canonical = new URL(Astro.url.pathname.replace(/\/$/, '') || '/', Astro.site);
 const ogImage = new URL(image, Astro.site);
+/**
+ * Titulek stránky. Na úvodu jen název areálu, jinde „Stránka | Stáj Manon".
+ * Když se název stránky rovná názvu stáje (/o-nas), neopakuje se dvakrát.
+ */
 const fullTitle =
-  Astro.url.pathname === '/' ? `${site.fullName}` : `${title} — ${site.name}`;
+  Astro.url.pathname === '/' || title === site.name
+    ? site.fullName
+    : `${title} | ${site.name}`;
 
 /** Základní organizace — na každé stránce. */
 const organizationLd = {

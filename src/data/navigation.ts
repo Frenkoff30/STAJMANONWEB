@@ -69,7 +69,7 @@ export const mainNav: NavGroup[] = [
       },
     ],
     feature: {
-      title: 'Léto 2026 — poslední místa',
+      title: 'Léto 2026, poslední místa',
       text: 'Týdenní jezdecké kurzy pro děti od 8 let. Šest lekcí, teorie, celodenní program a plná penze.',
       href: '/kurzy',
       cta: 'Zobrazit turnusy',

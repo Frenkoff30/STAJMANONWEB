@@ -20,7 +20,7 @@ const steps = [
   {
     n: '01',
     title: 'Základ na lonži',
-    text: 'Začínající jezdce vedeme důsledným základním výcvikem na lonži. Nejvhodnější věk pro učení jízdy na koni je kolem sedmi let — ale výjimky se najdou.',
+    text: 'Začínající jezdce vedeme důsledným základním výcvikem na lonži. Nejvhodnější věk pro učení jízdy na koni je kolem sedmi let, ale výjimky se najdou.',
   },
   {
     n: '02',
@@ -30,7 +30,7 @@ const steps = [
   {
     n: '03',
     title: 'Jezdecké hry',
-    text: 'Pětkrát ročně si děti ověří získané zkušenosti v soutěži — jízdy zručnosti, jízdy zručnosti se skákáním a parkury 40, 50 a 60 cm.',
+    text: 'Pětkrát ročně si děti ověří získané zkušenosti v soutěži: jízdy zručnosti, jízdy zručnosti se skákáním a parkury 40, 50 a 60 cm.',
   },
   {
     n: '04',
@@ -52,7 +52,7 @@ const klubActivities = [
 
 <PageLayout
   title="Jezdecká škola"
-  description="Celoroční jezdecká škola v areálu Jízdárna Suchá — pro začínající i pokročilé jezdce od 7 let. Výcvik na lonži, skupinové i individuální lekce, jezdecké hry a příprava na ZZVJ."
+  description="Celoroční jezdecká škola v areálu Jízdárna Suchá pro začínající i pokročilé jezdce od 7 let. Výcvik na lonži, skupinové i individuální lekce, jezdecké hry a příprava na ZZVJ."
   heading="Jezdecká škola"
   lead="Pro začínající i pokročilé jezdce od sedmi let. Na ponících i velkých koních, celoročně, vždy pod odborným dohledem."
   image={heroImg}
@@ -74,7 +74,7 @@ const klubActivities = [
             title="Krok za krokem k vlastnímu parkuru."
             lead="Výuka na ponících i velkých koních probíhá díky kryté hale celoročně. Pouze letní prázdniny patří týdenním kurzům pro děti."
           />
-          <div class="img-zoom mt-10 overflow-hidden" data-reveal>
+          <div class="mt-10 overflow-hidden" data-reveal>
             <Image
               src={lekceImg}
               alt="Dítě na ponym na parkuru jezdeckých her"
@@ -107,10 +107,10 @@ const klubActivities = [
   </Section>
 
   <!-- Bezpečnost -->
-  <Section tone="dark" space="lg" id="bezpecnost">
+  <Section tone="dark" space="lg" id="bezpecnost" rise>
     <div class="grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-14">
       <div class="lg:col-span-6">
-        <div class="img-zoom overflow-hidden" data-reveal>
+        <div class="overflow-hidden" data-reveal>
           <Image
             src={bezpecnostImg}
             alt="Dívka se stará o koně před lekcí"
@@ -129,7 +129,7 @@ const klubActivities = [
         <p class="lead mt-6 text-white/70">
           Bezpečnostní třmeny, vesty a tříbodové helmy jsou samozřejmostí. Výcvik je
           vždy veden pod odborným dohledem a podle možností jezdce. Na začátku
-          ochranné pomůcky půjčujeme — pokud je předpoklad, že se dítě bude ježdění
+          ochranné pomůcky půjčujeme. Pokud je předpoklad, že se dítě bude ježdění
           věnovat dál, doporučujeme vlastní tříbodovou helmu, chapsy a bezpečnostní
           vestu.
         </p>
@@ -140,7 +140,7 @@ const klubActivities = [
               'Tříbodová jezdecká helma',
               'Bezpečnostní vesta',
               'Sedla s bezpečnostními třmeny',
-              'Vybraní školní koně — zkušení, klidní a dobře jezditelní',
+              'Vybraní školní koně, zkušení, klidní a dobře jezditelní',
             ].map((t) => (
               <li class="flex gap-3 text-[0.9375rem] text-white/80">
                 <Icon name="shield" class="mt-0.5 h-4 w-4 shrink-0 text-brass-300" />
@@ -173,7 +173,7 @@ const klubActivities = [
           Vrcholem byla Velká cena Litomyšle.
         </p>
         <p class="prose-manon mt-4">
-          Drezurní soustředění pořádáme ve spolupráci s Danielou Groeben — Češkou,
+          Drezurní soustředění pořádáme ve spolupráci s Danielou Groeben, Češkou,
           která dlouhodobě žije v Německu a působí ve stájích pana Kasellmanna.
         </p>
       </div>
@@ -222,7 +222,7 @@ const klubActivities = [
           },
           {
             t: 'Pobyty s výukou',
-            d: 'Velikonoce a podzimní prázdniny — příprava na ZZVJ',
+            d: 'Velikonoce a podzimní prázdniny, příprava na ZZVJ',
             href: '/pobyty',
           },
           {
@@ -252,7 +252,7 @@ const klubActivities = [
       <div class="lg:col-span-7">
         <h2 class="t-2 text-white">Chcete přihlásit dítě do jezdecké školy?</h2>
         <p class="lead mt-5 text-white/70">
-          Ozvěte se Miroslavě Skřivanové — poradí s termíny, vybavením i tím, jestli
+          Ozvěte se Miroslavě Skřivanové, poradí s termíny, vybavením i tím, jestli
           je vaše dítě na ježdění připravené.
         </p>
       </div>

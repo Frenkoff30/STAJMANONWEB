@@ -16,7 +16,7 @@ export const services: Service[] = [
     summary:
       'Boxové ustájení včetně místování, krmení a využívání tréninkových prostor.',
     detail:
-      'Možnost spolupráce při výcvikových lekcích. Ostatní služby za poplatek — pouštění do výběhu, dekování. K dispozici venkovní písková jízdárna 25 × 60 m se skokovým materiálem, venkovní kolbiště 60 × 70 m s moderním pískovým povrchem s geotextilií a stálým tréninkovým parkurem a krytá hala 23 × 60 m s osvětlením.',
+      'Možnost spolupráce při výcvikových lekcích. Ostatní služby za poplatek: pouštění do výběhu, dekování. K dispozici venkovní písková jízdárna 25 × 60 m se skokovým materiálem, venkovní kolbiště 60 × 70 m s moderním pískovým povrchem s geotextilií a stálým tréninkovým parkurem a krytá hala 23 × 60 m s osvětlením.',
     price: '12 000 Kč',
     priceNote: 'měsíčně za box · využívání výběhů + 1 000 Kč',
   },
@@ -26,7 +26,7 @@ export const services: Service[] = [
     summary:
       'Boxové ustájení a denní trénink vedený podle individuality koně.',
     detail:
-      'Kompletní servis pro koně — profesionální přístup, vyvážené krmení, zajištění kování a veterinární péče. Dle dohody účast na závodech.',
+      'Kompletní servis pro koně, profesionální přístup, vyvážené krmení, zajištění kování a veterinární péče. Dle dohody účast na závodech.',
   },
   {
     slug: 'jezdecka-skola',
@@ -67,7 +67,7 @@ export const services: Service[] = [
     slug: 'pronajem-parkuru',
     title: 'Pronájem parkuru na vaše jezdecké akce',
     summary:
-      'Kompletní parkur — 11 nových moderních překážek včetně zdi a imitace vodního příkopu.',
+      'Kompletní parkur o 11 nových moderních překážek včetně zdi a imitace vodního příkopu.',
   },
   {
     slug: 'prani-dek',
@@ -102,7 +102,7 @@ export const facilities: Facility[] = [
   {
     name: 'Venkovní jízdárna',
     size: '25 × 60 m',
-    text: 'Písková jízdárna včetně skokového materiálu — prostor pro každodenní práci a rozcvičení před startem.',
+    text: 'Písková jízdárna včetně skokového materiálu, prostor pro každodenní práci a rozcvičení před startem.',
   },
   {
     name: 'Stáje',

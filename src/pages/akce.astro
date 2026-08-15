@@ -55,7 +55,7 @@ const eventsLd = upcoming.slice(0, 20).map((e) => ({
   title="Kalendář jezdeckých akcí 2026"
   heading="Jezdecké akce 2026"
   description="Kalendář závodů, jezdeckých her pro děti, soustředění a chovatelských akcí v areálu Jízdárna Suchá. Přes 40 akcí ročně včetně Velké ceny Litomyšle."
-  lead="Skokové a drezurní závody, všestrannost, spřežení, jezdecké hry pro děti, soustředění a chovatelské akce — vše v areálu Jízdárna Suchá."
+  lead="Skokové a drezurní závody, všestrannost, spřežení, jezdecké hry pro děti, soustředění a chovatelské akce. Vše v areálu Jízdárna Suchá."
   image={heroImg}
   imageAlt="Skok na parkuru Velké ceny Litomyšle"
   crumbs={[{ label: 'Kalendář akcí' }]}
@@ -69,7 +69,7 @@ const eventsLd = upcoming.slice(0, 20).map((e) => ({
   <!-- Vrchol sezóny -->
   {
     vcl && (
-      <Section tone="loden" space="sm">
+      <Section tone="loden" space="sm" rise>
         <div class="grid gap-8 lg:grid-cols-12 lg:items-center" data-reveal>
           <div class="lg:col-span-8">
             <h2 class="t-2 text-white">{vcl.title}</h2>
@@ -195,7 +195,7 @@ const eventsLd = upcoming.slice(0, 20).map((e) => ({
       <div class="lg:col-span-7">
         <h2 class="t-2 text-white">Chcete u nás uspořádat vlastní akci?</h2>
         <p class="lead mt-5 text-white/70">
-          Pronajímáme halu i kolbiště včetně kompletního parkuru — 11 moderních
+          Pronajímáme halu i kolbiště včetně kompletního parkuru o 11 moderních
           překážek, zeď a imitace vodního příkopu.
         </p>
       </div>

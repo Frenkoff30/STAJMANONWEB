@@ -31,12 +31,12 @@ export const stays: Stay[] = [
     extras: 'návštěva krytého bazénu',
     ageFrom: 8,
     description:
-      'Nahlédneme do přípravy na ZZVJ — bezpečný pohyb na jízdárně, předvádění koní, testy, hezké předvedení drezurní úlohy a souhra mezi jezdcem a koněm na malém parkuru. Práci s koňmi si vylepšíme pomocí bariér a přechodů. Pro pokročilejší jezdce je výuka vedena ve vyšší náročnosti. Lekce jsou vždy přizpůsobeny zkušenostem jezdce a program je doplněný o sportovní a společenské hry.',
+      'Nahlédneme do přípravy na ZZVJ: bezpečný pohyb na jízdárně, předvádění koní, testy, hezké předvedení drezurní úlohy a souhra mezi jezdcem a koněm na malém parkuru. Práci s koňmi si vylepšíme pomocí bariér a přechodů. Pro pokročilejší jezdce je výuka vedena ve vyšší náročnosti. Lekce jsou vždy přizpůsobeny zkušenostem jezdce a program je doplněný o sportovní a společenské hry.',
     price: '7 900 Kč',
     priceNotes: [
-      'jezdci na lonži a děti od 10 let — 7 500 Kč',
-      'členové JKHS — 7 500 Kč',
-      'ustájení vlastního koně — + 800 Kč',
+      'jezdci na lonži a děti od 10 let za 7 500 Kč',
+      'členové JKHS za 7 500 Kč',
+      'ustájení vlastního koně za příplatek 800 Kč',
       'lekce je možné dokoupit',
     ],
   },
@@ -53,12 +53,12 @@ export const stays: Stay[] = [
     extras: 'návštěva Litomyšle + bowling',
     ageFrom: 8,
     description:
-      'Zlepšováním techniky sedu a rovnováhy se jezdec může s koněm neustále zlepšovat — a přesně o to nám v této přípravě na ZZVJ půjde. Pro pokročilejší je pobyt vedený ve vyšší náročnosti: obtížnější drezurní úloha, ustupování na holeň v různých variantách, vyšší nároky na skokovou přípravu a malý parkur. Zopakujeme všechny okruhy teorie včetně bezpečného pohybu na jízdárně a předvádění.',
+      'Zlepšováním techniky sedu a rovnováhy se jezdec může s koněm neustále zlepšovat a přesně o to nám v této přípravě na ZZVJ půjde. Pro pokročilejší je pobyt vedený ve vyšší náročnosti: obtížnější drezurní úloha, ustupování na holeň v různých variantách, vyšší nároky na skokovou přípravu a malý parkur. Zopakujeme všechny okruhy teorie včetně bezpečného pohybu na jízdárně a předvádění.',
     price: '9 500 Kč',
     priceNotes: [
-      'jezdci na lonži a děti do 10 let — 9 000 Kč',
-      'členové JKHS — 9 000 Kč',
-      'ustájení vlastního koně — + 1 000 Kč',
+      'jezdci na lonži a děti do 10 let za 9 000 Kč',
+      'členové JKHS za 9 000 Kč',
+      'ustájení vlastního koně za příplatek 1 000 Kč',
     ],
   },
 ];
