@@ -2,24 +2,22 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { mainNav } from '@/data/navigation';
 import { site } from '@/data/site';
+import page from '@/obsah/stranky/nenalezeno.json';
 ---
 
 <BaseLayout
-  title="Stránka nenalezena"
-  description="Požadovaná stránka na webu Stáje Manon neexistuje."
+  title={page.seo.title}
+  description={page.seo.description}
   noindex
 >
   <section class="bg-loden-950 grain relative overflow-hidden">
     <div class="container-x relative z-10 py-28 lg:py-40">
-      <h1 class="t-display text-white">Tudy cesta nevede.</h1>
-      <p class="lead mt-7 max-w-xl text-white/70">
-        Stránku, kterou hledáte, jsme nenašli. Web jsme nedávno přestavěli, je
-        možné, že se adresa změnila.
-      </p>
+      <h1 class="t-display text-white">{page.heading}</h1>
+      <p class="lead mt-7 max-w-xl text-white/70">{page.lead}</p>
 
       <div class="mt-10 flex flex-wrap gap-3">
-        <a href="/" class="btn btn-brass">Zpět na úvod</a>
-        <a href="/kontakt" class="btn btn-ghost-light">Kontakt</a>
+        <a href="/" class="btn btn-brass">{page.primaryLabel}</a>
+        <a href="/kontakt" class="btn btn-ghost-light">{page.secondaryLabel}</a>
       </div>
     </div>
   </section>
@@ -49,11 +47,11 @@ import { site } from '@/data/site';
       </div>
 
       <p class="mt-14 text-[0.9375rem] text-ink-3">
-        Nemůžete něco najít? Zavolejte na
+        {page.helpBefore}
         <a href={`tel:${site.phoneHref}`} class="link-underline font-semibold text-brass-700">
           {site.phone}
         </a>
-        nebo napište na
+        {page.helpMiddle}
         <a href={`mailto:${site.email}`} class="link-underline font-semibold text-brass-700">
           {site.email}
         </a>.

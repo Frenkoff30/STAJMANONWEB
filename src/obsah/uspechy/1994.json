@@ -1,0 +1,26 @@
+{
+  "year": "1994",
+  "items": [
+    {
+      "place": "1.",
+      "event": "MČR mladých koní",
+      "rider": "Jiří Skřivan",
+      "horse": "Labe Jeff",
+      "major": false
+    },
+    {
+      "place": "1.",
+      "event": "KMK 6letých",
+      "rider": "Jiří Skřivan",
+      "horse": "Labe Jeff",
+      "major": false
+    },
+    {
+      "place": "3.",
+      "event": "MČR",
+      "rider": "Jiří Skřivan",
+      "horse": "Vesta del Metz",
+      "major": false
+    }
+  ]
+}

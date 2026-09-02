@@ -5,56 +5,32 @@ import Section from '@/components/Section.astro';
 import SectionHead from '@/components/SectionHead.astro';
 import EventRow from '@/components/EventRow.astro';
 import Icon from '@/components/Icon.astro';
+import Lines from '@/components/Lines.astro';
 import { site } from '@/data/site';
 import { upcomingPublicEvents } from '@/data/events';
 import { facilities } from '@/data/services';
 import { turnusy } from '@/data/courses';
 import { majorTitles } from '@/data/achievements';
-import { featuredPhotos } from '@/data/gallery';
-
-import heroImg from '@/assets/photos/areal-letecky.jpg';
-import sportImg from '@/assets/photos/vc-skok.jpg';
-import skolaImg from '@/assets/photos/skola-01.jpg';
-import penzionImg from '@/assets/photos/pokoj-02.jpg';
-import restauraceImg from '@/assets/photos/restaurace-01.jpg';
-import halaImg from '@/assets/photos/deti-kun.jpg';
-import kurzyImg from '@/assets/photos/kurzy-pony.jpg';
-import skrivanImg from '@/assets/photos/skrivan-01.jpg';
+import { pickPhotos } from '@/data/gallery';
+import { photo } from '@/data/images';
+import page from '@/obsah/stranky/uvod.json';
 
 const nextEvents = upcomingPublicEvents().slice(0, 5);
 const freeTurnusy = turnusy.filter(
   (t) => t.status === 'volno' || t.status === 'posledni',
 ).length;
 
-const pillars = [
-  {
-    n: '01',
-    title: 'Sportovní stáj',
-    text: 'Trénink a ustájení na profesionální úrovni. Přes třicet let výsledků na domácích i zahraničních kolbištích, tři vítězství v Českém skokovém poháru.',
-    href: '/sluzby',
-    cta: 'Služby a ustájení',
-    image: sportImg,
-    alt: 'Skok na parkuru Velké ceny Litomyšle',
-  },
-  {
-    n: '02',
-    title: 'Jezdecká škola',
-    text: 'Od prvního sednutí na lonži po ZZVJ. Celoroční výuka pro děti od sedmi let i pro dospělé, na ponících i velkých koních, vždy pod odborným dohledem.',
-    href: '/jezdecka-skola',
-    cta: 'Jak výuka probíhá',
-    image: skolaImg,
-    alt: 'Výuka jízdy na koni v kryté hale',
-  },
-  {
-    n: '03',
-    title: 'Penzion a restaurace',
-    text: '24 lůžek s vlastním sociálním zařízením, restaurace se snídaněmi a terasa s výhledem na kolbiště. Tři kilometry od zámku v Litomyšli.',
-    href: '/penzion',
-    cta: 'Ubytování a ceny',
-    image: penzionImg,
-    alt: 'Pokoj penzionu Jízdárna Suchá',
-  },
-];
+const heroImg = photo(page.hero.image)!;
+const restauraceImg = photo(page.penzion.image)!;
+const kurzyImg = photo(page.skola.imageTall)!;
+const halaImg = photo(page.skola.imageSquare)!;
+const skrivanImg = photo(page.uspechy.image)!;
+
+const pillars = page.pillars
+  .map((p, i) => ({ ...p, n: String(i + 1).padStart(2, '0'), img: photo(p.image) }))
+  .filter((p) => p.img);
+
+const featuredPhotos = pickPhotos(page.galerie.featured);
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -67,7 +43,7 @@ const jsonLd = {
 ---
 
 <BaseLayout
-  title="Stáj Manon"
+  title={page.seo.title}
   description={site.description}
   overlayHeader
   jsonLd={jsonLd}
@@ -76,7 +52,7 @@ const jsonLd = {
   <section class="relative isolate flex min-h-[100svh] flex-col justify-end overflow-hidden bg-loden-950">
     <Image
       src={heroImg}
-      alt="Letecký pohled na jezdecký areál Jízdárna Suchá u Litomyšle"
+      alt={page.hero.imageAlt}
       widths={[768, 1280, 1920, 2560]}
       sizes="100vw"
       loading="eager"
@@ -94,20 +70,23 @@ const jsonLd = {
 
     <div class="container-x relative pb-10 pt-28 lg:pb-14">
       <h1 class="t-display max-w-[16ch] text-white text-shadow-hero">
-        Místo, kde se<br class="hidden sm:block" />
-        <em class="font-normal italic text-brass-300">koně</em> berou vážně.
+        {page.hero.headingStart}<br class="hidden sm:block" />
+        <em class="font-normal italic text-brass-300">{page.hero.headingAccent}</em>
+        {' '}{page.hero.headingEnd}
       </h1>
 
       <div class="mt-9 grid gap-10 lg:grid-cols-12 lg:items-end">
         <p class="lead max-w-xl text-white/85 lg:col-span-6">
-          Sportovní stáj, jezdecká škola a penzion pod jednou střechou. Krytá hala
-          23 × 66 metrů, kolbiště, na kterém se jede Velká cena Litomyšle, a přes
-          čtyřicet jezdeckých akcí ročně.
+          {page.hero.lead}
         </p>
 
         <div class="flex flex-wrap gap-3 lg:col-span-6 lg:justify-end">
-          <a href="/penzion" class="btn btn-brass">Ubytování a rezervace</a>
-          <a href="/jezdecka-skola" class="btn btn-ghost-light">Jezdecká škola</a>
+          <a href={page.hero.primaryCta.href} class="btn btn-brass">
+            {page.hero.primaryCta.label}
+          </a>
+          <a href={page.hero.secondaryCta.href} class="btn btn-ghost-light">
+            {page.hero.secondaryCta.label}
+          </a>
         </div>
       </div>
     </div>
@@ -118,20 +97,20 @@ const jsonLd = {
         {
           [
             {
-              href: '/akce',
-              label: 'Nejbližší akce',
-              value: nextEvents[0]?.title ?? 'Kalendář 2026',
+              href: page.hero.quickEvents.href,
+              label: page.hero.quickEvents.label,
+              value: nextEvents[0]?.title ?? page.hero.quickEvents.fallback,
               icon: 'calendar' as const,
             },
             {
-              href: '/kurzy',
-              label: 'Prázdninové kurzy 2026',
+              href: page.hero.quickCourses.href,
+              label: page.hero.quickCourses.label,
               value: `${freeTurnusy} turnusů s volnými místy`,
               icon: 'users' as const,
             },
             {
               href: `tel:${site.phoneHref}`,
-              label: 'Zavolejte nám',
+              label: page.hero.quickPhone.label,
               value: site.phone,
               icon: 'phone' as const,
             },
@@ -164,14 +143,11 @@ const jsonLd = {
       <div class="lg:col-span-4">
         <div class="lg:sticky lg:top-28">
           <h2 class="t-2">
-            Jeden areál,<br />tři různé důvody.
+            <Lines text={page.pillarsIntro.heading} />
           </h2>
-          <p class="lead mt-6">
-            Vrcholový sport, výuka dětí a klidné ubytování na venkově se tu potkávají
-            na jednom místě a navzájem si nepřekáží.
-          </p>
-          <a href="/areal" class="link-arrow mt-8">
-            Prohlédnout areál
+          <p class="lead mt-6">{page.pillarsIntro.lead}</p>
+          <a href={page.pillarsIntro.linkHref} class="link-arrow mt-8">
+            {page.pillarsIntro.linkLabel}
             <Icon name="arrow-right" class="h-3.5 w-3.5" />
           </a>
         </div>
@@ -204,7 +180,7 @@ const jsonLd = {
 
                   <span class="hidden w-32 shrink-0 overflow-hidden sm:block lg:w-40">
                     <Image
-                      src={p.image}
+                      src={p.img!}
                       alt={p.alt}
                       widths={[220, 440]}
                       sizes="13rem"
@@ -225,12 +201,12 @@ const jsonLd = {
     <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
       <div class="lg:col-span-5">
         <SectionHead
-          title="Postaveno pro celoroční provoz."
-          lead="Komplex 30 boxů, kryté haly a penzionu vznikl v roce 2007 za přispění prostředků státního rozpočtu z programu Ministerstva pro místní rozvoj."
+          title={page.facilities.title}
+          lead={page.facilities.lead}
           tone="light"
         />
-        <a href="/areal" class="link-arrow mt-8 text-brass-300">
-          Vybavení a technické parametry
+        <a href={page.facilities.linkHref} class="link-arrow mt-8 text-brass-300">
+          {page.facilities.linkLabel}
           <Icon name="arrow-right" class="h-3.5 w-3.5" />
         </a>
       </div>
@@ -264,9 +240,9 @@ const jsonLd = {
   <!-- =========================================================== KALENDÁŘ -->
   <Section tone="paper" space="lg">
     <SectionHead
-      title="Co se u nás chystá"
-      lead="Skokové a drezurní závody, všestrannost, spřežení, jezdecké hry pro děti i soustředění. Loni jsme uspořádali přes čtyřicet akcí."
-      action={{ label: 'Celý kalendář', href: '/akce' }}
+      title={page.calendar.title}
+      lead={page.calendar.lead}
+      action={{ label: page.calendar.actionLabel, href: '/akce' }}
     />
 
     <div class="mt-9">
@@ -286,7 +262,7 @@ const jsonLd = {
       <div class="parallax relative min-h-[16rem] overflow-hidden lg:min-h-[30rem]">
         <Image
           src={restauraceImg}
-          alt="Restaurace penzionu Jízdárna Suchá"
+          alt={page.penzion.imageAlt}
           widths={[640, 1024, 1600]}
           sizes="(min-width: 1024px) 50vw, 100vw"
           class="absolute inset-0 h-full w-full object-cover"
@@ -295,38 +271,26 @@ const jsonLd = {
 
       <div class="flex items-center px-5 py-14 sm:px-8 lg:px-14 lg:py-20 xl:px-20">
         <div class="max-w-xl" data-reveal>
-          <h2 class="t-2">Přespat kousek od koní.</h2>
-          <p class="lead mt-6">
-            Dvou až čtyřlůžkové pokoje s vlastní koupelnou, kapacita 24 lůžek.
-            Restaurace s obsluhou, snídaně na objednávku a venkovní terasa
-            s výhledem na kolbiště a pastviny.
-          </p>
+          <h2 class="t-2">{page.penzion.title}</h2>
+          <p class="lead mt-6">{page.penzion.lead}</p>
 
           <dl class="mt-10 grid gap-px border border-ink/12 bg-ink/12 sm:grid-cols-2">
-            <div class="bg-paper-2 p-6">
-              <dt class="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-ink-3/70">
-                Od
-              </dt>
-              <dd class="mt-2 font-display text-[2rem] leading-none">740 Kč</dd>
-              <dd class="mt-2 text-[0.8125rem] text-ink-3">osoba / noc</dd>
-            </div>
-            <div class="bg-paper-2 p-6">
-              <dt class="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-ink-3/70">
-                Kapacita
-              </dt>
-              <dd class="mt-2 font-display text-[2rem] leading-none">24 lůžek</dd>
-              <dd class="mt-2 text-[0.8125rem] text-ink-3">restaurace pro 40 hostů</dd>
-            </div>
+            {
+              page.penzion.stats.map((s) => (
+                <div class="bg-paper-2 p-6">
+                  <dt class="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-ink-3/70">
+                    {s.label}
+                  </dt>
+                  <dd class="mt-2 font-display text-[2rem] leading-none">{s.value}</dd>
+                  <dd class="mt-2 text-[0.8125rem] text-ink-3">{s.note}</dd>
+                </div>
+              ))
+            }
           </dl>
 
           <ul class="mt-8 space-y-2.5 text-[0.9375rem] text-ink-3">
             {
-              [
-                'Vlastní koupelna a WC na každém pokoji',
-                'Snídaně na objednávku, rychlé občerstvení',
-                'Domácím mazlíčkům vstup povolen',
-                'Zámek Litomyšl (UNESCO) tři kilometry',
-              ].map((t) => (
+              page.penzion.bullets.map((t) => (
                 <li class="flex gap-3">
                   <Icon name="check" class="mt-1 h-4 w-4 shrink-0 text-brass-600" strokeWidth={2.2} />
                   {t}
@@ -336,9 +300,11 @@ const jsonLd = {
           </ul>
 
           <div class="mt-10 flex flex-wrap gap-3">
-            <a href="/penzion" class="btn btn-primary">Ubytování a ceník</a>
+            <a href={page.penzion.primaryCta.href} class="btn btn-primary">
+              {page.penzion.primaryCta.label}
+            </a>
             <a href={`mailto:${site.emailPenzion}`} class="btn btn-outline">
-              Rezervovat
+              {page.penzion.secondaryCtaLabel}
             </a>
           </div>
         </div>
@@ -350,41 +316,21 @@ const jsonLd = {
   <Section tone="white" space="lg">
     <div class="grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-14">
       <div class="lg:col-span-5" data-reveal>
-        <h2 class="t-2">Od lonže k prvnímu parkuru.</h2>
-        <p class="lead mt-6">
-          Jezdecká škola funguje od roku 2003. Výuka probíhá celoročně díky kryté
-          hale, na ponících i velkých koních. Bezpečnostní třmeny, vesty a tříbodové
-          helmy jsou samozřejmostí.
-        </p>
+        <h2 class="t-2">{page.skola.title}</h2>
+        <p class="lead mt-6">{page.skola.lead}</p>
 
         <div class="mt-8 space-y-5">
           {
-            [
-              {
-                t: 'Jezdecká škola',
-                d: 'Docházka 1–2× týdně, individuální lekce i výuka ve skupině. Ochranné pomůcky na začátek půjčujeme.',
-                href: '/jezdecka-skola',
-              },
-              {
-                t: 'Prázdninové kurzy',
-                d: 'Osm týdenních turnusů, 6 lekcí, teorie 2× denně, plná penze a celodenní program.',
-                href: '/kurzy',
-              },
-              {
-                t: 'Pobyty s výukou',
-                d: 'Velikonoce a podzimní prázdniny s intenzivní přípravou na ZZVJ pro začátečníky i pokročilé.',
-                href: '/pobyty',
-              },
-            ].map((x) => (
+            page.skola.items.map((x) => (
               <a href={x.href} class="group block border-t border-ink/12 pt-6">
                 <h3 class="flex items-center gap-3 font-display text-[1.375rem] transition-colors group-hover:text-brass-700">
-                  {x.t}
+                  {x.title}
                   <Icon
                     name="arrow-right"
                     class="h-4 w-4 text-brass-600 opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100"
                   />
                 </h3>
-                <p class="mt-2 text-[0.9375rem] leading-relaxed text-ink-3">{x.d}</p>
+                <p class="mt-2 text-[0.9375rem] leading-relaxed text-ink-3">{x.text}</p>
               </a>
             ))
           }
@@ -396,7 +342,7 @@ const jsonLd = {
           <div class="overflow-hidden">
             <Image
               src={kurzyImg}
-              alt="Dvě dívky na ponym během prázdninového kurzu"
+              alt={page.skola.imageTallAlt}
               widths={[400, 800]}
               sizes="(min-width: 1024px) 28vw, 45vw"
               class="aspect-[3/4] h-full w-full object-cover"
@@ -406,17 +352,18 @@ const jsonLd = {
             <div class="overflow-hidden">
               <Image
                 src={halaImg}
-                alt="Dívka s koněm na jezdeckém kurzu"
+                alt={page.skola.imageSquareAlt}
                 widths={[400, 800]}
                 sizes="(min-width: 1024px) 28vw, 45vw"
                 class="aspect-square h-full w-full object-cover"
               />
             </div>
             <div class="bg-loden-900 p-6 text-white">
-              <p class="font-display text-[2.5rem] leading-none text-brass-300">2003</p>
+              <p class="font-display text-[2.5rem] leading-none text-brass-300">
+                {page.skola.yearValue}
+              </p>
               <p class="mt-3 text-[0.875rem] leading-relaxed text-white/65">
-                rok, kdy jsme otevřeli jezdeckou školu. Od té doby jí prošly stovky
-                dětí. Část z nich dodnes startuje na našich závodech.
+                {page.skola.yearText}
               </p>
             </div>
           </div>
@@ -432,7 +379,7 @@ const jsonLd = {
         <div class="overflow-hidden" data-reveal>
           <Image
             src={skrivanImg}
-            alt="Jiří Skřivan na parkuru"
+            alt={page.uspechy.imageAlt}
             widths={[400, 800, 1200]}
             sizes="(min-width: 1024px) 38vw, 100vw"
             class="aspect-[4/5] w-full object-cover"
@@ -441,18 +388,9 @@ const jsonLd = {
       </div>
 
       <div class="lg:col-span-7">
-        <SectionHead
-          title="Třicet let na kolbišti."
-          tone="light"
-        />
+        <SectionHead title={page.uspechy.title} tone="light" />
 
-        <p class="lead mt-6 text-white/70">
-          Jiří Skřivan začal závodit ve dvanácti letech a svůj první parkur vyhrál
-          na klisně Manon, po které se stáj jmenuje. Po stážích u Paula Darragha
-          a Markuse Fuchse založil v roce 1992 vlastní stáj. V roce 2002 přišel
-          s myšlenkou celorepublikového seriálu Velkých cen, ze kterého vznikl
-          Český skokový pohár.
-        </p>
+        <p class="lead mt-6 text-white/70">{page.uspechy.text}</p>
 
         <ul class="mt-9 space-y-px">
           {
@@ -472,8 +410,12 @@ const jsonLd = {
         </ul>
 
         <div class="mt-10 flex flex-wrap gap-3">
-          <a href="/uspechy" class="btn btn-ghost-light">Kompletní výsledky</a>
-          <a href="/jiri-skrivan" class="btn btn-ghost-light">Jiří Skřivan</a>
+          <a href="/uspechy" class="btn btn-ghost-light">
+            {page.uspechy.primaryCtaLabel}
+          </a>
+          <a href="/jiri-skrivan" class="btn btn-ghost-light">
+            {page.uspechy.secondaryCtaLabel}
+          </a>
         </div>
       </div>
     </div>
@@ -483,8 +425,8 @@ const jsonLd = {
   <Section tone="paper" space="md" bleed>
     <div class="container-x">
       <SectionHead
-        title="Jak to u nás vypadá"
-        action={{ label: 'Celá galerie', href: '/galerie' }}
+        title={page.galerie.title}
+        action={{ label: page.galerie.actionLabel, href: '/galerie' }}
       />
     </div>
 
@@ -508,7 +450,7 @@ const jsonLd = {
     </div>
 
     <div class="container-x mt-10">
-      <a href="/galerie" class="btn btn-outline">Otevřít fotogalerii</a>
+      <a href="/galerie" class="btn btn-outline">{page.galerie.buttonLabel}</a>
     </div>
   </Section>
 
@@ -517,12 +459,9 @@ const jsonLd = {
     <div class="grid gap-8 lg:grid-cols-12 lg:items-center">
       <div class="lg:col-span-7">
         <h2 class="t-1 text-white">
-          Přijeďte se podívat.<br />Nejlépe o víkendu, kdy se závodí.
+          <Lines text={page.cta.heading} />
         </h2>
-        <p class="lead mt-5 max-w-2xl text-white/70">
-          Ustájení, výuka, kurz pro dítě nebo jen víkend na venkově, ozvěte se
-          a domluvíme se. Areál najdete tři kilometry od Litomyšle.
-        </p>
+        <p class="lead mt-5 max-w-2xl text-white/70">{page.cta.lead}</p>
       </div>
 
       <div class="flex flex-wrap gap-3 lg:col-span-5 lg:justify-end">
@@ -530,7 +469,7 @@ const jsonLd = {
           <Icon name="phone" class="h-4 w-4" />
           {site.phone}
         </a>
-        <a href="/kontakt" class="btn btn-ghost-light">Napsat nám</a>
+        <a href="/kontakt" class="btn btn-ghost-light">{page.cta.buttonLabel}</a>
       </div>
     </div>
   </Section>

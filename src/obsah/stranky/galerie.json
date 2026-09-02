@@ -1,0 +1,22 @@
+{
+  "seo": {
+    "title": "Fotogalerie",
+    "description": "Fotografie ze závodů, jezdeckých kurzů pro děti, z penzionu a z areálu Jízdárna Suchá."
+  },
+  "hero": {
+    "heading": "Jak to u nás vypadá",
+    "image": "vc-divaci",
+    "imageAlt": "Diváci na tribuně Velké ceny Litomyšle",
+    "leadSuffix": "fotografií ze závodů, kurzů, penzionu i z běžného provozu areálu."
+  },
+  "sekce": {
+    "prohledneteSiAreal": {
+      "title": "Prohlédněte si areál",
+      "lead": "Filtrujte podle tématu. Kliknutím na fotku ji zvětšíte, šipkami procházíte galerii."
+    }
+  },
+  "cta": {
+    "heading": "Sledujte nás na sítích",
+    "lead": "Nejčerstvější fotky a videa ze závodů přidáváme na Facebook a YouTube."
+  }
+}

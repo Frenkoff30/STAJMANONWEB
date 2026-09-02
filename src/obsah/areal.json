@@ -1,0 +1,24 @@
+{
+  "facilities": [
+    {
+      "name": "Krytá jezdecká hala",
+      "size": "23 × 66 m",
+      "text": "Osvětlená hala s kvalitním povrchem a skokovým materiálem. Umožňuje celoroční provoz jezdecké školy i závodů bez ohledu na počasí."
+    },
+    {
+      "name": "Venkovní kolbiště",
+      "size": "60 × 70 m",
+      "text": "Moderní pískový povrch s geotextilií a stálý tréninkový parkur. Hlavní kolbiště pro Velkou cenu Litomyšle a domácí závody."
+    },
+    {
+      "name": "Venkovní jízdárna",
+      "size": "25 × 60 m",
+      "text": "Písková jízdárna včetně skokového materiálu, prostor pro každodenní práci a rozcvičení před startem."
+    },
+    {
+      "name": "Stáje",
+      "size": "30 boxů",
+      "text": "Boxové ustájení s místováním a krmením, výběhy a pastviny. Postaveno v roce 2007 spolu s halou a penzionem."
+    }
+  ]
+}

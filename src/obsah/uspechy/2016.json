@@ -1,0 +1,33 @@
+{
+  "year": "2016",
+  "items": [
+    {
+      "place": "2.",
+      "event": "ČSP Velká cena Opavy",
+      "rider": "Jiří Skřivan",
+      "horse": "Flying Star",
+      "major": false
+    },
+    {
+      "place": "2.",
+      "event": "MČR družstva",
+      "rider": "Jiří Skřivan ml.",
+      "horse": "Eurydika",
+      "major": false
+    },
+    {
+      "place": "3.",
+      "event": "Styl Šampionát",
+      "rider": "Jiří Skřivan ml.",
+      "horse": "Dius, Jolie",
+      "major": false
+    },
+    {
+      "place": "1. a 3.",
+      "event": "Mistrovství VČO",
+      "rider": "Jiří Skřivan",
+      "horse": "Jolie, Dius",
+      "major": false
+    }
+  ]
+}

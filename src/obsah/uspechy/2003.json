@@ -1,0 +1,40 @@
+{
+  "year": "2003",
+  "items": [
+    {
+      "place": "1.",
+      "event": "Velká cena Ostravy",
+      "rider": "Jiří Skřivan",
+      "horse": "Labe James CAC Leasing",
+      "major": false
+    },
+    {
+      "place": "1.",
+      "event": "Velká cena Poděbrad",
+      "rider": "Jiří Skřivan",
+      "horse": "Labe James CAC Leasing",
+      "major": false
+    },
+    {
+      "place": "1.",
+      "event": "Velká cena Plzně",
+      "rider": "Jiří Skřivan",
+      "horse": "Labe James CAC Leasing",
+      "major": false
+    },
+    {
+      "place": "1.",
+      "event": "Velká cena Frenštátu pod Radhoštěm",
+      "rider": "Jiří Skřivan",
+      "horse": "Labe James CAC Leasing",
+      "major": false
+    },
+    {
+      "place": "3.",
+      "event": "MČR",
+      "rider": "Jiří Skřivan",
+      "horse": "Labe James CAC Leasing",
+      "major": false
+    }
+  ]
+}

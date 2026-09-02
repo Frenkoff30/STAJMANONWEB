@@ -1,0 +1,36 @@
+{
+  "seo": {
+    "title": "Úspěchy",
+    "description": "Sportovní úspěchy Stáje Manon od roku 1993: mistrovské tituly, vítězství ve Velkých cenách a tři celkové triumfy v Českém skokovém poháru."
+  },
+  "hero": {
+    "heading": "Úspěchy",
+    "lead": "Třicet let výsledků na domácích i zahraničních kolbištích, od prvního mistrovského titulu v roce 1993 po Český skokový pohár.",
+    "image": "vc-areal",
+    "imageAlt": "Velká cena Litomyšle v areálu Jízdárna Suchá"
+  },
+  "sekce": {
+    "rokPoRoce": {
+      "title": "Rok po roce",
+      "lead": "Umístění na mistrovstvích, ve Velkých cenách a v seriálových soutěžích."
+    },
+    "titulyKtereSePocitaji": {
+      "title": "Tituly, které se počítají."
+    }
+  },
+  "souhrn": {
+    "labelTotal": "zaznamenaných umístění",
+    "labelWins": "vítězství",
+    "extraValue": "3×",
+    "extraLabel": "celkový vítěz Českého skokového poháru",
+    "note": "Přehled zahrnuje výsledky Jiřího Skřivana a jezdců Stáje Manon."
+  },
+  "images": {
+    "portrait": "uspechy-02"
+  },
+  "cta": {
+    "heading": "Výsledky z domácích akcí",
+    "lead": "Výsledkové listiny z jezdeckých her, veřejných tréninků a závodů pořádaných v areálu najdete v samostatném archivu.",
+    "buttonLabel": "Výsledkové listiny"
+  }
+}

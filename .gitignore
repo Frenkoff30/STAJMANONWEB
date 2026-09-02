@@ -2,6 +2,7 @@
 node_modules/
 dist/
 .astro/
+.vercel/
 
 # Nástroje mimo projekt (skill pro návrh UI, ne součást webu)
 skills/

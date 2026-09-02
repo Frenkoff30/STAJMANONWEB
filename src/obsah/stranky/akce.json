@@ -1,0 +1,37 @@
+{
+  "seo": {
+    "title": "Kalendář jezdeckých akcí 2026",
+    "description": "Kalendář závodů, jezdeckých her pro děti, soustředění a chovatelských akcí v areálu Jízdárna Suchá. Přes 40 akcí ročně včetně Velké ceny Litomyšle."
+  },
+  "hero": {
+    "heading": "Jezdecké akce 2026",
+    "lead": "Skokové a drezurní závody, všestrannost, spřežení, jezdecké hry pro děti, soustředění a chovatelské akce. Vše v areálu Jízdárna Suchá.",
+    "image": "vc-skok",
+    "imageAlt": "Skok na parkuru Velké ceny Litomyšle"
+  },
+  "sekce": {
+    "coNasCeka": {
+      "title": "Co nás čeká",
+      "lead": "Termíny se mohou výjimečně měnit. U jezdeckých her najdete i rozpis ke stažení."
+    },
+    "probehleAkce": {
+      "title": "Proběhlé akce",
+      "lead": "Přehled toho, co se v areálu odehrálo v předchozích měsících a letech.",
+      "actionLabel": "Výsledkové listiny"
+    }
+  },
+  "vrchol": {
+    "lead": "Už dvacet dva let je Velká cena Litomyšle nedílnou součástí extraligového seriálu Českého skokového poháru. Čtyři dny sportu na hlavním kolbišti.",
+    "place": "Areál Jízdárna Suchá"
+  },
+  "prazdno": "Kalendář na další sezónu právě připravujeme. Ozvěte se nám na",
+  "druhy": {
+    "title": "Jaké akce pořádáme"
+  },
+  "cta": {
+    "heading": "Chcete u nás uspořádat vlastní akci?",
+    "lead": "Pronajímáme halu i kolbiště včetně kompletního parkuru o 11 moderních překážek, zeď a imitace vodního příkopu.",
+    "primaryLabel": "Pronájmy a ceník",
+    "secondaryLabel": "Domluvit termín"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "year": "2005",
+  "items": [
+    {
+      "place": "1.",
+      "event": "Velká cena Prahy",
+      "rider": "Jiří Skřivan",
+      "horse": "Labe James CAC Leasing",
+      "major": false
+    },
+    {
+      "place": "3.",
+      "event": "Finále KMK 6letých",
+      "rider": "Jiří Skřivan",
+      "horse": "Tora 1",
+      "major": false
+    },
+    {
+      "place": "4.",
+      "event": "Velká cena Brna",
+      "rider": "Jiří Skřivan",
+      "horse": "Labe James CAC Leasing",
+      "major": false
+    }
+  ]
+}

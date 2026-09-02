@@ -1,11 +1,13 @@
 /**
  * Zmenší zdrojové fotky v src/assets/photos na rozumnou velikost.
  *
- * Fotky z původního webu jsou nezmenšené snímky z foťáku (až 5472 px, 4 MB).
- * Web z nich nikdy nevyužije víc než ~2560 px, ale Astro originál stejně
- * kopíruje do dist/ — takže build zbytečně bobtná o desítky megabajtů.
+ * Každá fotka má vlastní složku (src/assets/photos/<nazev>/image.jpg) —
+ * tak je ukládá redakční systém. Skript projde všechny.
  *
- * Spouštět ručně po přidání nových fotek:  node scripts/optimize-photos.mjs
+ * Fotky z původního webu jsou nezmenšené snímky z foťáku (až 5472 px, 4 MB).
+ * Web z nich nikdy nevyužije víc než ~2560 px, takže build zbytečně bobtná.
+ *
+ * Spouštět ručně po hromadném přidání fotek:  npm run photos
  */
 
 import sharp from 'sharp';
@@ -20,8 +22,19 @@ let before = 0;
 let after = 0;
 let touched = 0;
 
-for (const file of fs.readdirSync(DIR).filter((f) => /\.jpe?g$/i.test(f))) {
-  const filePath = path.join(DIR, file);
+/** Všechny fotky napříč podsložkami. */
+function collect(dir) {
+  const out = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...collect(full));
+    else if (/\.jpe?g$/i.test(entry.name)) out.push(full);
+  }
+  return out;
+}
+
+for (const filePath of collect(DIR)) {
+  const file = path.relative(DIR, filePath);
   const size = fs.statSync(filePath).size;
   before += size;
 

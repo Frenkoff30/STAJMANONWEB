@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
 
+# Administrace webu do vyhledávačů nepatří.
+Disallow: /keystatic
+Disallow: /api/keystatic
+
 Sitemap: https://www.stajmanon.cz/sitemap-index.xml

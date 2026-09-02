@@ -1,0 +1,71 @@
+{
+  "seo": {
+    "title": "Penzion a restaurace Jízdárna Suchá",
+    "description": "Ubytování v moderním jezdeckém areálu 3 km od Litomyšle. 2–4lůžkové pokoje s vlastní koupelnou, 24 lůžek, restaurace se snídaněmi a terasa s výhledem na kolbiště. Od 740 Kč za osobu a noc."
+  },
+  "hero": {
+    "heading": "Penzion & restaurace",
+    "lead": "Klidné prostředí, vlastní koupelna na každém pokoji a terasa s výhledem na koně. Do centra Litomyšle tři kilometry.",
+    "image": "penzion-exterier",
+    "imageAlt": "Budova penzionu v areálu Jízdárna Suchá"
+  },
+  "sekce": {
+    "ubytovaniVKliduKousek": {
+      "title": "Ubytování v klidu, kousek od všeho.",
+      "lead": "Penzion je součástí jezdeckého areálu dokončeného v roce 2007. Hodí se pro jezdce na závodech, rodiny s dětmi i firemní akce mimo městský ruch."
+    },
+    "cenyUbytovani": {
+      "title": "Ceny ubytování",
+      "lead": "Ceny jsou uvedené za osobu a noc. Lůžkoviny a povlečení jsou součástí vybavení pokoje."
+    },
+    "jakToUNas": {
+      "title": "Jak to u nás vypadá",
+      "lead": "Kliknutím na fotku ji zvětšíte."
+    },
+    "litomyslskoNaMalemUzemi": {
+      "title": "Litomyšlsko na malém území.",
+      "lead": "Výhodou oblasti je množství zajímavých pamětihodností a přírodních krás v dosahu krátké vyjížďky."
+    }
+  },
+  "prehled": [
+    {
+      "icon": "bed",
+      "value": "24 lůžek",
+      "note": "2–4lůžkové pokoje"
+    },
+    {
+      "icon": "utensils",
+      "value": "40 míst",
+      "note": "restaurace s obsluhou"
+    },
+    {
+      "icon": "home",
+      "value": "Vlastní koupelna",
+      "note": "a WC na každém pokoji"
+    },
+    {
+      "icon": "pin",
+      "value": "3 km",
+      "note": "do centra Litomyšle"
+    }
+  ],
+  "images": {
+    "pokoj": "pokoj-01",
+    "pokojAlt": "Dvoulůžkový pokoj penzionu s vlastní koupelnou",
+    "restaurace": "restaurace-02",
+    "restauraceAlt": "Interiér restaurace penzionu",
+    "terasa": "terasa-01",
+    "terasaAlt": "Venkovní terasa s výhledem na kolbiště",
+    "okoli": "kolbiste-vecer",
+    "okoliAlt": "Podvečer v areálu Jízdárna Suchá"
+  },
+  "psi": {
+    "title": "Domácí mazlíčci",
+    "text": "Psi jsou u nás vítáni za poplatek:"
+  },
+  "cta": {
+    "heading": "Napište nám termín, ozveme se obratem.",
+    "lead": "Ubytování rezervujeme e-mailem nebo telefonicky. Dejte nám vědět počet osob, termín a jestli přijedete s koněm nebo se psem.",
+    "buttonLabel": "Kontaktní formulář"
+  }
+}

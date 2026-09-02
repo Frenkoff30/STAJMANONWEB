@@ -1,0 +1,96 @@
+{
+  "year": "2006",
+  "items": [
+    {
+      "place": "",
+      "event": "Vítěz Českého skokového poháru",
+      "rider": "Jiří Skřivan",
+      "horse": "",
+      "major": true
+    },
+    {
+      "place": "1.",
+      "event": "ČSOB Velká cena Prahy",
+      "rider": "Jiří Skřivan",
+      "horse": "Labe James CAC Leasing",
+      "major": false
+    },
+    {
+      "place": "1.",
+      "event": "ČSOB Velká cena Brna",
+      "rider": "Jiří Skřivan",
+      "horse": "Rytma CAC Leasing",
+      "major": false
+    },
+    {
+      "place": "1.",
+      "event": "Cena Karsit",
+      "rider": "Jiří Skřivan",
+      "horse": "Rytma CAC Leasing",
+      "major": false
+    },
+    {
+      "place": "2.",
+      "event": "MČR družstva",
+      "rider": "Jiří Skřivan",
+      "horse": "Labe James CAC Leasing",
+      "major": false
+    },
+    {
+      "place": "2.",
+      "event": "Malá cena Plzně",
+      "rider": "Jiří Skřivan",
+      "horse": "Tora 1",
+      "major": false
+    },
+    {
+      "place": "2.",
+      "event": "Malá cena Brna",
+      "rider": "Jiří Skřivan",
+      "horse": "Excalibur Wepol",
+      "major": false
+    },
+    {
+      "place": "3.",
+      "event": "Grand Prix Leszno, Polsko",
+      "rider": "Jiří Skřivan",
+      "horse": "Rytma CAC Leasing",
+      "major": false
+    },
+    {
+      "place": "3.",
+      "event": "MČR juniorů",
+      "rider": "Mirka Skřivanová",
+      "horse": "Rafaela",
+      "major": false
+    },
+    {
+      "place": "4.",
+      "event": "ČSOB Velká cena Zámku Belcredi",
+      "rider": "Jiří Skřivan",
+      "horse": "Labe James CAC Leasing",
+      "major": false
+    },
+    {
+      "place": "5.",
+      "event": "ČSOB Velká cena Ostravy",
+      "rider": "Jiří Skřivan",
+      "horse": "Rytma CAC Leasing",
+      "major": false
+    },
+    {
+      "place": "5.",
+      "event": "MČR juniorů",
+      "rider": "Petra Skřivanová",
+      "horse": "Tora 1",
+      "major": false
+    },
+    {
+      "place": "6.",
+      "event": "Mittel Tour",
+      "rider": "Jiří Skřivan",
+      "horse": "Ramara Elkor",
+      "major": false
+    }
+  ]
+}

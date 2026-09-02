@@ -1,0 +1,54 @@
+{
+  "year": "2012",
+  "items": [
+    {
+      "place": "",
+      "event": "Finále Českého skokového poháru, 3. místo",
+      "rider": "Jiří Skřivan",
+      "horse": "Kalisto",
+      "major": true
+    },
+    {
+      "place": "1.",
+      "event": "Finále KMK 5letých",
+      "rider": "Jiří Skřivan",
+      "horse": "Eben",
+      "major": false
+    },
+    {
+      "place": "1.",
+      "event": "Velká cena Opavy",
+      "rider": "Jiří Skřivan",
+      "horse": "Kalisto",
+      "major": false
+    },
+    {
+      "place": "2.",
+      "event": "ČP Velká cena Martinic",
+      "rider": "Jiří Skřivan",
+      "horse": "Kalisto",
+      "major": false
+    },
+    {
+      "place": "3.",
+      "event": "ČP Velká cena Brna",
+      "rider": "Jiří Skřivan",
+      "horse": "Kalisto",
+      "major": false
+    },
+    {
+      "place": "3.",
+      "event": "MČR senioři",
+      "rider": "Jiří Skřivan",
+      "horse": "Kalisto",
+      "major": false
+    },
+    {
+      "place": "5.",
+      "event": "ČP Velká cena Ostravy",
+      "rider": "Jiří Skřivan",
+      "horse": "Kalisto",
+      "major": false
+    }
+  ]
+}

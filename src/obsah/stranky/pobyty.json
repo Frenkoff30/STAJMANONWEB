@@ -1,0 +1,27 @@
+{
+  "seo": {
+    "title": "Pobyty s výukou jízdy na koni",
+    "description": "Velikonoční a podzimní pobyty s intenzivní výukou jízdy na koni v areálu Jízdárna Suchá. Příprava na ZZVJ pro začínající i pokročilé jezdce od 8 let."
+  },
+  "hero": {
+    "heading": "Pobyty s výukou",
+    "lead": "Několik dní intenzivní práce s koňmi. Příprava na základní zkoušky výcviku jezdce, doplněná o sportovní a společenské hry.",
+    "image": "deti-kun",
+    "imageAlt": "Dívka s koněm během jezdeckého pobytu"
+  },
+  "sekce": {
+    "dvaTerminyMimoPrazdniny": {
+      "title": "Dva termíny mimo prázdniny",
+      "lead": "Pobyty jsou vhodné pro začínající i pokročilé jezdce od osmi let. Lekce jsou vždy přizpůsobené zkušenostem jezdce."
+    }
+  },
+  "cta": {
+    "heading": "Napište nám a pošleme přihlášku.",
+    "lead": "V případě zájmu o pobyt nás kontaktujte e-mailem, zašleme vám přihlášku a bližší informace, případně odpovíme na další otázky.",
+    "secondaryLabel": "Letní kurzy"
+  },
+  "images": [
+    "deti-parkur",
+    "skola-02"
+  ]
+}

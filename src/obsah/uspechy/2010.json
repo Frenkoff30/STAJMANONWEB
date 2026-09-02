@@ -1,0 +1,54 @@
+{
+  "year": "2010",
+  "items": [
+    {
+      "place": "",
+      "event": "Mistryně ČR mladých jezdců",
+      "rider": "Petra Skřivanová",
+      "horse": "Odyssea",
+      "major": true
+    },
+    {
+      "place": "1.",
+      "event": "Velká cena Ptýrova",
+      "rider": "Jiří Skřivan",
+      "horse": "Kalisto",
+      "major": false
+    },
+    {
+      "place": "2.",
+      "event": "Malá cena Plzně",
+      "rider": "Jiří Skřivan",
+      "horse": "Kalisto",
+      "major": false
+    },
+    {
+      "place": "3.",
+      "event": "ČSP Velká cena Plzně",
+      "rider": "Jiří Skřivan",
+      "horse": "Mercedes 1",
+      "major": false
+    },
+    {
+      "place": "3.",
+      "event": "Finále DaJ Czech Junior Cup",
+      "rider": "Mirka Skřivanová",
+      "horse": "Kalisto",
+      "major": false
+    },
+    {
+      "place": "5.",
+      "event": "ČSP Velká cena Všemil",
+      "rider": "Petra Skřivanová",
+      "horse": "Odyssea",
+      "major": false
+    },
+    {
+      "place": "8.",
+      "event": "ČSP Velká cena Prahy",
+      "rider": "Petra Skřivanová",
+      "horse": "Odyssea",
+      "major": false
+    }
+  ]
+}

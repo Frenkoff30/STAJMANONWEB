@@ -1,0 +1,64 @@
+{
+  "seo": {
+    "title": "Stáj Manon",
+    "description": "Příběh Stáje Manon od roku 1992, od zemědělské usedlosti u Litomyšle přes areál u Primátorské hráze až po moderní Areál Jízdárna Suchá s krytou halou a penzionem."
+  },
+  "hero": {
+    "heading": "Stáj Manon",
+    "lead": "Od roku 1992. Sportovní stáj, která vyrostla z přestavěného statku v areál, kde se ročně koná přes čtyřicet jezdeckých akcí.",
+    "image": "kolbiste-02",
+    "imageAlt": "Venkovní kolbiště areálu Jízdárna Suchá"
+  },
+  "sekce": {
+    "ctyriVeciKtereTu": {
+      "title": "Čtyři věci, které tu běží současně."
+    },
+    "statekStajAreal": {
+      "title": "Statek, stáj, areál."
+    }
+  },
+  "pribeh": [
+    "Stáj Manon vznikla v roce **1992**. Po návratu ze zahraničí zakoupil Jiří Skřivan zemědělskou usedlost nedaleko Litomyšle, kde byl po přestavbě zahájen provoz sportovní stáje. V roce **1995** se stáj přestěhovala do nově vybudované moderní stáje v Litomyšli.",
+    "Pro pořádání jezdeckých závodů se v roce **1997** začal budovat přírodní jezdecký areál u Primátorské hráze. V krásném prostředí vzniklo pískové kolbiště, přírodní tribuna a travnaté kolbiště. Každoročně zde proběhla řada jezdeckých akcí, z nichž nejvýznamnější byla tradiční **Velká cena Litomyšle** v parkurovém skákání, od roku 2002 součást prestižního celorepublikového seriálu Český skokový pohár.",
+    "Za přispění prostředků státního rozpočtu ČR z programu Ministerstva pro místní rozvoj se aktivity stáje mohly dále rozšířit. Na podzim **2007** byla v areálu Hřebčína Suchá dokončena stavba 30 boxů s jezdeckou krytou halou 23 × 66 m a penzionu s ubytováním.",
+    "Nový komplex **Areál Jízdárna Suchá** poskytuje kvalitní zázemí pro koně i jezdce a také pro jezdecké akce, kterých bylo v roce 2025 uspořádáno přes čtyřicet: parkurové a drezurní závody, závody ve všestrannosti a spřežení, jezdecké hry pro děti, soustředění, ZZVJ, jezdecké tábory a chovatelské akce. Celoročně probíhá i jezdecká škola pro veřejnost. Všechny jezdecké akce se dnes konají právě zde."
+  ],
+  "pribehButtons": {
+    "primary": "Prohlédnout areál",
+    "secondary": "Jiří Skřivan"
+  },
+  "images": {
+    "areal": "areal-letecky",
+    "arealAlt": "Letecký pohled na areál Jízdárna Suchá",
+    "staj": "boxy-01",
+    "stajAlt": "Stájová chodba s boxy pro koně",
+    "klub": "zavody-skok-01",
+    "klubAlt": "Parkurový skok na kolbišti v Suché"
+  },
+  "cinnosti": [
+    {
+      "title": "Sportovní stáj",
+      "text": "Trénink a ustájení koní na profesionální úrovni, účast na domácích i zahraničních závodech.",
+      "href": "/sluzby"
+    },
+    {
+      "title": "Jezdecká škola",
+      "text": "Od roku 2003. Celoroční výuka pro začínající i pokročilé jezdce, jezdecké hry a příprava na ZZVJ.",
+      "href": "/jezdecka-skola"
+    },
+    {
+      "title": "Pořadatel akcí",
+      "text": "Přes 40 akcí ročně: závody, soustředění, tábory, chovatelské akce a Velká cena Litomyšle.",
+      "href": "/akce"
+    },
+    {
+      "title": "Penzion a restaurace",
+      "text": "24 lůžek, restaurace se snídaněmi a terasa nad kolbištěm pro jezdce, rodiny i firemní akce.",
+      "href": "/penzion"
+    }
+  ],
+  "citat": {
+    "text": "„Svůj první parkur vyhrál Jiří Skřivan na klisně jménem Manon. Po ní se stáj jmenuje dodnes.\"",
+    "linkLabel": "Celý příběh"
+  }
+}

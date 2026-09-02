@@ -1,0 +1,46 @@
+{
+  "seo": {
+    "title": "Testační odchovna hřebců",
+    "description": "Testační odchovna hřebců. Termíny jarního a podzimního třídění, zkoušek základního výcviku a naskladnění hřebečků. Podmínky pro nástup do odchovny."
+  },
+  "hero": {
+    "heading": "Testační odchovna hřebců",
+    "lead": "Termíny třídění, zkoušek a naskladnění pro rok 2026 a podmínky, které musí hřebeček před nástupem splnit.",
+    "image": "pastvina-01",
+    "imageAlt": "Kůň na pastvině u areálu"
+  },
+  "sekce": {
+    "kdyAKde": {
+      "title": "Kdy a kde",
+      "lead": "Třídění probíhá v Pazuše, zkoušky základního výcviku v areálu JK Hřebčína Suchá."
+    },
+    "coMusiHrebecMit": {
+      "title": "Co musí hřebec mít",
+      "lead": "Bez těchto náležitostí nelze hřebečka do testační odchovny přijmout."
+    }
+  },
+  "requirements": [
+    {
+      "title": "Čip",
+      "text": "Hřebeček musí být před nástupem označený čipem."
+    },
+    {
+      "title": "Průkaz koně",
+      "text": "Vystavený průkaz koně přivezte s sebou."
+    },
+    {
+      "title": "Vakcinace",
+      "text": "Rozvakcinování proti chřipce a tetanu. Pokud není hotové, zajistíme ho."
+    },
+    {
+      "title": "Odčervení",
+      "text": "Provádíme hromadně pro všechny hřebečky v odchovně."
+    }
+  ],
+  "prazdno": "Termíny na další ročník právě připravujeme. Sledujte kalendář akcí nebo se nám ozvěte.",
+  "cta": {
+    "heading": "Máte dotaz k odchovně?",
+    "lead": "Ozvěte se Jiřímu Skřivanovi, rád vám poradí s přípravou hřebečka i s termíny.",
+    "secondaryLabel": "Kontakt"
+  }
+}

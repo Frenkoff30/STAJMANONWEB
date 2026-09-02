@@ -1,0 +1,26 @@
+{
+  "year": "1996",
+  "items": [
+    {
+      "place": "1.",
+      "event": "Grand Prix CSI Hortobágy, Maďarsko",
+      "rider": "Jiří Skřivan",
+      "horse": "Labe Jeff",
+      "major": true
+    },
+    {
+      "place": "1.",
+      "event": "Grand Prix CSA Poděbrady",
+      "rider": "Jiří Skřivan",
+      "horse": "Labe Jeff",
+      "major": false
+    },
+    {
+      "place": "2.",
+      "event": "MČR",
+      "rider": "Jiří Skřivan",
+      "horse": "Labe Jeff",
+      "major": false
+    }
+  ]
+}

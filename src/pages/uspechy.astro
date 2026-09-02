@@ -6,8 +6,11 @@ import SectionHead from '@/components/SectionHead.astro';
 import Icon from '@/components/Icon.astro';
 import { achievements, majorTitles } from '@/data/achievements';
 
-import heroImg from '@/assets/photos/vc-areal.jpg';
-import portraitImg from '@/assets/photos/uspechy-02.jpg';
+import { photo } from '@/data/images';
+import page from '@/obsah/stranky/uspechy.json';
+
+const heroImg = photo(page.hero.image)!;
+const portraitImg = photo(page.images.portrait)!;
 
 const total = achievements.reduce((sum, y) => sum + y.items.length, 0);
 const wins = achievements.reduce(
@@ -18,12 +21,12 @@ const span = `${achievements[achievements.length - 1]!.year}–${achievements[0]
 ---
 
 <PageLayout
-  title="Úspěchy"
-  description="Sportovní úspěchy Stáje Manon od roku 1993: mistrovské tituly, vítězství ve Velkých cenách a tři celkové triumfy v Českém skokovém poháru."
-  heading="Úspěchy"
-  lead="Třicet let výsledků na domácích i zahraničních kolbištích, od prvního mistrovského titulu v roce 1993 po Český skokový pohár."
+  title={page.seo.title}
+  description={page.seo.description}
+  heading={page.hero.heading}
+  lead={page.hero.lead}
   image={heroImg}
-  imageAlt="Velká cena Litomyšle v areálu Jízdárna Suchá"
+  imageAlt={page.hero.imageAlt}
   crumbs={[{ label: 'Sport' }, { label: 'Úspěchy' }]}
   nav={[
     { id: 'souhrn', label: 'Souhrn' },
@@ -36,9 +39,9 @@ const span = `${achievements[achievements.length - 1]!.year}–${achievements[0]
     <dl class="grid gap-px border border-ink/12 bg-ink/12 sm:grid-cols-3">
       {
         [
-          { k: total, v: 'zaznamenaných umístění' },
-          { k: wins, v: 'vítězství' },
-          { k: '3×', v: 'celkový vítěz Českého skokového poháru' },
+          { k: total, v: page.souhrn.labelTotal },
+          { k: wins, v: page.souhrn.labelWins },
+          { k: page.souhrn.extraValue, v: page.souhrn.extraLabel },
         ].map((s, i) => (
           <div class="bg-paper p-8" data-reveal style={`--reveal-delay:${i * 70}ms`}>
             <dt class="sr-only">{s.v}</dt>
@@ -49,7 +52,7 @@ const span = `${achievements[achievements.length - 1]!.year}–${achievements[0]
       }
     </dl>
     <p class="mt-5 text-[0.8125rem] text-ink-3/80">
-      Období {span}. Přehled zahrnuje výsledky Jiřího Skřivana a jezdců Stáje Manon.
+      Období {span}. {page.souhrn.note}
     </p>
   </Section>
 
@@ -69,7 +72,7 @@ const span = `${achievements[achievements.length - 1]!.year}–${achievements[0]
       </div>
 
       <div class="lg:col-span-7">
-        <SectionHead title="Tituly, které se počítají." tone="light" />
+        <SectionHead title={page.sekce.titulyKtereSePocitaji.title} tone="light" />
         <ul class="mt-10 space-y-px">
           {
             majorTitles.map((m, i) => (
@@ -97,8 +100,8 @@ const span = `${achievements[achievements.length - 1]!.year}–${achievements[0]
   <!-- Kompletní přehled -->
   <Section tone="paper" space="lg" id="prehled">
     <SectionHead
-      title="Rok po roce"
-      lead="Umístění na mistrovstvích, ve Velkých cenách a v seriálových soutěžích."
+      title={page.sekce.rokPoRoce.title}
+      lead={page.sekce.rokPoRoce.lead}
     />
 
     <div class="mt-10 space-y-3">
@@ -163,14 +166,11 @@ const span = `${achievements[achievements.length - 1]!.year}–${achievements[0]
   <Section tone="paper-2" space="md">
     <div class="grid gap-8 lg:grid-cols-12 lg:items-center">
       <div class="lg:col-span-8">
-        <h2 class="t-3">Výsledky z domácích akcí</h2>
-        <p class="mt-3 text-ink-3">
-          Výsledkové listiny z jezdeckých her, veřejných tréninků a závodů pořádaných
-          v areálu najdete v samostatném archivu.
-        </p>
+        <h2 class="t-3">{page.cta.heading}</h2>
+        <p class="mt-3 text-ink-3">{page.cta.lead}</p>
       </div>
       <div class="lg:col-span-4 lg:text-right">
-        <a href="/vysledky" class="btn btn-primary">Výsledkové listiny</a>
+        <a href="/vysledky" class="btn btn-primary">{page.cta.buttonLabel}</a>
       </div>
     </div>
   </Section>

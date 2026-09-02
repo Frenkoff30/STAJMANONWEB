@@ -35,28 +35,34 @@ Web běží na `http://localhost:4321`.
 
 | Vrstva | Volba | Proč |
 | --- | --- | --- |
-| Framework | **Astro 5** (`output: 'static'`) | Výstupem je čisté HTML — nasadí se na jakýkoli hosting včetně toho stávajícího. Nulový JS tam, kde není potřeba. |
+| Framework | **Astro 5**, statický výstup | Všechny stránky jsou předgenerované HTML. Serverová je jen administrace. Nulový JS tam, kde není potřeba. |
 | Styly | **Tailwind CSS 4** | Design tokeny v `@theme`, komponentní třídy v `@layer components`. Žádný config soubor. |
 | Jazyk | **TypeScript** (strict) | Data o akcích, kurzech a výsledcích mají schéma — překlep se pozná při buildu, ne až na produkci. |
 | Obrázky | `astro:assets` + **sharp** | Automatický převod na WebP, responsivní `srcset`, lazy loading. 50 MB zdrojových fotek → ~2 MB skutečně přenášených dat. |
 | Mapa | OpenStreetMap `<iframe>` | Bez API klíče a bez trackovacích cookies. |
-| Formulář | jeden PHP skript v `public/` | Funguje na běžném hostingu s `mail()`, i bez JavaScriptu. |
+| Redakční systém | **Keystatic** | Administrace na `/keystatic`, obsah jako JSON v repozitáři. Žádná databáze, žádný měsíční poplatek, obsah je verzovaný v gitu. |
+| Hosting | **Vercel** (`@astrojs/vercel`) | Uložení v administraci = commit = automatický build. |
+| Formulář | jeden PHP skript v `public/` | Funguje na běžném hostingu s `mail()`, i bez JavaScriptu. Na Vercelu se přepne na formulářovou službu. |
 
 ---
 
 ## Struktura
 
 ```
+keystatic.config.ts    definice redakčního systému (kolekce, singletony)
+keystatic.fields.ts    sdílená pole (fotka, záhlaví, nadpis sekce…)
+keystatic.stranky.ts   pole pro texty jednotlivých stránek
 scripts/               pomocné skripty (zmenšení fotek, úklid buildu)
 src/
-├── assets/photos/     fotografie (zpracuje je Astro při buildu)
-├── components/        Header, Footer, SEO, Lightbox, EventRow, Icon…
-├── data/              ★ VEŠKERÝ OBSAH — viz níže
+├── assets/photos/     ★ knihovna fotek, jedna složka na fotku
+├── components/        Header, Footer, SEO, Lightbox, EventRow, Prose…
+├── data/              čtecí vrstva nad obsahem + pomocné funkce
 ├── layouts/           BaseLayout (shell) + PageLayout (shell s hero fotkou)
+├── obsah/             ★ VEŠKERÝ OBSAH, spravuje ho redakční systém
 ├── pages/             jedna .astro = jedna URL
 └── styles/global.css  design systém: barvy, typografie, komponentní třídy
 
-public/                kopíruje se 1:1 do dist/
+public/                kopíruje se 1:1 do buildu
 ├── soubory/           výsledkové listiny a rozpisy přenesené ze starého webu
 ├── kontakt-odeslat.php formulář
 ├── .htaccess          301 přesměrování ze starých .php adres, cache, hlavičky
@@ -65,71 +71,110 @@ public/                kopíruje se 1:1 do dist/
 
 ---
 
-## Kde se co edituje
+## Redakční systém
 
-Veškerý obsah je v `src/data/`. Nikde jinde se text upravovat nemusí.
+Administrace běží na **`/keystatic`** ([Keystatic](https://keystatic.com)).
+Není za ní žádná databáze: co se v ní uloží, se zapíše jako commit do
+repozitáře a Vercel z něj postaví nový web. Změna je online do dvou minut.
 
-| Soubor | Obsahuje | Jak často se mění |
+```bash
+npm run dev
+```
+
+Lokálně pak administrace běží na `http://localhost:4321/keystatic` a zapisuje
+rovnou na disk, bez přihlašování.
+
+### Co jde upravovat
+
+| Sekce v administraci | Co obsahuje | Kde to leží |
 | --- | --- | --- |
-| `site.ts` | kontakty, adresa, telefony, e-maily, sociální sítě, partneři | výjimečně |
-| `navigation.ts` | struktura menu a patičky | výjimečně |
-| `events.ts` | **kalendář akcí** | průběžně |
-| `courses.ts` | prázdninové turnusy, ceny, storno podmínky | 1× ročně + obsazenost |
-| `stays.ts` | velikonoční a podzimní pobyt | 1× ročně |
-| `accommodation.ts` | ceny pokojů, restaurace, tipy na výlety | podle ceníku |
-| `services.ts` | služby, ceník ustájení, parametry ploch | podle ceníku |
-| `achievements.ts` | sportovní úspěchy po letech | po sezóně |
-| `results.ts` | výsledkové listiny ke stažení | po každé akci |
-| `horses.ts` | koně na prodej | podle nabídky |
-| `gallery.ts` | popisky (alt texty) a zařazení fotek | při přidání fotek |
+| **Kalendář akcí** | jednotlivé závody, hry, soustředění, rozpisy ke stažení | `src/obsah/akce/` |
+| **Výsledkové listiny** | archiv výsledků od roku 2012 | `src/obsah/vysledky/` |
+| **Úspěchy podle let** | sportovní výsledky po ročnících | `src/obsah/uspechy/` |
+| **Hlavní tituly** | ručně vybraný přehled do hero sekcí | `src/obsah/tituly.json` |
+| **Prázdninové kurzy** | turnusy, obsazenost, ceník, program, storno | `src/obsah/kurzy.json` |
+| **Pobyty s výukou** | velikonoční a podzimní pobyt | `src/obsah/pobyty/` |
+| **Služby** | ustájení, trénink, pronájmy, ceny | `src/obsah/sluzby.json` |
+| **Koně na prodej** | nabídka koní i s fotkami | `src/obsah/kone.json` |
+| **Vybavení areálu** | hala, kolbiště, jízdárna, boxy | `src/obsah/areal.json` |
+| **Penzion a okolí** | ceník pokojů, psi, vybavení, tipy na výlety | `src/obsah/penzion.json` |
+| **Fotogalerie** | knihovna fotek celého webu | `src/obsah/galerie/` |
+| **Texty stránek** | nadpisy, odstavce, tlačítka a fotky všech 17 stránek | `src/obsah/stranky/` |
+| **Kontakty a údaje** | telefony, e-maily, adresa, sociální sítě, partneři | `src/obsah/nastaveni.json` |
+
+V kódu zůstává jen to, co by se úpravou dalo rozbít: struktura menu
+(`src/data/navigation.ts`), rozvržení stránek a design.
+
+### Fotky
+
+Fotogalerie je zároveň **knihovna fotek pro celý web**. Každá fotka je
+v repozitáři právě jednou, ve vlastní složce:
+
+```
+src/assets/photos/vc-skok/image.jpg
+```
+
+Nová fotka se nahrává jedině ve Fotogalerii (popis, zařazení, pořadí).
+Na ostatních stránkách se pak vybírá z rozbalovacího seznamu podle názvu.
+Díky tomu se jedna fotka nekopíruje na deset míst a změna popisku platí všude.
+
+Astro si z originálu vygeneruje WebP varianty pro různé šířky obrazovky, takže
+nahrávat se dá rovnou snímek z foťáku. Po hromadném přidání většího množství
+fotek se hodí spustit `npm run photos`, který originály zmenší na 2560 px.
+
+### Delší texty
+
+Příběh stáje, medailon Jiřího Skřivana a podobné bloky se v administraci píšou
+jako seznam odstavců. Formátování je záměrně minimální:
+
+| Zápis | Výsledek |
+| --- | --- |
+| `**text**` | **tučně** |
+| `## Nadpis` | mezinadpis uvnitř textu |
+
+Nic jiného se neinterpretuje, HTML se vypíše doslova. Zajišťuje to komponenta
+`src/components/Prose.astro`.
 
 ### Přidání akce do kalendáře
 
-Jeden řádek v `src/data/events.ts`:
+V administraci *Kalendář akcí → New*. Vyplní se název, datum, typ akce a
+volitelně upřesnění nebo rozpis ke stažení. Stránka `/akce` si sama spočítá,
+co je nadcházející a co patří do archivu, podle data buildu.
 
-```ts
-{ start: '2027-04-10', title: 'Dubnové jezdecké závody', detail: 'hobby, Z–ST, pony', kind: 'zavody' },
-```
-
-Stránka `/akce` si sama spočítá, co je nadcházející a co patří do archivu — podle
-data buildu. Vícedenní akce mají navíc `end`, vrchol sezóny `highlight: true`,
-rozpis ke stažení `file: { label, href }`.
+U opakujících se akcí (*Zimní skoková příprava*) je potřeba v poli
+**Adresa záznamu** doplnit datum, aby byl název souboru jedinečný.
 
 ### Přidání výsledkové listiny
 
-1. Soubor nahrát do `public/soubory/vysledky/`
-2. Přidat řádek do `src/data/results.ts`:
-
-```ts
-{ date: '2027-04-10', title: 'DUBNOVÉ JEZDECKÉ ZÁVODY', file: '/soubory/vysledky/2027-04-10-vysledky.xlsx' },
-```
+1. Soubor nahrát do `public/soubory/vysledky/` (přes GitHub nebo od vývojáře)
+2. V administraci *Výsledkové listiny → New*, do pole **Cesta k listině**
+   napsat `/soubory/vysledky/nazev.xlsx`
 
 Kategorie (jezdecké hry / závody / drezura…) se odvodí z názvu automaticky,
 filtry na stránce se doplní samy.
 
 ### Změna obsazenosti turnusu
 
-V `src/data/courses.ts` u daného turnusu přepsat `status`:
-`'volno' | 'posledni' | 'obsazeno' | 'uzavreno'` a případně `note`.
-
-### Přidání fotky
-
-1. Soubor do `src/assets/photos/` — název ať odpovídá tomu, co je na fotce
-   (`kolbiste-*`, `pokoj-*`, `vc-*`, `hala-*`…)
-2. Spustit `npm run photos` — zmenší fotku na rozumnou velikost
-3. Popisek a kategorii doplnit do `meta` v `src/data/gallery.ts`
-
-Bez záznamu v `meta` se fotka v galerii zobrazí taky, jen s obecným alt textem.
-
-Krok 2 nevynechávejte: fotogalerie načítá složku přes `import.meta.glob`, takže
-Astro do buildu kopíruje originál každé fotky. Nezmenšený snímek z foťáku
-(5 000 px, 4 MB) tak nafoukne `dist/` o pár megabajtů navíc.
+*Prázdninové kurzy → Turnusy*, u konkrétního turnusu přepsat **Obsazenost**
+a případně **Poznámku k volným místům**.
 
 ### Koně na prodej
 
-`src/data/horses.ts` — dokud je pole prázdné, stránka ukazuje verzi
+*Koně na prodej*. Dokud je seznam prázdný, stránka ukazuje verzi
 „momentálně nemáme volného koně". Po přidání prvního koně se sama přepne
 na výpis karet.
+
+---
+
+## Jak je to postavené uvnitř
+
+Obsah je JSON v `src/obsah/`. Moduly v `src/data/` ho načítají přes
+`import.meta.glob` a doplňují k němu logiku, kterou redaktor řešit nemusí:
+řazení akcí podle data, rozdělení na nadcházející a archiv, odvození kategorie
+výsledků z názvu, dopočet souhrnných čísel.
+
+Stránky v `src/pages/` pak čtou hotová data. Díky tomu má každý text v
+administraci jasné místo a přidání akce nevyžaduje sáhnout do kódu.
 
 ---
 
@@ -279,27 +324,43 @@ Vzor je v `.env.example`.
 
 ## Nasazení
 
-### Apache hosting (cílový stav)
+Web je statický: všech 17 stránek se předgeneruje při buildu. Serverové jsou
+jen dvě cesty, `/keystatic` a `/api/keystatic`, tedy samotná administrace.
 
-```bash
-npm run build
-```
+### Vercel
 
-Obsah složky `dist/` nahrát do kořene webu — `.htaccess` se přenese s ním.
+Repozitář stačí připojit. `vercel.json` řeší přesměrování ze starých `.php`
+adres a bezpečnostní hlavičky, zbytek zajistí adaptér `@astrojs/vercel`.
 
-1. `src/data/site.ts` → zkontrolovat `url` (kanonická doména v `<link rel=canonical>` a v sitemapě)
-2. ověřit, že hosting má zapnuté `mod_rewrite`, `mod_deflate` a `mod_expires`
-3. otestovat odeslání formuláře — hosting musí mít funkční `mail()`
+**Proměnné prostředí** (*Settings → Environment Variables*):
 
-### Vercel (náhled pro klienta)
+| Proměnná | K čemu |
+| --- | --- |
+| `KEYSTATIC_GITHUB_CLIENT_ID` | přihlášení do administrace přes GitHub |
+| `KEYSTATIC_GITHUB_CLIENT_SECRET` | tamtéž |
+| `KEYSTATIC_SECRET` | podepisování přihlašovací session |
+| `PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` | název GitHub App |
+| `PUBLIC_FORM_ENDPOINT` | kam odesílat kontaktní formulář |
+| `PUBLIC_FORM_ACCESS_KEY` | klíč formulářové služby |
 
-Repozitář stačí připojit, `vercel.json` řeší build, hezké URL, přesměrování ze
-starých `.php` adres i bezpečnostní hlavičky. Jen pozor na dvě věci:
+### Zprovoznění administrace (jednorázově)
 
-- **formulář** — nastavit `PUBLIC_FORM_ENDPOINT` a `PUBLIC_FORM_ACCESS_KEY`
-  v *Settings → Environment Variables*, jinak PHP endpoint neodpoví
-- **indexace** — u náhledu, který nemá skončit ve vyhledávačích, přidat
-  proměnnou `VERCEL_ENV=preview` nebo nasadit na chráněný náhled
+1. Nasadit web na Vercel a nastavit vlastní doménu
+2. Otevřít `https://<doména>/keystatic/setup` — průvodce založí GitHub App
+   a vypíše hodnoty pro čtyři proměnné `KEYSTATIC_*`
+3. Vyplnit je ve Vercelu a spustit nový deploy
+4. Přidat lidi ze stáje jako spolupracovníky repozitáře — bez toho se
+   do administrace přihlásí, ale nebudou moct ukládat
+
+Repozitář je v `keystatic.config.ts` nastavený konstantou `REPO`. Při
+přesunu pod jiný GitHub účet je potřeba ji přepsat.
+
+### Apache hosting
+
+Pokud by web měl běžet na běžném hostingu s PHP, administrace tam fungovat
+nebude (potřebuje serverovou část). Web samotný ano: stačí z
+`astro.config.mjs` odebrat adaptér, spustit `npm run build` a nahrát obsah
+`dist/`. Obsah by se pak upravoval jen lokálně přes `npm run dev`.
 
 ---
 
@@ -309,7 +370,9 @@ starých `.php` adres i bezpečnostní hlavičky. Jen pozor na dvě věci:
   `skola-03`, `boxy-01` mají pod 700 px). Na hero pozicích jsou proto měkčí.
   Novější fotky ve vysokém rozlišení by web viditelně posunuly.
 - **Aktuality.** Původní web měl sekci aktualit, která byla dlouhodobě prázdná —
-  proto tu není. Kdyby ji stáj chtěla používat, dá se přidat jako `src/data/news.ts`
-  se stejným vzorem jako `events.ts`.
+  proto tu není. Kdyby ji stáj chtěla používat, přidá se jako další kolekce
+  v `keystatic.config.ts` se stejným vzorem jako kalendář akcí.
+- **Formulář na Vercelu.** Teď míří na externí službu. Až bude jistá cílová
+  doména, dá se nahradit vlastní serverovou funkcí a odesílat e-maily přímo.
 - **Cizojazyčné verze.** Staré `/en/` a `/de/` na původním webu nefungovaly.
   Astro má i18n připravené, kdyby byl o překlad zájem.

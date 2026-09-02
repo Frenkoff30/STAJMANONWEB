@@ -1,0 +1,67 @@
+{
+  "seo": {
+    "title": "Jezdecká škola",
+    "description": "Celoroční jezdecká škola v areálu Jízdárna Suchá pro začínající i pokročilé jezdce od 7 let. Výcvik na lonži, skupinové i individuální lekce, jezdecké hry a příprava na ZZVJ."
+  },
+  "hero": {
+    "heading": "Jezdecká škola",
+    "lead": "Pro začínající i pokročilé jezdce od sedmi let. Na ponících i velkých koních, celoročně, vždy pod odborným dohledem.",
+    "image": "skola-01",
+    "imageAlt": "Výuka jízdy na koni v kryté hale"
+  },
+  "sekce": {
+    "krokZaKrokemK": {
+      "title": "Krok za krokem k vlastnímu parkuru.",
+      "lead": "Výuka na ponících i velkých koních probíhá díky kryté hale celoročně. Pouze letní prázdniny patří týdenním kurzům pro děti."
+    },
+    "naTomhleNesetrime": {
+      "title": "Na tomhle nešetříme."
+    },
+    "klubZaTimVsim": {
+      "title": "Klub za tím vším.",
+      "lead": "Hlavní činností klubu je organizace jezdeckých akcí a účast na nich, výuka dětí a mládeže a pořádání víkendových pobytů a prázdninových kurzů."
+    }
+  },
+  "steps": [
+    {
+      "title": "Základ na lonži",
+      "text": "Začínající jezdce vedeme důsledným základním výcvikem na lonži. Nejvhodnější věk pro učení jízdy na koni je kolem sedmi let, ale výjimky se najdou."
+    },
+    {
+      "title": "Skupina nebo individuál",
+      "text": "Pokročilejší jezdci pracují ve skupině nebo si mohou zvolit individuální lekce. Docházka 1–2× týdně, celoročně díky kryté hale."
+    },
+    {
+      "title": "Jezdecké hry",
+      "text": "Pětkrát ročně si děti ověří získané zkušenosti v soutěži: jízdy zručnosti, jízdy zručnosti se skákáním a parkury 40, 50 a 60 cm."
+    },
+    {
+      "title": "ZZVJ a veřejné tréninky",
+      "text": "Od 17 let mohou jezdci složit základní zkoušky výcviku jezdce a startovat na veřejných trénincích a domácích závodech."
+    }
+  ],
+  "klubActivities": [
+    "moderní jezdecký areál, krytá hala, venkovní kolbiště",
+    "víkendové pobyty a jezdecké kurzy",
+    "jezdecké závody a veřejné tréninky",
+    "skoková a drezurní soustředění",
+    "jezdecké hry pro děti, prázdninové tábory",
+    "možnost ustájení vlastního koně",
+    "skokový výcvik, základy drezurního a voltižního ježdění"
+  ],
+  "images": {
+    "lekce": "deti-parkur",
+    "lekceAlt": "Dítě na ponym na parkuru jezdeckých her",
+    "bezpecnost": "skola-02",
+    "bezpecnostAlt": "Dívka se stará o koně před lekcí"
+  },
+  "bezpecnostNote": "Při pravidelné sportovní činnosti poskytujeme zvýhodněné cenové podmínky.",
+  "klubText": [
+    "V roce 2024 uspořádal JK Hřebčín Suchá přes 50 jezdeckých akcí. Sezónu otevřela série skokové zimní přípravy s Jiřím Skřivanem a veřejné tréninky, následovala Kritéria mladých koní, jezdecké hry pro děti na pony i velkých koních, dětský šampionát, Mikulášská veselice a drezurní soustředění. Vrcholem byla Velká cena Litomyšle.",
+    "Drezurní soustředění pořádáme ve spolupráci s Danielou Groeben, Češkou, která dlouhodobě žije v Německu a působí ve stájích pana Kasellmanna."
+  ],
+  "cta": {
+    "heading": "Chcete přihlásit dítě do jezdecké školy?",
+    "lead": "Ozvěte se Miroslavě Skřivanové, poradí s termíny, vybavením i tím, jestli je vaše dítě na ježdění připravené."
+  }
+}

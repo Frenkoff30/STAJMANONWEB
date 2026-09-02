@@ -7,16 +7,19 @@ import Map from '@/components/Map.astro';
 import Icon from '@/components/Icon.astro';
 import { site } from '@/data/site';
 
-import heroImg from '@/assets/photos/terasa-02.jpg';
+import { photo } from '@/data/images';
+import page from '@/obsah/stranky/kontakt.json';
+
+const heroImg = photo(page.hero.image)!;
 ---
 
 <PageLayout
-  title="Kontakt"
-  description="Kontakt na Stáj Manon a Areál Jízdárna Suchá, Suchá 1, 570 01 Suchá u Litomyšle. Telefony, e-maily a kontaktní formulář."
-  heading="Kontakt"
-  lead="Suchá 1, tři kilometry od Litomyšle. Zavolejte, napište nebo přijeďte, nejlépe o víkendu, kdy se u nás závodí."
+  title={page.seo.title}
+  description={page.seo.description}
+  heading={page.hero.heading}
+  lead={page.hero.lead}
   image={heroImg}
-  imageAlt="Terasa a zázemí areálu Jízdárna Suchá"
+  imageAlt={page.hero.imageAlt}
   crumbs={[{ label: 'Kontakt' }]}
   nav={[
     { id: 'kontakty', label: 'Kontakty' },
@@ -27,7 +30,7 @@ import heroImg from '@/assets/photos/terasa-02.jpg';
   <Section tone="paper" space="lg" id="kontakty">
     <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
       <div class="lg:col-span-5">
-        <SectionHead title="Kontakty" />
+        <SectionHead title={page.sekce.kontakty.title} />
 
         <div class="mt-10 space-y-px">
           {
@@ -64,9 +67,9 @@ import heroImg from '@/assets/photos/terasa-02.jpg';
 
         <address class="mt-10 not-italic" data-reveal>
           <p class="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-brass-700">
-            Adresa
+            {page.adresa.label}
           </p>
-          <p class="mt-3 font-display text-[1.5rem]">Areál Jízdárna Suchá</p>
+          <p class="mt-3 font-display text-[1.5rem]">{page.adresa.placeName}</p>
           <p class="mt-2 text-[1.0625rem] leading-relaxed text-ink-3">
             {site.address.street}<br />
             {site.address.zip}&nbsp;{site.address.city}
@@ -77,7 +80,7 @@ import heroImg from '@/assets/photos/terasa-02.jpg';
             rel="noopener noreferrer"
             class="link-arrow mt-5"
           >
-            Navigovat
+            {page.adresa.linkLabel}
             <Icon name="arrow-up-right" class="h-3.5 w-3.5" />
           </a>
         </address>
@@ -113,8 +116,8 @@ import heroImg from '@/assets/photos/terasa-02.jpg';
   <!-- Mapa -->
   <Section tone="paper-2" space="md" id="mapa">
     <SectionHead
-      title="Najdete nás tři kilometry od Litomyšle"
-      lead="Parkování je přímo v areálu. Pro navigaci zadejte „Jízdárna Suchá, Suchá 1“."
+      title={page.sekce.najdeteNasTriKilometry.title}
+      lead={page.sekce.najdeteNasTriKilometry.lead}
     />
     <Map class="mt-10" />
   </Section>

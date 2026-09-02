@@ -1,0 +1,164 @@
+{
+  "seo": {
+    "title": "Stáj Manon"
+  },
+  "hero": {
+    "image": "areal-letecky",
+    "imageAlt": "Letecký pohled na jezdecký areál Jízdárna Suchá u Litomyšle",
+    "headingStart": "Místo, kde se",
+    "headingAccent": "koně",
+    "headingEnd": "berou vážně.",
+    "lead": "Sportovní stáj, jezdecká škola a penzion pod jednou střechou. Krytá hala 23 × 66 metrů, kolbiště, na kterém se jede Velká cena Litomyšle, a přes čtyřicet jezdeckých akcí ročně.",
+    "primaryCta": {
+      "label": "Ubytování a rezervace",
+      "href": "/penzion"
+    },
+    "secondaryCta": {
+      "label": "Jezdecká škola",
+      "href": "/jezdecka-skola"
+    },
+    "quickEvents": {
+      "label": "Nejbližší akce",
+      "href": "/akce",
+      "fallback": "Kalendář 2026"
+    },
+    "quickCourses": {
+      "label": "Prázdninové kurzy 2026",
+      "href": "/kurzy"
+    },
+    "quickPhone": {
+      "label": "Zavolejte nám"
+    }
+  },
+  "pillarsIntro": {
+    "heading": "Jeden areál,\ntři různé důvody.",
+    "lead": "Vrcholový sport, výuka dětí a klidné ubytování na venkově se tu potkávají na jednom místě a navzájem si nepřekáží.",
+    "linkLabel": "Prohlédnout areál",
+    "linkHref": "/areal"
+  },
+  "pillars": [
+    {
+      "title": "Sportovní stáj",
+      "text": "Trénink a ustájení na profesionální úrovni. Přes třicet let výsledků na domácích i zahraničních kolbištích, tři vítězství v Českém skokovém poháru.",
+      "href": "/sluzby",
+      "cta": "Služby a ustájení",
+      "image": "vc-skok",
+      "alt": "Skok na parkuru Velké ceny Litomyšle"
+    },
+    {
+      "title": "Jezdecká škola",
+      "text": "Od prvního sednutí na lonži po ZZVJ. Celoroční výuka pro děti od sedmi let i pro dospělé, na ponících i velkých koních, vždy pod odborným dohledem.",
+      "href": "/jezdecka-skola",
+      "cta": "Jak výuka probíhá",
+      "image": "skola-01",
+      "alt": "Výuka jízdy na koni v kryté hale"
+    },
+    {
+      "title": "Penzion a restaurace",
+      "text": "24 lůžek s vlastním sociálním zařízením, restaurace se snídaněmi a terasa s výhledem na kolbiště. Tři kilometry od zámku v Litomyšli.",
+      "href": "/penzion",
+      "cta": "Ubytování a ceny",
+      "image": "pokoj-02",
+      "alt": "Pokoj penzionu Jízdárna Suchá"
+    }
+  ],
+  "facilities": {
+    "title": "Postaveno pro celoroční provoz.",
+    "lead": "Komplex 30 boxů, kryté haly a penzionu vznikl v roce 2007 za přispění prostředků státního rozpočtu z programu Ministerstva pro místní rozvoj.",
+    "linkLabel": "Vybavení a technické parametry",
+    "linkHref": "/areal"
+  },
+  "calendar": {
+    "title": "Co se u nás chystá",
+    "lead": "Skokové a drezurní závody, všestrannost, spřežení, jezdecké hry pro děti i soustředění. Loni jsme uspořádali přes čtyřicet akcí.",
+    "actionLabel": "Celý kalendář"
+  },
+  "penzion": {
+    "image": "restaurace-01",
+    "imageAlt": "Restaurace penzionu Jízdárna Suchá",
+    "title": "Přespat kousek od koní.",
+    "lead": "Dvou až čtyřlůžkové pokoje s vlastní koupelnou, kapacita 24 lůžek. Restaurace s obsluhou, snídaně na objednávku a venkovní terasa s výhledem na kolbiště a pastviny.",
+    "stats": [
+      {
+        "label": "Od",
+        "value": "740 Kč",
+        "note": "osoba / noc"
+      },
+      {
+        "label": "Kapacita",
+        "value": "24 lůžek",
+        "note": "restaurace pro 40 hostů"
+      }
+    ],
+    "bullets": [
+      "Vlastní koupelna a WC na každém pokoji",
+      "Snídaně na objednávku, rychlé občerstvení",
+      "Domácím mazlíčkům vstup povolen",
+      "Zámek Litomyšl (UNESCO) tři kilometry"
+    ],
+    "primaryCta": {
+      "label": "Ubytování a ceník",
+      "href": "/penzion"
+    },
+    "secondaryCtaLabel": "Rezervovat"
+  },
+  "skola": {
+    "title": "Od lonže k prvnímu parkuru.",
+    "lead": "Jezdecká škola funguje od roku 2003. Výuka probíhá celoročně díky kryté hale, na ponících i velkých koních. Bezpečnostní třmeny, vesty a tříbodové helmy jsou samozřejmostí.",
+    "items": [
+      {
+        "title": "Jezdecká škola",
+        "text": "Docházka 1–2× týdně, individuální lekce i výuka ve skupině. Ochranné pomůcky na začátek půjčujeme.",
+        "href": "/jezdecka-skola"
+      },
+      {
+        "title": "Prázdninové kurzy",
+        "text": "Osm týdenních turnusů, 6 lekcí, teorie 2× denně, plná penze a celodenní program.",
+        "href": "/kurzy"
+      },
+      {
+        "title": "Pobyty s výukou",
+        "text": "Velikonoce a podzimní prázdniny s intenzivní přípravou na ZZVJ pro začátečníky i pokročilé.",
+        "href": "/pobyty"
+      }
+    ],
+    "imageTall": "kurzy-pony",
+    "imageTallAlt": "Dvě dívky na ponym během prázdninového kurzu",
+    "imageSquare": "deti-kun",
+    "imageSquareAlt": "Dívka s koněm na jezdeckém kurzu",
+    "yearValue": "2003",
+    "yearText": "rok, kdy jsme otevřeli jezdeckou školu. Od té doby jí prošly stovky dětí. Část z nich dodnes startuje na našich závodech."
+  },
+  "uspechy": {
+    "image": "skrivan-01",
+    "imageAlt": "Jiří Skřivan na parkuru",
+    "title": "Třicet let na kolbišti.",
+    "text": "Jiří Skřivan začal závodit ve dvanácti letech a svůj první parkur vyhrál na klisně Manon, po které se stáj jmenuje. Po stážích u Paula Darragha a Markuse Fuchse založil v roce 1992 vlastní stáj. V roce 2002 přišel s myšlenkou celorepublikového seriálu Velkých cen, ze kterého vznikl Český skokový pohár.",
+    "primaryCtaLabel": "Kompletní výsledky",
+    "secondaryCtaLabel": "Jiří Skřivan"
+  },
+  "galerie": {
+    "title": "Jak to u nás vypadá",
+    "actionLabel": "Celá galerie",
+    "buttonLabel": "Otevřít fotogalerii",
+    "featured": [
+      "vc-skok",
+      "kurzy-pony",
+      "restaurace-01",
+      "hala-01",
+      "vc-divaci",
+      "pokoj-02",
+      "skola-01",
+      "kolbiste-02",
+      "deti-parkur",
+      "terasa-01",
+      "zavody-oxer",
+      "areal-letecky"
+    ]
+  },
+  "cta": {
+    "heading": "Přijeďte se podívat.\nNejlépe o víkendu, kdy se závodí.",
+    "lead": "Ustájení, výuka, kurz pro dítě nebo jen víkend na venkově, ozvěte se a domluvíme se. Areál najdete tři kilometry od Litomyšle.",
+    "buttonLabel": "Napsat nám"
+  }
+}

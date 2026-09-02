@@ -4,21 +4,25 @@ import PageLayout from '@/layouts/PageLayout.astro';
 import Section from '@/components/Section.astro';
 import SectionHead from '@/components/SectionHead.astro';
 import Icon from '@/components/Icon.astro';
+import Prose from '@/components/Prose.astro';
 import { keyFacts } from '@/data/site';
 
-import heroImg from '@/assets/photos/kolbiste-02.jpg';
-import stajImg from '@/assets/photos/boxy-01.jpg';
-import arealImg from '@/assets/photos/areal-letecky.jpg';
-import klubImg from '@/assets/photos/zavody-skok-01.jpg';
+import { photo } from '@/data/images';
+import page from '@/obsah/stranky/o-nas.json';
+
+const heroImg = photo(page.hero.image)!;
+const arealImg = photo(page.images.areal)!;
+const stajImg = photo(page.images.staj)!;
+const klubImg = photo(page.images.klub)!;
 ---
 
 <PageLayout
-  title="Stáj Manon"
-  description="Příběh Stáje Manon od roku 1992, od zemědělské usedlosti u Litomyšle přes areál u Primátorské hráze až po moderní Areál Jízdárna Suchá s krytou halou a penzionem."
-  heading="Stáj Manon"
-  lead="Od roku 1992. Sportovní stáj, která vyrostla z přestavěného statku v areál, kde se ročně koná přes čtyřicet jezdeckých akcí."
+  title={page.seo.title}
+  description={page.seo.description}
+  heading={page.hero.heading}
+  lead={page.hero.lead}
   image={heroImg}
-  imageAlt="Venkovní kolbiště areálu Jízdárna Suchá"
+  imageAlt={page.hero.imageAlt}
   crumbs={[{ label: 'O nás' }]}
   nav={[
     { id: 'cisla', label: 'V číslech' },
@@ -48,42 +52,13 @@ import klubImg from '@/assets/photos/zavody-skok-01.jpg';
   <Section tone="paper" space="lg" id="pribeh">
     <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
       <div class="lg:col-span-7">
-        <SectionHead title="Statek, stáj, areál." />
+        <SectionHead title={page.sekce.statekStajAreal.title} />
 
-        <div class="prose-manon mt-8">
-          <p>
-            Stáj Manon vznikla v roce <strong>1992</strong>. Po návratu ze zahraničí
-            zakoupil Jiří Skřivan zemědělskou usedlost nedaleko Litomyšle, kde byl po
-            přestavbě zahájen provoz sportovní stáje. V roce <strong>1995</strong> se
-            stáj přestěhovala do nově vybudované moderní stáje v Litomyšli.
-          </p>
-          <p>
-            Pro pořádání jezdeckých závodů se v roce <strong>1997</strong> začal budovat
-            přírodní jezdecký areál u Primátorské hráze. V krásném prostředí vzniklo
-            pískové kolbiště, přírodní tribuna a travnaté kolbiště. Každoročně zde
-            proběhla řada jezdeckých akcí, z nichž nejvýznamnější byla tradiční
-            <strong> Velká cena Litomyšle</strong> v parkurovém skákání, od roku 2002
-            součást prestižního celorepublikového seriálu Český skokový pohár.
-          </p>
-          <p>
-            Za přispění prostředků státního rozpočtu ČR z programu Ministerstva pro
-            místní rozvoj se aktivity stáje mohly dále rozšířit. Na podzim
-            <strong> 2007</strong> byla v areálu Hřebčína Suchá dokončena stavba
-            30 boxů s jezdeckou krytou halou 23 × 66 m a penzionu s ubytováním.
-          </p>
-          <p>
-            Nový komplex <strong>Areál Jízdárna Suchá</strong> poskytuje kvalitní
-            zázemí pro koně i jezdce a také pro jezdecké akce, kterých bylo v roce 2025
-            uspořádáno přes čtyřicet: parkurové a drezurní závody, závody ve
-            všestrannosti a spřežení, jezdecké hry pro děti, soustředění, ZZVJ,
-            jezdecké tábory a chovatelské akce. Celoročně probíhá i jezdecká škola pro
-            veřejnost. Všechny jezdecké akce se dnes konají právě zde.
-          </p>
-        </div>
+        <Prose paragraphs={page.pribeh} class="prose-manon mt-8" />
 
         <div class="mt-10 flex flex-wrap gap-3">
-          <a href="/areal" class="btn btn-primary">Prohlédnout areál</a>
-          <a href="/jiri-skrivan" class="btn btn-outline">Jiří Skřivan</a>
+          <a href="/areal" class="btn btn-primary">{page.pribehButtons.primary}</a>
+          <a href="/jiri-skrivan" class="btn btn-outline">{page.pribehButtons.secondary}</a>
         </div>
       </div>
 
@@ -92,7 +67,7 @@ import klubImg from '@/assets/photos/zavody-skok-01.jpg';
           <div class="overflow-hidden" data-reveal>
             <Image
               src={arealImg}
-              alt="Letecký pohled na areál Jízdárna Suchá"
+              alt={page.images.arealAlt}
               widths={[400, 800, 1200]}
               sizes="(min-width: 1024px) 38vw, 100vw"
               class="aspect-[4/3] w-full object-cover"
@@ -102,7 +77,7 @@ import klubImg from '@/assets/photos/zavody-skok-01.jpg';
             <div class="overflow-hidden" data-reveal style="--reveal-delay:80ms">
               <Image
                 src={stajImg}
-                alt="Stájová chodba s boxy pro koně"
+                alt={page.images.stajAlt}
                 widths={[300, 600]}
                 sizes="(min-width: 1024px) 19vw, 45vw"
                 class="aspect-square w-full object-cover"
@@ -111,7 +86,7 @@ import klubImg from '@/assets/photos/zavody-skok-01.jpg';
             <div class="overflow-hidden" data-reveal style="--reveal-delay:160ms">
               <Image
                 src={klubImg}
-                alt="Parkurový skok na kolbišti v Suché"
+                alt={page.images.klubAlt}
                 widths={[300, 600]}
                 sizes="(min-width: 1024px) 19vw, 45vw"
                 class="aspect-square w-full object-cover"
@@ -126,34 +101,13 @@ import klubImg from '@/assets/photos/zavody-skok-01.jpg';
   <!-- Co děláme -->
   <Section tone="dark" space="lg" id="dnes" rise>
     <SectionHead
-      title="Čtyři věci, které tu běží současně."
+      title={page.sekce.ctyriVeciKtereTu.title}
       tone="light"
     />
 
     <div class="mt-10 grid gap-px border border-white/12 bg-white/12 sm:grid-cols-2">
       {
-        [
-          {
-            t: 'Sportovní stáj',
-            d: 'Trénink a ustájení koní na profesionální úrovni, účast na domácích i zahraničních závodech.',
-            href: '/sluzby',
-          },
-          {
-            t: 'Jezdecká škola',
-            d: 'Od roku 2003. Celoroční výuka pro začínající i pokročilé jezdce, jezdecké hry a příprava na ZZVJ.',
-            href: '/jezdecka-skola',
-          },
-          {
-            t: 'Pořadatel akcí',
-            d: 'Přes 40 akcí ročně: závody, soustředění, tábory, chovatelské akce a Velká cena Litomyšle.',
-            href: '/akce',
-          },
-          {
-            t: 'Penzion a restaurace',
-            d: '24 lůžek, restaurace se snídaněmi a terasa nad kolbištěm pro jezdce, rodiny i firemní akce.',
-            href: '/penzion',
-          },
-        ].map((x, i) => (
+        page.cinnosti.map((x, i) => (
           <a
             href={x.href}
             class="group bg-loden-950 p-8 transition-colors hover:bg-loden-900 lg:p-10"
@@ -161,9 +115,9 @@ import klubImg from '@/assets/photos/zavody-skok-01.jpg';
             style={`--reveal-delay:${i * 70}ms`}
           >
             <h3 class="font-display text-[1.625rem] text-white transition-colors group-hover:text-brass-300">
-              {x.t}
+              {x.title}
             </h3>
-            <p class="mt-3 text-[0.9375rem] leading-relaxed text-white/60">{x.d}</p>
+            <p class="mt-3 text-[0.9375rem] leading-relaxed text-white/60">{x.text}</p>
             <span class="link-arrow mt-6 text-brass-300">
               Více
               <Icon name="arrow-right" class="h-3.5 w-3.5" />
@@ -178,12 +132,9 @@ import klubImg from '@/assets/photos/zavody-skok-01.jpg';
   <Section tone="paper-2" space="md">
     <div class="container-prose text-center" data-reveal>
       <Icon name="sparkle" class="mx-auto h-6 w-6 text-brass-600" />
-      <p class="t-3 mt-6 font-display italic">
-        „Svůj první parkur vyhrál Jiří Skřivan na klisně jménem Manon.
-        Po ní se stáj jmenuje dodnes."
-      </p>
+      <p class="t-3 mt-6 font-display italic">{page.citat.text}</p>
       <a href="/jiri-skrivan" class="link-arrow mt-8 justify-center">
-        Celý příběh
+        {page.citat.linkLabel}
         <Icon name="arrow-right" class="h-3.5 w-3.5" />
       </a>
     </div>

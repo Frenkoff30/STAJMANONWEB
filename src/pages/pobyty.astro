@@ -7,20 +7,23 @@ import Icon from '@/components/Icon.astro';
 import { site } from '@/data/site';
 import { stays } from '@/data/stays';
 
-import heroImg from '@/assets/photos/deti-kun.jpg';
-import stayImgA from '@/assets/photos/deti-parkur.jpg';
-import stayImgB from '@/assets/photos/skola-02.jpg';
+import { photo } from '@/data/images';
+import page from '@/obsah/stranky/pobyty.json';
 
-const images = [stayImgA, stayImgB];
+const heroImg = photo(page.hero.image)!;
+
+const images = page.images
+  .map((name) => photo(name))
+  .filter((img): img is NonNullable<typeof img> => Boolean(img));
 ---
 
 <PageLayout
-  title="Pobyty s výukou jízdy na koni"
-  heading="Pobyty s výukou"
-  description="Velikonoční a podzimní pobyty s intenzivní výukou jízdy na koni v areálu Jízdárna Suchá. Příprava na ZZVJ pro začínající i pokročilé jezdce od 8 let."
-  lead="Několik dní intenzivní práce s koňmi. Příprava na základní zkoušky výcviku jezdce, doplněná o sportovní a společenské hry."
+  title={page.seo.title}
+  heading={page.hero.heading}
+  description={page.seo.description}
+  lead={page.hero.lead}
   image={heroImg}
-  imageAlt="Dívka s koněm během jezdeckého pobytu"
+  imageAlt={page.hero.imageAlt}
   crumbs={[{ label: 'Jezdectví' }, { label: 'Pobyty s výukou' }]}
   nav={[
     { id: 'velikonocni-pobyt', label: 'Velikonoční pobyt' },
@@ -30,8 +33,8 @@ const images = [stayImgA, stayImgB];
 >
   <Section tone="paper" space="lg">
     <SectionHead
-      title="Dva termíny mimo prázdniny"
-      lead="Pobyty jsou vhodné pro začínající i pokročilé jezdce od osmi let. Lekce jsou vždy přizpůsobené zkušenostem jezdce."
+      title={page.sekce.dvaTerminyMimoPrazdniny.title}
+      lead={page.sekce.dvaTerminyMimoPrazdniny.lead}
     />
 
     <div class="mt-9 space-y-10">
@@ -112,18 +115,15 @@ const images = [stayImgA, stayImgB];
   <Section tone="loden" space="md" id="prihlaseni">
     <div class="grid gap-10 lg:grid-cols-12 lg:items-center">
       <div class="lg:col-span-7">
-        <h2 class="t-2 text-white">Napište nám a pošleme přihlášku.</h2>
-        <p class="lead mt-5 text-white/70">
-          V případě zájmu o pobyt nás kontaktujte e-mailem, zašleme vám přihlášku
-          a bližší informace, případně odpovíme na další otázky.
-        </p>
+        <h2 class="t-2 text-white">{page.cta.heading}</h2>
+        <p class="lead mt-5 text-white/70">{page.cta.lead}</p>
       </div>
       <div class="flex flex-wrap gap-3 lg:col-span-5 lg:justify-end">
         <a href={`mailto:${site.email}`} class="btn btn-brass">
           <Icon name="mail" class="h-4 w-4" />
           {site.email}
         </a>
-        <a href="/kurzy" class="btn btn-ghost-light">Letní kurzy</a>
+        <a href="/kurzy" class="btn btn-ghost-light">{page.cta.secondaryLabel}</a>
       </div>
     </div>
   </Section>

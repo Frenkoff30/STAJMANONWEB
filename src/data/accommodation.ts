@@ -1,4 +1,9 @@
-/** Penzion Jízdárna Suchá — ubytování, ceny, restaurace, okolí. */
+/**
+ * Penzion Jízdárna Suchá — ubytování, ceny, restaurace, okolí.
+ * Spravuje redakční systém v `src/obsah/penzion.json`.
+ */
+
+import data from '../obsah/penzion.json';
 
 export interface RoomPrice {
   type: string;
@@ -6,85 +11,27 @@ export interface RoomPrice {
   perNote: string;
 }
 
-export const rooms: RoomPrice[] = [
-  { type: 'Dvoulůžkový pokoj', price: '940 Kč', perNote: 'osoba / noc' },
-  {
-    type: 'Třílůžkový pokoj s manželskou postelí',
-    price: '940 Kč',
-    perNote: 'osoba / noc',
-  },
-  {
-    type: 'Třílůžkový pokoj s oddělenými postelemi',
-    price: '840 Kč',
-    perNote: 'osoba / noc',
-  },
-  { type: 'Pokoj s patrovými postelemi', price: '740 Kč', perNote: 'osoba / noc' },
-];
+export const rooms: RoomPrice[] = data.rooms;
 
-export const petPolicy = [
-  { size: 'Malý pes', price: '150 Kč / noc' },
-  { size: 'Střední a velký pes', price: '300 Kč / noc' },
-];
+export interface PetPrice {
+  size: string;
+  price: string;
+}
 
-export const penzionHighlights = [
-  {
-    title: 'Ubytování',
-    text: '2–4lůžkové pokoje s vlastní koupelnou a WC, celková kapacita 24 lůžek. Lůžkoviny a povlečení jsou součástí vybavení pokoje.',
-  },
-  {
-    title: 'Restaurace',
-    text: 'Klubové zařízení s obsluhou a rychlým občerstvením, snídaně na objednávku. Kapacita 40 míst.',
-  },
-  {
-    title: 'Venkovní terasa',
-    text: 'Posezení s výhledem přímo na kolbiště a pastviny. Nejlepší místo na sledování závodů.',
-  },
-  {
-    title: 'Firemní a společenské akce',
-    text: 'Areál i restauraci lze využít pro firemní akce, oslavy a setkání mimo běžný ruch města.',
-  },
-];
+export const petPolicy: PetPrice[] = data.petPolicy;
 
-/** Tipy na výlety v okolí — z původní sekce „Turistické aktivity". */
-export const nearby = [
-  {
-    title: 'Zámek Litomyšl',
-    text: 'Renesanční zámek zapsaný na seznamu UNESCO, 3 km od areálu.',
-    tag: 'Památky',
-  },
-  {
-    title: 'Toulovcovy Maštale',
-    text: 'Přírodní rezervace s pískovcovými útvary, rozhlednami a sítí značených stezek.',
-    tag: 'Příroda',
-  },
-  {
-    title: 'Hrad Svojanov a Nové Hrady',
-    text: 'Historická města a hrady v dosahu krátké vyjížďky: Moravská Třebová, Nové Hrady, Svojanov.',
-    tag: 'Památky',
-  },
-  {
-    title: 'Kozlovská chata s rozhlednou',
-    text: 'Klasický výletní cíl s výhledem do kraje, dostupný pěšky i na kole.',
-    tag: 'Výhledy',
-  },
-  {
-    title: 'Lanové centrum Česká Třebová',
-    text: 'Aktivní odpoledne pro děti i dospělé, motokárový okruh ve Vysokém Mýtě.',
-    tag: 'Adrenalin',
-  },
-  {
-    title: 'Pinguin park Přívrat',
-    text: 'Dětský park s trampolínami, autíčka, minigolf, bowling a jízda na motokárách po sjezdovce.',
-    tag: 'Pro děti',
-  },
-  {
-    title: 'Krytý bazén Litomyšl',
-    text: 'Nově otevřený bazén ve městě, ideální varianta pro deštivý den.',
-    tag: 'Pro děti',
-  },
-  {
-    title: 'Zimní sezóna',
-    text: 'Lyžařský areál a vyhlášené běžkařské tratě v blízkém okolí.',
-    tag: 'Zima',
-  },
-];
+export interface Highlight {
+  title: string;
+  text: string;
+}
+
+export const penzionHighlights: Highlight[] = data.highlights;
+
+/** Tipy na výlety v okolí. */
+export interface NearbyTip {
+  title: string;
+  text: string;
+  tag: string;
+}
+
+export const nearby: NearbyTip[] = data.nearby;

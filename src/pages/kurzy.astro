@@ -16,9 +16,12 @@ import {
 } from '@/data/courses';
 import { formatRange } from '@/data/events';
 
-import heroImg from '@/assets/photos/kurzy-pony.jpg';
-import programImg from '@/assets/photos/deti-kun.jpg';
-import pokojImg from '@/assets/photos/pokoj-06.jpg';
+import { photo } from '@/data/images';
+import page from '@/obsah/stranky/kurzy.json';
+
+const heroImg = photo(page.hero.image)!;
+const programImg = photo(page.images.program)!;
+const pokojImg = photo(page.images.pokoj)!;
 
 const statusStyle: Record<string, string> = {
   volno: 'bg-loden-800 text-paper',
@@ -32,12 +35,12 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
 ---
 
 <PageLayout
-  title="Prázdninové jezdecké kurzy 2026"
-  heading="Prázdninové jezdecké kurzy"
-  description="Týdenní jezdecké kurzy pro děti od 8 let v areálu Jízdárna Suchá. Osm turnusů, 6 výukových lekcí, teorie, plná penze a celodenní program. Cena 11 400 Kč."
-  lead="Osm týdenních turnusů intenzivní výuky jízdy na koni. Šest lekcí, teorie dvakrát denně, plná penze a program od rána do večera."
+  title={page.seo.title}
+  heading={page.hero.heading}
+  description={page.seo.description}
+  lead={page.hero.lead}
   image={heroImg}
-  imageAlt="Dvě dívky na ponym během prázdninového kurzu"
+  imageAlt={page.hero.imageAlt}
   crumbs={[{ label: 'Jezdectví' }, { label: 'Prázdninové kurzy' }]}
   nav={[
     { id: 'turnusy', label: 'Termíny' },
@@ -51,7 +54,7 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
   <!-- Turnusy -->
   <Section tone="paper" space="lg" id="turnusy">
     <SectionHead
-      title="Termíny 2026"
+      title={page.sekce.terminy2026.title}
       lead={`Volná místa má ${freeCount} z ${turnusy.length} turnusů. Nástup v neděli do 10.00, ukončení s vyhodnocením v sobotu ve 12.00, odjezd zhruba ve 13.30.`}
       action={{ label: 'Poptat termín', href: `mailto:${site.email}` }}
     />
@@ -108,10 +111,10 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
     </ul>
 
     <p class="mt-8 text-[0.9375rem] text-ink-3">
-      V případě zájmu nás kontaktujte na
+      {page.terminyNote.before}
       <a href={`mailto:${site.email}`} class="link-underline font-semibold text-brass-700">
         {site.email}
-      </a>. Zašleme vám přihlášku a bližší informace.
+      </a>. {page.terminyNote.after}
     </p>
   </Section>
 
@@ -120,14 +123,14 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
     <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
       <div class="lg:col-span-5">
         <SectionHead
-          title="Týden, ze kterého si dítě něco odnese."
-          lead="Naší snahou je podporovat mladé jezdce od nejútlejšího věku, naučit je dobrým základům a dál prohlubovat jejich praktické i teoretické znalosti."
+          title={page.sekce.tydenZeKterehoSi.title}
+          lead={page.sekce.tydenZeKterehoSi.lead}
           tone="light"
         />
         <div class="mt-10 overflow-hidden" data-reveal>
           <Image
             src={programImg}
-            alt="Dívka s koněm na prázdninovém kurzu"
+            alt={page.images.programAlt}
             widths={[400, 800]}
             sizes="(min-width: 1024px) 36vw, 100vw"
             class="aspect-[4/3] w-full object-cover"
@@ -154,9 +157,7 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
         </dl>
 
         <p class="mt-8 border-l-2 border-brass-500 pl-5 text-[0.9375rem] text-white/65">
-          Všechny lekce jsou přizpůsobeny jezdeckým zkušenostem dětí, které jsou
-          rozdělené do tří skupin podle dovedností. Věnujeme se i úplným
-          začátečníkům, u nich výcvik probíhá na lonži.
+          {page.programNote}
         </p>
       </div>
     </div>
@@ -166,18 +167,18 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
   <Section tone="paper" space="lg" id="cena">
     <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
       <div class="lg:col-span-5">
-        <SectionHead title="Kolik to stojí" />
+        <SectionHead title={page.sekce.kolikToStoji.title} />
 
         <div class="mt-10 grid gap-px border border-ink/12 bg-ink/12 sm:grid-cols-2">
           <div class="bg-paper p-7">
             <p class="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-ink-3/70">
-              Základní cena
+              {page.cenaLabels.main}
             </p>
             <p class="mt-3 font-display text-[2.25rem] leading-none">{kurzCena.main}</p>
           </div>
           <div class="bg-paper p-7">
             <p class="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-brass-700">
-              Zvýhodněná
+              {page.cenaLabels.discounted}
             </p>
             <p class="mt-3 font-display text-[2.25rem] leading-none text-brass-700">
               {kurzCena.discounted}
@@ -190,27 +191,25 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
 
         <div class="mt-8 space-y-4 text-[0.9375rem] text-ink-3">
           <p>
-            <strong class="text-ink">Ustájení vlastního koně:</strong>{' '}
-            {kurzCena.ownHorse}, včetně steliva a sena. Místování, jadrné krmivo
-            nebo granule si zajišťuje každý účastník sám. Vhodný je stojan na sedlo,
-            k dispozici jsou i výběhy.
+            <strong class="text-ink">{page.cenaNotes.ownHorseLabel}</strong>{' '}
+            {kurzCena.ownHorse}{page.cenaNotes.ownHorseText}
           </p>
           <p>
-            <strong class="text-ink">Platba:</strong> nejpozději měsíc před nástupem
-            na účet <span class="whitespace-nowrap font-semibold text-ink">{kurzCena.account}</span>{' '}
-            (Komerční banka). Do poznámky pro příjemce uveďte jméno dítěte a termín
-            pobytu. Bez včasné platby se pobyt automaticky stornuje.
+            <strong class="text-ink">{page.cenaNotes.paymentLabel}</strong>{' '}
+            {page.cenaNotes.paymentBefore}{' '}
+            <span class="whitespace-nowrap font-semibold text-ink">{kurzCena.account}</span>{' '}
+            {page.cenaNotes.paymentAfter}
           </p>
           <p>
-            <strong class="text-ink">Pojištění:</strong> pokud dítě nemá sjednané
-            úrazové pojištění, doporučujeme ho na dobu kurzu připojistit.
+            <strong class="text-ink">{page.cenaNotes.insuranceLabel}</strong>{' '}
+            {page.cenaNotes.insuranceText}
           </p>
         </div>
       </div>
 
       <div class="lg:col-span-7">
         <div class="card p-8 lg:p-10">
-          <h3 class="t-3">Cena zahrnuje</h3>
+          <h3 class="t-3">{page.boxTitles.included}</h3>
           <ul class="mt-6 space-y-3">
             {
               kurzIncluded.map((t) => (
@@ -224,7 +223,7 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
         </div>
 
         <div class="card mt-4 p-8 lg:p-10">
-          <h3 class="t-3">Storno podmínky</h3>
+          <h3 class="t-3">{page.boxTitles.storno}</h3>
           <dl class="mt-6 space-y-px">
             {
               stornoPodminky.map((s) => (
@@ -235,9 +234,7 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
               ))
             }
           </dl>
-          <p class="mt-5 text-[0.8125rem] text-ink-3">
-            Storno neplatí v případě, že za sebe zajistíte náhradníka.
-          </p>
+          <p class="mt-5 text-[0.8125rem] text-ink-3">{page.stornoNote}</p>
         </div>
       </div>
     </div>
@@ -248,13 +245,13 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
     <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
       <div class="lg:col-span-5">
         <SectionHead
-          title="Co si zabalit"
-          lead="Ubytování je v nově zařízených třílůžkových pokojích, jeden pokoj je čtyřlůžkový s palandami. Lůžkoviny a povlečení jsou součástí vybavení."
+          title={page.sekce.coSiZabalit.title}
+          lead={page.sekce.coSiZabalit.lead}
         />
         <div class="mt-10 overflow-hidden" data-reveal>
           <Image
             src={pokojImg}
-            alt="Pokoj s patrovými postelemi pro účastníky kurzů"
+            alt={page.images.pokojAlt}
             widths={[400, 800]}
             sizes="(min-width: 1024px) 36vw, 100vw"
             class="aspect-[3/2] w-full object-cover"
@@ -282,12 +279,16 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
           <p class="flex items-start gap-3 text-[0.9375rem] leading-relaxed text-ink-3">
             <Icon name="info" class="mt-0.5 h-5 w-5 shrink-0 text-brass-600" />
             <span>
-              <strong class="text-ink">Odpovědná osoba:</strong> Miroslava Skřivanová,
-              <a href="tel:+420606836449" class="link-underline text-brass-700">
-                606 836 449
+              <strong class="text-ink">{page.odpovednaOsoba.label}</strong>{' '}
+              {page.odpovednaOsoba.name}
+              <a
+                href={`tel:${page.odpovednaOsoba.phoneHref}`}
+                class="link-underline text-brass-700"
+              >
+                {page.odpovednaOsoba.phone}
               </a>
               , <a href={`mailto:${site.email}`} class="link-underline text-brass-700">{site.email}</a>.
-              Licence: cvičitel, rozhodčí, stylový komisař, stavitel parkuru.
+              {page.odpovednaOsoba.after}
             </span>
           </p>
         </div>
@@ -299,11 +300,8 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
   <Section tone="loden" space="md">
     <div class="grid gap-10 lg:grid-cols-12 lg:items-center">
       <div class="lg:col-span-7">
-        <h2 class="t-2 text-white">Zbývají poslední místa.</h2>
-        <p class="lead mt-5 text-white/70">
-          Napište nám, o který turnus máte zájem, obratem pošleme přihlášku
-          a všechny podrobnosti.
-        </p>
+        <h2 class="t-2 text-white">{page.cta.heading}</h2>
+        <p class="lead mt-5 text-white/70">{page.cta.lead}</p>
       </div>
       <div class="flex flex-wrap gap-3 lg:col-span-5 lg:justify-end">
         <a
@@ -311,9 +309,11 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
           class="btn btn-brass"
         >
           <Icon name="mail" class="h-4 w-4" />
-          Napsat e-mail
+          {page.cta.primaryLabel}
         </a>
-        <a href="tel:+420606836449" class="btn btn-ghost-light">606 836 449</a>
+        <a href={`tel:${page.odpovednaOsoba.phoneHref}`} class="btn btn-ghost-light">
+          {page.odpovednaOsoba.phone}
+        </a>
       </div>
     </div>
   </Section>

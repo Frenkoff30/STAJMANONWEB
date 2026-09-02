@@ -1,0 +1,47 @@
+---
+/**
+ * Delší text z redakčního systému: pole odstavců.
+ *
+ * Povolené formátování je jen **tučně** a řádek začínající `## `, ze kterého
+ * se stane mezinadpis. Všechno ostatní se vypíše doslova, takže do textu
+ * nejde propašovat HTML ani skript.
+ */
+interface Props {
+  paragraphs: readonly string[];
+  class?: string;
+  paragraphClass?: string;
+}
+
+const {
+  paragraphs,
+  class: className = 'prose-manon',
+  paragraphClass = '',
+} = Astro.props;
+
+const escape = (s: string) =>
+  s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+/** `**text**` na <strong>, zbytek doslova. */
+const render = (s: string) =>
+  escape(s).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+const blocks = paragraphs.map((raw) => {
+  const heading = raw.startsWith('## ');
+  return { heading, html: render(heading ? raw.slice(3).trim() : raw) };
+});
+---
+
+<div class={className}>
+  {
+    blocks.map((b) =>
+      b.heading ? (
+        <h2 set:html={b.html} />
+      ) : (
+        <p class={paragraphClass} set:html={b.html} />
+      ),
+    )
+  }
+</div>

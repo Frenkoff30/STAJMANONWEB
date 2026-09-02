@@ -1,0 +1,50 @@
+{
+  "seo": {
+    "title": "Koně na prodej",
+    "description": "Prodej koní s kvalitní průpravou ze Stáje Manon. Rádi projednáme výběr koně z naší nabídky i prodej koně, který pro vás už není vhodný."
+  },
+  "hero": {
+    "heading": "Koně na prodej",
+    "lead": "Koně s kvalitní průpravou od trenéra s třiceti lety zkušeností na domácích i zahraničních kolbištích.",
+    "image": "portret-kun",
+    "imageAlt": "Bělouš ve stáji Manon"
+  },
+  "sekce": {
+    "praveTedNemameVolneho": {
+      "title": "Právě teď nemáme volného koně.",
+      "lead": "Nabídka se mění průběžně. Ozvěte se nám a řekněte, co hledáte. Často víme o koni dřív, než se objeví v inzerci."
+    }
+  },
+  "pribeh": [
+    "Neváhejte nás kontaktovat v případě zájmu o koupi či prodej koní. Rádi s vámi osobně projednáme možnosti výběru koně z naší nabídky nebo možnost prodeje koně, který už pro vás není vhodný.",
+    "Koně si u nás lze také **pronajmout** dlouhodobě, na jednotlivé hodiny nebo na soustředění, včetně možnosti následného odkoupení."
+  ],
+  "kontaktLabel": "Napsat nám",
+  "ocekavani": {
+    "title": "Co od nás můžete čekat",
+    "items": [
+      {
+        "title": "Kvalitní průprava",
+        "text": "Denní trénink vedený podle individuality koně, profesionální přístup a vyvážené krmení."
+      },
+      {
+        "title": "Otevřená komunikace",
+        "text": "Řekneme vám, na co se kůň hodí a na co ne. Prodat nevhodného koně nikomu neprospěje."
+      },
+      {
+        "title": "Možnost vyzkoušení",
+        "text": "Přijeďte se svým trenérem, koně si vyzkoušejte v hale i venku."
+      },
+      {
+        "title": "Prodej za vás",
+        "text": "Zprostředkujeme i prodej koně, který už pro vás není vhodný."
+      }
+    ]
+  },
+  "cta": {
+    "heading": "Hledáte konkrétní typ koně?",
+    "lead": "Napište nám, co potřebujete: disciplínu, úroveň jezdce, rozpočet. Ozveme se, jakmile budeme mít vhodného koně.",
+    "primaryLabel": "Poslat poptávku",
+    "secondaryLabel": "Pronájem koní"
+  }
+}

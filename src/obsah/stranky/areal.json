@@ -1,0 +1,99 @@
+{
+  "seo": {
+    "title": "Areál Jízdárna Suchá",
+    "description": "Moderní jezdecký areál 3 km od Litomyšle. Krytá hala 23 × 66 m, venkovní kolbiště 60 × 70 m, písková jízdárna, 30 boxů a penzion s restaurací."
+  },
+  "hero": {
+    "heading": "Areál Jízdárna Suchá",
+    "lead": "Krytá hala, dvě venkovní plochy, třicet boxů a penzion, všechno na jednom místě tři kilometry od Litomyšle.",
+    "image": "areal-letecky",
+    "imageAlt": "Letecký pohled na areál Jízdárna Suchá"
+  },
+  "sekce": {
+    "coTuNajdete": {
+      "title": "Co tu najdete",
+      "lead": "Komplex vznikl v roce 2007 a je postavený tak, aby fungoval po celý rok bez ohledu na počasí."
+    },
+    "odUsedlostiKArealu": {
+      "title": "Od usedlosti k areálu.",
+      "lead": "Třicet let postupného budování od přestavěného statku po komplex, kde se ročně koná přes čtyřicet jezdeckých akcí."
+    },
+    "kdeNasNajdete": {
+      "title": "Kde nás najdete"
+    }
+  },
+  "timeline": [
+    {
+      "year": "1992",
+      "title": "Zemědělská usedlost u Litomyšle",
+      "text": "Po návratu ze zahraničí zakoupil Jiří Skřivan zemědělskou usedlost nedaleko Litomyšle. Po přestavbě zde byl zahájen provoz sportovní stáje."
+    },
+    {
+      "year": "1995",
+      "title": "Nová stáj v Litomyšli",
+      "text": "Stáj se přestěhovala do nově vybudované moderní stáje přímo v Litomyšli."
+    },
+    {
+      "year": "1997",
+      "title": "Přírodní areál u Primátorské hráze",
+      "text": "Pro pořádání jezdeckých závodů vzniklo pískové kolbiště, přírodní tribuna a travnaté kolbiště."
+    },
+    {
+      "year": "2002",
+      "title": "Velká cena vstupuje do Českého skokového poháru",
+      "text": "Tradiční Velká cena Litomyšle se stala součástí prestižního celorepublikového seriálu."
+    },
+    {
+      "year": "2007",
+      "title": "Areál Jízdárna Suchá",
+      "text": "V areálu Hřebčína Suchá byla dokončena stavba 30 boxů s krytou halou 23 × 66 m a penzionu s ubytováním, a to za přispění prostředků státního rozpočtu z programu Ministerstva pro místní rozvoj."
+    }
+  ],
+  "gallery": [
+    {
+      "image": "hala-01",
+      "alt": "Krytá jezdecká hala 23 × 66 m",
+      "label": "Krytá hala"
+    },
+    {
+      "image": "kolbiste-01",
+      "alt": "Venkovní kolbiště s parkurovými překážkami",
+      "label": "Kolbiště"
+    },
+    {
+      "image": "boxy-01",
+      "alt": "Stájová chodba s boxy pro koně",
+      "label": "Stáje a boxy"
+    },
+    {
+      "image": "areal-budovy",
+      "alt": "Budovy areálu s parkovištěm",
+      "label": "Zázemí"
+    }
+  ],
+  "mapa": {
+    "placeName": "Areál Jízdárna Suchá",
+    "notes": [
+      "3 km od centra Litomyšle",
+      "Parkování přímo v areálu"
+    ],
+    "buttonLabel": "Navigovat"
+  },
+  "odkazy": [
+    {
+      "title": "Penzion & restaurace",
+      "text": "Ubytování a stravování přímo v areálu",
+      "href": "/penzion"
+    },
+    {
+      "title": "Služby a ceník",
+      "text": "Ustájení, trénink, pronájmy, přeprava",
+      "href": "/sluzby"
+    },
+    {
+      "title": "Kalendář akcí",
+      "text": "Závody a akce v sezóně 2026",
+      "href": "/akce"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 /**
- * Po buildu smaže z dist/_astro nepoužité originály obrázků.
+ * Po buildu smaže z _astro nepoužité originály obrázků.
  *
  * Proč: fotogalerie načítá fotky přes `import.meta.glob`, takže Astro do
  * dist/ zkopíruje originál každé z nich — i když stránky odkazují výhradně
@@ -11,13 +11,20 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const DIST = 'dist';
-const ASSETS = path.join(DIST, '_astro');
+/**
+ * S adaptérem pro Vercel končí statické soubory v .vercel/output/static,
+ * bez adaptéru v dist/. Vezmeme tu složku, která existuje.
+ */
+const DIST = ['.vercel/output/static', 'dist'].find((d) =>
+  fs.existsSync(path.join(d, '_astro')),
+);
 
-if (!fs.existsSync(ASSETS)) {
-  console.log('dist/_astro neexistuje — přeskakuji.');
+if (!DIST) {
+  console.log('Složka s buildem nenalezena — přeskakuji.');
   process.exit(0);
 }
+
+const ASSETS = path.join(DIST, '_astro');
 
 /** Posbírá obsah všech textových souborů v dist/. */
 function collectText(dir) {

@@ -6,18 +6,21 @@ import Icon from '@/components/Icon.astro';
 import { services, facilities } from '@/data/services';
 import { site } from '@/data/site';
 
-import heroImg from '@/assets/photos/hala-01.jpg';
+import { photo } from '@/data/images';
+import page from '@/obsah/stranky/sluzby.json';
+
+const heroImg = photo(page.hero.image)!;
 
 const priced = services.filter((s) => s.price);
 ---
 
 <PageLayout
-  title="Služby a ceník"
-  description="Ustájení koní, trénink, jezdecká škola, prodej a pronájem koní, pronájem haly, kolbiště a parkuru, praní dek a přeprava koní. Ceník Stáje Manon."
-  heading="Služby a ceník"
-  lead="Ustájení, trénink, pronájmy i přeprava. Kompletní servis pro koně i jezdce v areálu, který funguje celoročně."
+  title={page.seo.title}
+  description={page.seo.description}
+  heading={page.hero.heading}
+  lead={page.hero.lead}
   image={heroImg}
-  imageAlt="Krytá jezdecká hala v areálu Jízdárna Suchá"
+  imageAlt={page.hero.imageAlt}
   crumbs={[{ label: 'Areál', href: '/areal' }, { label: 'Služby' }]}
   nav={[
     { id: 'ceny', label: 'Klíčové ceny' },
@@ -46,8 +49,8 @@ const priced = services.filter((s) => s.price);
   <!-- Všechny služby -->
   <Section tone="paper" space="lg" id="nabidka">
     <SectionHead
-      title="Co pro vás uděláme"
-      lead="Od dlouhodobého ustájení po jednorázový pronájem haly na váš trénink."
+      title={page.sekce.coProVasUdelame.title}
+      lead={page.sekce.coProVasUdelame.lead}
     />
 
     <div class="mt-10 space-y-px">
@@ -89,8 +92,8 @@ const priced = services.filter((s) => s.price);
   <!-- Tréninkové plochy -->
   <Section tone="dark" space="lg" id="plochy" rise>
     <SectionHead
-      title="Kde se pracuje"
-      lead="Všechny plochy jsou k dispozici ustájeným koním i k pronájmu."
+      title={page.sekce.kdeSePracuje.title}
+      lead={page.sekce.kdeSePracuje.lead}
       tone="light"
     />
 
@@ -115,11 +118,8 @@ const priced = services.filter((s) => s.price);
   <Section tone="paper-2" space="lg" id="poptavka">
     <div class="grid gap-12 lg:grid-cols-12 lg:items-center">
       <div class="lg:col-span-7">
-        <h2 class="t-2">Ozvěte se a domluvíme detaily.</h2>
-        <p class="lead mt-5">
-          Ustájení, trénink konkrétního koně nebo termín na pronájem haly,
-          nejrychlejší je zavolat.
-        </p>
+        <h2 class="t-2">{page.cta.heading}</h2>
+        <p class="lead mt-5">{page.cta.lead}</p>
       </div>
 
       <div class="lg:col-span-5">
@@ -135,7 +135,7 @@ const priced = services.filter((s) => s.price);
             <Icon name="phone" class="h-4 w-4" />
             {site.contacts[0]!.phone}
           </a>
-          <a href="/kontakt" class="btn btn-primary mt-7 w-full">Kontaktní formulář</a>
+          <a href="/kontakt" class="btn btn-primary mt-7 w-full">{page.cta.buttonLabel}</a>
         </div>
       </div>
     </div>

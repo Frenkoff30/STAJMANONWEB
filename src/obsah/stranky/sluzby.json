@@ -1,0 +1,27 @@
+{
+  "seo": {
+    "title": "Služby a ceník",
+    "description": "Ustájení koní, trénink, jezdecká škola, prodej a pronájem koní, pronájem haly, kolbiště a parkuru, praní dek a přeprava koní. Ceník Stáje Manon."
+  },
+  "hero": {
+    "heading": "Služby a ceník",
+    "lead": "Ustájení, trénink, pronájmy i přeprava. Kompletní servis pro koně i jezdce v areálu, který funguje celoročně.",
+    "image": "hala-01",
+    "imageAlt": "Krytá jezdecká hala v areálu Jízdárna Suchá"
+  },
+  "sekce": {
+    "coProVasUdelame": {
+      "title": "Co pro vás uděláme",
+      "lead": "Od dlouhodobého ustájení po jednorázový pronájem haly na váš trénink."
+    },
+    "kdeSePracuje": {
+      "title": "Kde se pracuje",
+      "lead": "Všechny plochy jsou k dispozici ustájeným koním i k pronájmu."
+    }
+  },
+  "cta": {
+    "heading": "Ozvěte se a domluvíme detaily.",
+    "lead": "Ustájení, trénink konkrétního koně nebo termín na pronájem haly, nejrychlejší je zavolat.",
+    "buttonLabel": "Kontaktní formulář"
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "seo": {
+    "title": "Prázdninové jezdecké kurzy 2026",
+    "description": "Týdenní jezdecké kurzy pro děti od 8 let v areálu Jízdárna Suchá. Osm turnusů, 6 výukových lekcí, teorie, plná penze a celodenní program. Cena 11 400 Kč."
+  },
+  "hero": {
+    "heading": "Prázdninové jezdecké kurzy",
+    "lead": "Osm týdenních turnusů intenzivní výuky jízdy na koni. Šest lekcí, teorie dvakrát denně, plná penze a program od rána do večera.",
+    "image": "kurzy-pony",
+    "imageAlt": "Dvě dívky na ponym během prázdninového kurzu"
+  },
+  "sekce": {
+    "terminy2026": {
+      "title": "Termíny 2026"
+    },
+    "tydenZeKterehoSi": {
+      "title": "Týden, ze kterého si dítě něco odnese.",
+      "lead": "Naší snahou je podporovat mladé jezdce od nejútlejšího věku, naučit je dobrým základům a dál prohlubovat jejich praktické i teoretické znalosti."
+    },
+    "coSiZabalit": {
+      "title": "Co si zabalit",
+      "lead": "Ubytování je v nově zařízených třílůžkových pokojích, jeden pokoj je čtyřlůžkový s palandami. Lůžkoviny a povlečení jsou součástí vybavení."
+    },
+    "kolikToStoji": {
+      "title": "Kolik to stojí"
+    }
+  },
+  "images": {
+    "program": "deti-kun",
+    "programAlt": "Dívka s koněm na prázdninovém kurzu",
+    "pokoj": "pokoj-06",
+    "pokojAlt": "Pokoj s patrovými postelemi pro účastníky kurzů"
+  },
+  "terminyNote": {
+    "before": "V případě zájmu nás kontaktujte na",
+    "after": "Zašleme vám přihlášku a bližší informace."
+  },
+  "programNote": "Všechny lekce jsou přizpůsobeny jezdeckým zkušenostem dětí, které jsou rozdělené do tří skupin podle dovedností. Věnujeme se i úplným začátečníkům, u nich výcvik probíhá na lonži.",
+  "cenaLabels": {
+    "main": "Základní cena",
+    "discounted": "Zvýhodněná"
+  },
+  "cenaNotes": {
+    "ownHorseLabel": "Ustájení vlastního koně:",
+    "ownHorseText": ", včetně steliva a sena. Místování, jadrné krmivo nebo granule si zajišťuje každý účastník sám. Vhodný je stojan na sedlo, k dispozici jsou i výběhy.",
+    "paymentLabel": "Platba:",
+    "paymentBefore": "nejpozději měsíc před nástupem na účet",
+    "paymentAfter": "(Komerční banka). Do poznámky pro příjemce uveďte jméno dítěte a termín pobytu. Bez včasné platby se pobyt automaticky stornuje.",
+    "insuranceLabel": "Pojištění:",
+    "insuranceText": "pokud dítě nemá sjednané úrazové pojištění, doporučujeme ho na dobu kurzu připojistit."
+  },
+  "boxTitles": {
+    "included": "Cena zahrnuje",
+    "storno": "Storno podmínky"
+  },
+  "stornoNote": "Storno neplatí v případě, že za sebe zajistíte náhradníka.",
+  "odpovednaOsoba": {
+    "label": "Odpovědná osoba:",
+    "name": "Miroslava Skřivanová,",
+    "phone": "606 836 449",
+    "phoneHref": "+420606836449",
+    "after": "Licence: cvičitel, rozhodčí, stylový komisař, stavitel parkuru."
+  },
+  "cta": {
+    "heading": "Zbývají poslední místa.",
+    "lead": "Napište nám, o který turnus máte zájem, obratem pošleme přihlášku a všechny podrobnosti.",
+    "primaryLabel": "Napsat e-mail"
+  }
+}

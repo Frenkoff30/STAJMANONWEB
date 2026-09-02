@@ -1,0 +1,22 @@
+---
+/**
+ * Víceřádkový text z redakčního systému.
+ * Každý nový řádek v textovém poli se vykreslí jako zalomení, takže se dá
+ * v administraci rozdělit nadpis na dva řádky bez psaní HTML.
+ */
+interface Props {
+  text: string;
+}
+
+const { text } = Astro.props;
+const lines = text.split('\n');
+---
+
+{
+  lines.map((line, i) => (
+    <Fragment>
+      {i > 0 && <br />}
+      {line}
+    </Fragment>
+  ))
+}

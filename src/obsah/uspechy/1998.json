@@ -1,0 +1,19 @@
+{
+  "year": "1998",
+  "items": [
+    {
+      "place": "1.",
+      "event": "Velká cena Poděbrad",
+      "rider": "Jiří Skřivan",
+      "horse": "Labe James CAC Leasing",
+      "major": false
+    },
+    {
+      "place": "4.",
+      "event": "MČR",
+      "rider": "Jiří Skřivan",
+      "horse": "Labe James CAC Leasing",
+      "major": false
+    }
+  ]
+}

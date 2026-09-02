@@ -1,0 +1,26 @@
+{
+  "seo": {
+    "title": "Kontakt",
+    "description": "Kontakt na Stáj Manon a Areál Jízdárna Suchá, Suchá 1, 570 01 Suchá u Litomyšle. Telefony, e-maily a kontaktní formulář."
+  },
+  "hero": {
+    "heading": "Kontakt",
+    "lead": "Suchá 1, tři kilometry od Litomyšle. Zavolejte, napište nebo přijeďte, nejlépe o víkendu, kdy se u nás závodí.",
+    "image": "terasa-02",
+    "imageAlt": "Terasa a zázemí areálu Jízdárna Suchá"
+  },
+  "sekce": {
+    "najdeteNasTriKilometry": {
+      "title": "Najdete nás tři kilometry od Litomyšle",
+      "lead": "Parkování je přímo v areálu. Pro navigaci zadejte „Jízdárna Suchá, Suchá 1“."
+    },
+    "kontakty": {
+      "title": "Kontakty"
+    }
+  },
+  "adresa": {
+    "label": "Adresa",
+    "placeName": "Areál Jízdárna Suchá",
+    "linkLabel": "Navigovat"
+  }
+}

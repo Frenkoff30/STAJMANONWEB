@@ -1,0 +1,47 @@
+{
+  "year": "2004",
+  "items": [
+    {
+      "place": "",
+      "event": "Vítěz Českého skokového poháru",
+      "rider": "Jiří Skřivan",
+      "horse": "",
+      "major": true
+    },
+    {
+      "place": "1.",
+      "event": "Velká cena Frenštátu pod Radhoštěm",
+      "rider": "Jiří Skřivan",
+      "horse": "Labe James CAC Leasing",
+      "major": false
+    },
+    {
+      "place": "2.",
+      "event": "Velká cena Prahy",
+      "rider": "Jiří Skřivan",
+      "horse": "Labe James CAC Leasing",
+      "major": false
+    },
+    {
+      "place": "3.",
+      "event": "MČR",
+      "rider": "Jiří Skřivan",
+      "horse": "Andolph Wepol",
+      "major": false
+    },
+    {
+      "place": "3.",
+      "event": "Velká cena Frenštátu pod Radhoštěm",
+      "rider": "Jiří Skřivan",
+      "horse": "Rytma CAC Leasing",
+      "major": false
+    },
+    {
+      "place": "4.",
+      "event": "Velká cena Brna",
+      "rider": "Jiří Skřivan",
+      "horse": "Labe James CAC Leasing",
+      "major": false
+    }
+  ]
+}

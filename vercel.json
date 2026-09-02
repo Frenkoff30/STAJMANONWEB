@@ -1,44 +1,132 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "cleanUrls": true,
-  "trailingSlash": false,
   "redirects": [
-    { "source": "/index.php", "destination": "/", "permanent": true },
-    { "source": "/aktuality.php", "destination": "/akce", "permanent": true },
-    { "source": "/penzion-jizdarna-sucha.php", "destination": "/penzion", "permanent": true },
-    { "source": "/akce.php", "destination": "/akce", "permanent": true },
-    { "source": "/vysledky.php", "destination": "/vysledky", "permanent": true },
-    { "source": "/sluzby.php", "destination": "/sluzby", "permanent": true },
-    { "source": "/kone-na-prodej.php", "destination": "/kone-na-prodej", "permanent": true },
-    { "source": "/testacni-odchovna-hrebcu.php", "destination": "/odchovna", "permanent": true },
-    { "source": "/jezdecka-skola.php", "destination": "/pobyty", "permanent": true },
-    { "source": "/jezdecky-klub.php", "destination": "/jezdecka-skola", "permanent": true },
-    { "source": "/prazdninove-kurzy.php", "destination": "/kurzy", "permanent": true },
-    { "source": "/fotogalerie.php", "destination": "/galerie", "permanent": true },
-    { "source": "/staj-manon.php", "destination": "/o-nas", "permanent": true },
-    { "source": "/uspechy.php", "destination": "/uspechy", "permanent": true },
-    { "source": "/jiri-skrivan.php", "destination": "/jiri-skrivan", "permanent": true },
-    { "source": "/kontakt.php", "destination": "/kontakt", "permanent": true },
-    { "source": "/:lang(cs|en|de)/index.php", "destination": "/", "permanent": true },
-    { "source": "/fotogalerie/:path*", "destination": "/galerie", "permanent": true },
-    { "source": "/gallery2/:path*", "destination": "/galerie", "permanent": true }
+    {
+      "source": "/index.php",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/aktuality.php",
+      "destination": "/akce",
+      "permanent": true
+    },
+    {
+      "source": "/penzion-jizdarna-sucha.php",
+      "destination": "/penzion",
+      "permanent": true
+    },
+    {
+      "source": "/akce.php",
+      "destination": "/akce",
+      "permanent": true
+    },
+    {
+      "source": "/vysledky.php",
+      "destination": "/vysledky",
+      "permanent": true
+    },
+    {
+      "source": "/sluzby.php",
+      "destination": "/sluzby",
+      "permanent": true
+    },
+    {
+      "source": "/kone-na-prodej.php",
+      "destination": "/kone-na-prodej",
+      "permanent": true
+    },
+    {
+      "source": "/testacni-odchovna-hrebcu.php",
+      "destination": "/odchovna",
+      "permanent": true
+    },
+    {
+      "source": "/jezdecka-skola.php",
+      "destination": "/pobyty",
+      "permanent": true
+    },
+    {
+      "source": "/jezdecky-klub.php",
+      "destination": "/jezdecka-skola",
+      "permanent": true
+    },
+    {
+      "source": "/prazdninove-kurzy.php",
+      "destination": "/kurzy",
+      "permanent": true
+    },
+    {
+      "source": "/fotogalerie.php",
+      "destination": "/galerie",
+      "permanent": true
+    },
+    {
+      "source": "/staj-manon.php",
+      "destination": "/o-nas",
+      "permanent": true
+    },
+    {
+      "source": "/uspechy.php",
+      "destination": "/uspechy",
+      "permanent": true
+    },
+    {
+      "source": "/jiri-skrivan.php",
+      "destination": "/jiri-skrivan",
+      "permanent": true
+    },
+    {
+      "source": "/kontakt.php",
+      "destination": "/kontakt",
+      "permanent": true
+    },
+    {
+      "source": "/:lang(cs|en|de)/index.php",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/fotogalerie/:path*",
+      "destination": "/galerie",
+      "permanent": true
+    },
+    {
+      "source": "/gallery2/:path*",
+      "destination": "/galerie",
+      "permanent": true
+    }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-        { "key": "Permissions-Policy", "value": "geolocation=(), microphone=(), camera=()" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "geolocation=(), microphone=(), camera=()"
+        }
       ]
     },
     {
       "source": "/_astro/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     }
   ]

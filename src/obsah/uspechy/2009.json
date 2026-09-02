@@ -1,0 +1,117 @@
+{
+  "year": "2009",
+  "items": [
+    {
+      "place": "1.",
+      "event": "MČR družstev",
+      "rider": "Jiří Skřivan",
+      "horse": "Kalisto",
+      "major": true
+    },
+    {
+      "place": "1.",
+      "event": "Dance and Jump Czech Junior Cup Kolín",
+      "rider": "Mirka Skřivanová",
+      "horse": "Mary Ann",
+      "major": false
+    },
+    {
+      "place": "1.",
+      "event": "Audi Christmas Masters",
+      "rider": "Petra Skřivanová",
+      "horse": "Odyssea",
+      "major": false
+    },
+    {
+      "place": "1.",
+      "event": "ST Dubicko",
+      "rider": "Jiří Skřivan",
+      "horse": "Mercedes",
+      "major": false
+    },
+    {
+      "place": "1.",
+      "event": "S Brno",
+      "rider": "Mirka Skřivanová",
+      "horse": "Mary Ann",
+      "major": false
+    },
+    {
+      "place": "1.",
+      "event": "ST+T Nová Amerika",
+      "rider": "Jiří Skřivan",
+      "horse": "Kalisto",
+      "major": false
+    },
+    {
+      "place": "2.",
+      "event": "Velká cena Opavy",
+      "rider": "Jiří Skřivan",
+      "horse": "Rytma CAC Leasing",
+      "major": false
+    },
+    {
+      "place": "2.",
+      "event": "Velká cena Jemčiny",
+      "rider": "Jiří Skřivan",
+      "horse": "Rytma CAC Leasing",
+      "major": false
+    },
+    {
+      "place": "2.",
+      "event": "S Hradišťko",
+      "rider": "Jiří Skřivan",
+      "horse": "Kalisto",
+      "major": false
+    },
+    {
+      "place": "3.",
+      "event": "Malá cena Plzně",
+      "rider": "Jiří Skřivan",
+      "horse": "Kalisto",
+      "major": false
+    },
+    {
+      "place": "3.",
+      "event": "S Hradišťko",
+      "rider": "Petra Skřivanová",
+      "horse": "Odyssea",
+      "major": false
+    },
+    {
+      "place": "4.",
+      "event": "Velká cena Prahy",
+      "rider": "Petra Skřivanová",
+      "horse": "Odyssea",
+      "major": false
+    },
+    {
+      "place": "4.",
+      "event": "Finále Dance and Jump Praha",
+      "rider": "Petra Skřivanová",
+      "horse": "Odyssea",
+      "major": false
+    },
+    {
+      "place": "4.",
+      "event": "S Hradišťko",
+      "rider": "Mirka Skřivanová",
+      "horse": "Mary Ann",
+      "major": false
+    },
+    {
+      "place": "5.",
+      "event": "Grand Prix Wiener Neustadt, Rakousko",
+      "rider": "Petra Skřivanová",
+      "horse": "Odyssea",
+      "major": false
+    },
+    {
+      "place": "6.",
+      "event": "MČR juniorů",
+      "rider": "Petra Skřivanová",
+      "horse": "Odyssea",
+      "major": false
+    }
+  ]
+}

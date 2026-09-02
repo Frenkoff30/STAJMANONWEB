@@ -1,0 +1,47 @@
+{
+  "year": "2007",
+  "items": [
+    {
+      "place": "1.",
+      "event": "Mistrovství VČO",
+      "rider": "Mirka Skřivanová",
+      "horse": "Labe James CAC Leasing",
+      "major": false
+    },
+    {
+      "place": "2.",
+      "event": "Mistrovství VČO",
+      "rider": "Petra Skřivanová",
+      "horse": "Excalibur Wepol",
+      "major": false
+    },
+    {
+      "place": "2.",
+      "event": "Mistrovství VČO",
+      "rider": "Mirka Skřivanová",
+      "horse": "Mary Ann",
+      "major": false
+    },
+    {
+      "place": "3.",
+      "event": "MČR",
+      "rider": "Jiří Skřivan",
+      "horse": "Rytma CAC Leasing",
+      "major": false
+    },
+    {
+      "place": "4.",
+      "event": "MČR juniorů",
+      "rider": "Mirka Skřivanová",
+      "horse": "Labe James CAC Leasing",
+      "major": false
+    },
+    {
+      "place": "4.",
+      "event": "MČR juniorů",
+      "rider": "Petra Skřivanová",
+      "horse": "Ramara Elkor",
+      "major": false
+    }
+  ]
+}

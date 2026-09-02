@@ -1,0 +1,81 @@
+{
+  "seo": {
+    "title": "Jiří Skřivan",
+    "description": "Jiří Skřivan, parkurový jezdec, trenér, zakladatel Stáje Manon a prezident Asociace Český skokový pohár. Mistr ČR 1993, trojnásobný vítěz ČSP."
+  },
+  "hero": {
+    "heading": "Jiří Skřivan",
+    "lead": "Parkurový jezdec, trenér a člověk, který v roce 2002 přišel s myšlenkou Českého skokového poháru.",
+    "image": "skrivan-02",
+    "imageAlt": "Jiří Skřivan v sedle"
+  },
+  "sekce": {
+    "jezdeckaRodinaSkrivanova": {
+      "title": "Jezdecká rodina Skřivanova",
+      "lead": "Manželka Miroslava vede jezdeckou školu, děti Petra, Mirka a Jiří ml. sbírali medaile na mistrovstvích republiky."
+    },
+    "odJuniorskychMedailiPo": {
+      "title": "Od juniorských medailí po vlastní seriál."
+    },
+    "nejvyznamnejsiTituly": {
+      "title": "Nejvýznamnější tituly"
+    }
+  },
+  "family": [
+    {
+      "name": "Miroslava Skřivanová",
+      "role": "Jezdecká škola",
+      "text": "Vede jezdeckou školu v jezdeckém klubu Hřebčína Suchá. Licence: cvičitel, rozhodčí, stylový komisař, stavitel parkuru."
+    },
+    {
+      "name": "Petra Skřivanová",
+      "role": "Jezdkyně",
+      "text": "Mistryně ČR mladých jezdců 2010. 2. místo ve finále Dance and Jump Czech Junior Cup 2008, 4. místo ve Velké ceně Prahy a 5. místo v Grand Prix ve Wiener Neustadt (2009)."
+    },
+    {
+      "name": "Mirka Skřivanová",
+      "role": "Jezdkyně",
+      "text": "3. a 5. místo z MČR juniorů 2006, dvě 4. místa z MČR 2007, 3. místo ve finále DaJ Czech Junior Cup 2010."
+    },
+    {
+      "name": "Jiří Skřivan ml.",
+      "role": "Jezdec",
+      "text": "Medailista z MČR družstev z let 2015, 2016 a 2017. 3. místo ve Styl Šampionátu 2016."
+    }
+  ],
+  "facts": [
+    {
+      "label": "Narozen",
+      "value": "17. října 1967"
+    },
+    {
+      "label": "Profesionálně",
+      "value": "od roku 1990"
+    },
+    {
+      "label": "První parkur",
+      "value": "ve 12 letech, na klisně Manon"
+    },
+    {
+      "label": "Funkce",
+      "value": "prezident Asociace Český skokový pohár"
+    }
+  ],
+  "pribeh": [
+    "Jiří Skřivan se narodil 17. října 1967, vystudoval gymnázium a od roku 1990 se parkurovému sportu věnuje profesionálně. Závodit začal ve dvanácti letech a svůj první parkur vyhrál na koni **Manon**, po kterém je pojmenovaná nynější stáj.",
+    "V juniorské kategorii patřili s bratrem Rudolfem k velmi úspěšným jezdcům a na mistrovstvích se pravidelně řadili na stupně vítězů. Jako junior závodil i ve všestranné způsobilosti, kde v roce 1985 získal na MČR bronzovou a na MČSSR zlatou a stříbrnou medaili.",
+    "## Zkušenosti ze zahraničí",
+    "V roce 1989 využil možnosti získávat nové zkušenosti v zahraničí. Nejprve pracoval ve Švýcarsku a poté odjel do Irska, kde absolvoval stáž u **Paula Darragha**. Po několika měsících se vrátil zpět, tentokrát do stáje jednoho z nejlepších světových jezdců **Markuse Fuchse**. Odtud vedly jeho kroky do privátní stáje H. Trauffera, kde měl možnost startovat na národní i mezinárodní úrovni téměř dva roky.",
+    "## Vlastní stáj",
+    "Po návratu ze zahraničí, na podzim 1992, založil nedaleko Litomyšle vlastní stáj. Začal spolupracovat s JK Mělník a dostal do tréninku první koně, mezi nimi i čtyřletého **Labe Jeffa**, se kterým později dosáhl vítězství v Grand Prix na CSI-W v Maďarsku.",
+    "V roce 1995 se stáj přestěhovala do nově vybudovaného areálu přímo v Litomyšli. S koňmi Vesta del Metz, Labe Jeff, Naracondo, Gargano, Guyane, Labe James, Andolph, Tora 1, Rytma a dalšími dosáhl Jiří Skřivan na domácích i zahraničních kolbištích nespočet sportovních úspěchů.",
+    "## Český skokový pohár",
+    "V roce 2002 přichází Jiří Skřivan do jezdeckého sportu s novou myšlenkou celorepublikového seriálu Velkých cen, ze které následně vzniká nový fenomén posledních let, **Český skokový pohár**. Byl zvolen prezidentem Asociace Český skokový pohár a v letech 2004, 2006 a 2011 se stal i jeho celkovým vítězem."
+  ],
+  "images": {
+    "portrait": "skrivan-01",
+    "sport": "uspechy-03",
+    "sportAlt": "Jezdec Stáje Manon po vítězné jízdě"
+  },
+  "milnikyLinkLabel": "Kompletní přehled úspěchů"
+}

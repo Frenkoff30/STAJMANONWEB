@@ -1,0 +1,82 @@
+{
+  "year": "2011",
+  "items": [
+    {
+      "place": "",
+      "event": "Vítěz Českého skokového poháru",
+      "rider": "Jiří Skřivan",
+      "horse": "Kalisto",
+      "major": true
+    },
+    {
+      "place": "1.",
+      "event": "Velká cena Ptýrova",
+      "rider": "Jiří Skřivan",
+      "horse": "Kalisto",
+      "major": false
+    },
+    {
+      "place": "1.",
+      "event": "Velká cena Opavy",
+      "rider": "Jiří Skřivan",
+      "horse": "Kalisto",
+      "major": false
+    },
+    {
+      "place": "3.",
+      "event": "Velká cena Kolína",
+      "rider": "Jiří Skřivan",
+      "horse": "Kalisto",
+      "major": false
+    },
+    {
+      "place": "3.",
+      "event": "Velká cena Ostravy",
+      "rider": "Jiří Skřivan",
+      "horse": "Kalisto",
+      "major": false
+    },
+    {
+      "place": "3.",
+      "event": "DaJ Junior Cup Kolín",
+      "rider": "Petra Skřivanová",
+      "horse": "Andromeda",
+      "major": false
+    },
+    {
+      "place": "4.",
+      "event": "Velká cena Brna",
+      "rider": "Jiří Skřivan",
+      "horse": "Kalisto",
+      "major": false
+    },
+    {
+      "place": "4.",
+      "event": "Velká cena Ostravy",
+      "rider": "Jiří Skřivan",
+      "horse": "Mercedes",
+      "major": false
+    },
+    {
+      "place": "5.",
+      "event": "MČR Ptýrov, senioři",
+      "rider": "Jiří Skřivan",
+      "horse": "Kalisto",
+      "major": false
+    },
+    {
+      "place": "5.",
+      "event": "MČR Ptýrov, mladí jezdci",
+      "rider": "Petra Skřivanová",
+      "horse": "Andromeda",
+      "major": false
+    },
+    {
+      "place": "7.",
+      "event": "Grand Prix Linec",
+      "rider": "Jiří Skřivan",
+      "horse": "Kalisto",
+      "major": false
+    }
+  ]
+}
