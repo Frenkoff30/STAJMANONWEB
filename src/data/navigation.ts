@@ -31,6 +31,11 @@ export const mainNav: NavGroup[] = [
         href: '/sluzby',
         desc: 'Ustájení, trénink, pronájmy, přeprava',
       },
+      {
+        label: 'Rezervace jízdáren',
+        href: '/rezervace',
+        desc: 'Online rozvrh haly a venkovních jízdáren',
+      },
     ],
     feature: {
       title: 'Ubytování přímo u kolbiště',
@@ -118,6 +123,7 @@ export const footerNav = [
       { label: 'Jízdárna Suchá', href: '/areal' },
       { label: 'Penzion & restaurace', href: '/penzion' },
       { label: 'Služby a ceník', href: '/sluzby' },
+      { label: 'Rezervace jízdáren', href: '/rezervace' },
       { label: 'Fotogalerie', href: '/galerie' },
     ],
   },

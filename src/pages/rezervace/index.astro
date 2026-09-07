@@ -1,0 +1,259 @@
+---
+/**
+ * Kalendář jízdáren — hlavní stránka rezervací.
+ *
+ * Nepřihlášený vidí obsazenost, ale ne jména. Nerozhoduje o tom tahle
+ * šablona, ale databázová funkce `kalendar()`: kdyby někdo dotaz poslal
+ * mimo web, dostane přesně totéž.
+ */
+
+export const prerender = false;
+
+import RezervaceLayout from '@/layouts/RezervaceLayout.astro';
+import Kalendar from '@/components/rezervace/Kalendar.astro';
+import Zprava from '@/components/rezervace/Zprava.astro';
+import Icon from '@/components/Icon.astro';
+import { rezervaceNastaveny } from '@/lib/supabase';
+import {
+  dnesCz,
+  dnyTydne,
+  mista,
+  platneDatum,
+  pondeliTydne,
+  posunDnu,
+  rozsahTydne,
+  type Blokace,
+  type Jizdarna,
+  type ObsazenostSlotu,
+  type Oznameni,
+  type Slot,
+} from '@/lib/rezervace';
+
+const { supabase, profil, uzivatel } = Astro.locals;
+const dnes = dnesCz();
+
+const parametry = Astro.url.searchParams;
+const zadanyTyden = parametry.get('od');
+const pondeli = pondeliTydne(
+  platneDatum(zadanyTyden) ? zadanyTyden : dnes,
+);
+const dny = dnyTydne(pondeli);
+
+let jizdarny: Jizdarna[] = [];
+let sloty: Slot[] = [];
+let blokace: Blokace[] = [];
+let oznameni: Oznameni[] = [];
+const obsazenost = new Map<string, ObsazenostSlotu>();
+let horizont = 21;
+let chybaNacteni = '';
+
+if (supabase) {
+  const [vysledekJizdaren, vysledekSlotu, vysledekBlokaci, vysledekOznameni, vysledekNastaveni] =
+    await Promise.all([
+      supabase.from('jizdarny').select('*').eq('aktivni', true).order('poradi'),
+      supabase.from('sloty').select('*').eq('aktivni', true).order('poradi'),
+      supabase
+        .from('blokace')
+        .select('*')
+        .gte('datum', pondeli)
+        .lte('datum', dny[6]),
+      supabase
+        .from('oznameni')
+        .select('*')
+        .eq('aktivni', true)
+        .order('poradi'),
+      supabase.from('nastaveni').select('*').eq('klic', 'horizont_dnu').maybeSingle(),
+    ]);
+
+  jizdarny = (vysledekJizdaren.data as Jizdarna[]) ?? [];
+  sloty = (vysledekSlotu.data as Slot[]) ?? [];
+  blokace = (vysledekBlokaci.data as Blokace[]) ?? [];
+  oznameni = (vysledekOznameni.data as Oznameni[]) ?? [];
+  horizont = (vysledekNastaveni.data as { hodnota: number } | null)?.hodnota ?? 21;
+
+  const { data: bunky, error } = await supabase.rpc('kalendar', {
+    od: pondeli,
+    dokdy: dny[6],
+  });
+
+  if (error) chybaNacteni = 'Kalendář se teď nepodařilo načíst.';
+
+  for (const bunka of (bunky as ObsazenostSlotu[]) ?? []) {
+    obsazenost.set(`${bunka.jizdarna}|${bunka.datum}|${bunka.slot}`, bunka);
+  }
+}
+
+const zvolena =
+  jizdarny.find((j) => j.kod === parametry.get('jizdarna')) ?? jizdarny[0];
+
+/** Odkaz na jiný týden nebo jinou jízdárnu, zbytek nastavení zůstane. */
+function odkaz(zmena: { od?: string; jizdarna?: string }): string {
+  const q = new URLSearchParams();
+  q.set('od', zmena.od ?? pondeli);
+  const kod = zmena.jizdarna ?? zvolena?.kod;
+  if (kod) q.set('jizdarna', kod);
+  return `/rezervace?${q}`;
+}
+
+const hlaseni: Record<string, string> = {
+  rezervovano: 'Hotovo, termín je váš. Najdete ho i v Moje rezervace.',
+  zruseno: 'Rezervace byla zrušena, termín je zase volný.',
+  potvrzeno: 'E-mail je potvrzený. Teď už jen počkejte, až vás stáj schválí.',
+};
+const potvrzeni = hlaseni[parametry.get('ok') ?? ''] ?? '';
+
+const clen = Boolean(profil?.schvaleno);
+---
+
+<RezervaceLayout
+  title="Rezervace jízdáren"
+  description="Online rezervace kryté haly a venkovních jízdáren Stáje Manon v areálu Jízdárna Suchá."
+  heading="Rezervace jízdáren"
+  lead="Rozvrh na celý týden. Volný termín si zarezervujete po přihlášení, zrušit ho jde až do jeho začátku."
+  profil={profil}
+  email={uzivatel?.email ?? null}
+  aktivni="kalendar"
+>
+  {
+    !rezervaceNastaveny ? (
+      <Zprava typ="info">
+        <strong>Rezervační systém se právě spouští.</strong>
+        <p class="mt-1">
+          Termíny zatím domlouvejte telefonicky. Jakmile bude systém připojený,
+          objeví se tady rozvrh všech jízdáren.
+        </p>
+      </Zprava>
+    ) : (
+      <>
+        {potvrzeni && (
+          <Zprava typ="ok" class="mb-6">
+            {potvrzeni}
+          </Zprava>
+        )}
+
+        {chybaNacteni && (
+          <Zprava typ="chyba" class="mb-6">
+            {chybaNacteni}
+          </Zprava>
+        )}
+
+        {oznameni.map((o) => (
+          <Zprava typ={o.typ === 'dulezite' ? 'dulezite' : 'info'} class="mb-4">
+            {o.text}
+          </Zprava>
+        ))}
+
+        {uzivatel && profil && !profil.schvaleno && (
+          <Zprava typ="dulezite" class="mb-6">
+            <strong>Účet čeká na schválení.</strong>
+            <p class="mt-1">
+              Rozvrh vidíte, ale rezervovat půjde až vás stáj potvrdí. Obvykle
+              to je do druhého dne.
+            </p>
+          </Zprava>
+        )}
+
+        {!uzivatel && (
+          <Zprava typ="info" class="mb-6">
+            Obsazenost vidíte i bez přihlášení. Rezervovat mohou{' '}
+            <a
+              href="/rezervace/prihlaseni"
+              class="link-underline font-semibold text-brass-700"
+            >přihlášení členové stáje</a>.
+          </Zprava>
+        )}
+
+        {jizdarny.length === 0 ? (
+          <Zprava typ="info">Zatím tu není žádná jízdárna k rezervaci.</Zprava>
+        ) : (
+          <>
+            {/* Přepínač jízdáren */}
+            <div class="mb-6 grid gap-px border border-ink/12 bg-ink/12 sm:grid-cols-3">
+              {jizdarny.map((j) => (
+                <a
+                  href={odkaz({ jizdarna: j.kod })}
+                  aria-current={j.kod === zvolena?.kod ? 'page' : undefined}
+                  class:list={[
+                    'px-4 py-3 text-center transition-colors',
+                    j.kod === zvolena?.kod
+                      ? 'bg-loden-900 text-white'
+                      : 'bg-white text-ink-3 hover:bg-paper-2 hover:text-ink',
+                  ]}
+                >
+                  <span class="block text-[0.875rem] font-semibold">{j.nazev}</span>
+                  <span
+                    class:list={[
+                      'block text-[0.6875rem]',
+                      j.kod === zvolena?.kod ? 'text-white/60' : 'text-ink-3',
+                    ]}
+                  >
+                    {mista(j.kapacita)} v jednom čase
+                  </span>
+                </a>
+              ))}
+            </div>
+
+            {/* Týden */}
+            <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <p class="font-display text-[1.375rem]">{rozsahTydne(pondeli)}</p>
+
+              <div class="flex items-center gap-px bg-ink/12">
+                <a
+                  href={odkaz({ od: posunDnu(pondeli, -7) })}
+                  class="bg-white px-4 py-2 text-[0.8125rem] font-semibold text-ink-3 transition-colors hover:bg-loden-900 hover:text-white"
+                  rel="prev"
+                >
+                  ← Předchozí
+                </a>
+                <a
+                  href={odkaz({ od: dnes })}
+                  class="bg-white px-4 py-2 text-[0.8125rem] font-semibold text-ink-3 transition-colors hover:bg-loden-900 hover:text-white"
+                >
+                  Tento týden
+                </a>
+                <a
+                  href={odkaz({ od: posunDnu(pondeli, 7) })}
+                  class="bg-white px-4 py-2 text-[0.8125rem] font-semibold text-ink-3 transition-colors hover:bg-loden-900 hover:text-white"
+                  rel="next"
+                >
+                  Následující →
+                </a>
+              </div>
+            </div>
+
+            {zvolena && (
+              <Kalendar
+                jizdarna={zvolena}
+                dny={dny}
+                sloty={sloty}
+                obsazenost={obsazenost}
+                blokace={blokace}
+                dnes={dnes}
+                prihlasen={Boolean(uzivatel)}
+                clen={clen}
+              />
+            )}
+
+            <div class="mt-10 grid gap-6 border-t border-ink/12 pt-8 sm:grid-cols-2">
+              <div class="flex gap-3">
+                <Icon name="clock" class="mt-0.5 h-4 w-4 shrink-0 text-brass-600" />
+                <p class="text-[0.875rem] text-ink-3">
+                  Rezervovat jde nejvýš {horizont} dní dopředu. Zrušit můžete
+                  kdykoli až do začátku termínu, ať se místo uvolní někomu
+                  dalšímu.
+                </p>
+              </div>
+              <div class="flex gap-3">
+                <Icon name="shield" class="mt-0.5 h-4 w-4 shrink-0 text-brass-600" />
+                <p class="text-[0.875rem] text-ink-3">
+                  Rezervovat mohou jen členové stáje se schváleným účtem. Jména
+                  jezdců se nepřihlášeným návštěvníkům nezobrazují.
+                </p>
+              </div>
+            </div>
+          </>
+        )}
+      </>
+    )
+  }
+</RezervaceLayout>

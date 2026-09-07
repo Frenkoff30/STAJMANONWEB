@@ -316,6 +316,57 @@
     border-color: #fff;
   }
 
+  /* --- Formulářová pole -------------------------------------------------- */
+  .form-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-ink-3);
+    margin-bottom: 0.5rem;
+  }
+
+  .form-control {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    font-family: inherit;
+    color: var(--color-ink);
+    background: var(--color-paper);
+    border: 1px solid color-mix(in srgb, var(--color-ink) 18%, transparent);
+    transition: border-color 200ms var(--ease-out-natural),
+      box-shadow 200ms var(--ease-out-natural);
+  }
+  .form-control:hover {
+    border-color: color-mix(in srgb, var(--color-ink) 32%, transparent);
+  }
+  .form-control:focus {
+    outline: none;
+    border-color: var(--color-brass-600);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brass-500) 22%, transparent);
+  }
+  .form-control[aria-invalid='true'] {
+    border-color: #a13a2a;
+  }
+
+  select.form-control {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233a4a42' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1.1rem;
+    padding-right: 2.75rem;
+    cursor: pointer;
+  }
+
+  .form-error {
+    margin-top: 0.4rem;
+    font-size: 0.8125rem;
+    color: #a13a2a;
+  }
+
   /* --- Textový odkaz s podtržením zevnitř -------------------------------- */
   .link-underline {
     background-image: linear-gradient(currentColor, currentColor);
@@ -360,10 +411,6 @@
   }
 
   /* --- Hairline oddělovač ------------------------------------------------ */
-  .rule {
-    height: 1px;
-    background: color-mix(in srgb, var(--color-ink) 14%, transparent);
-  }
   .rule-light {
     height: 1px;
     background: rgba(255, 255, 255, 0.16);
@@ -430,14 +477,6 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
   }
 
-  /* --- Číslovaný index (editorial) --------------------------------------- */
-  .index-num {
-    font-family: var(--font-display);
-    font-size: 0.875rem;
-    letter-spacing: 0.1em;
-    color: var(--color-brass-600);
-    font-variant-numeric: tabular-nums;
-  }
 }
 
 /* ==========================================================================
@@ -524,9 +563,6 @@
     text-shadow: 0 2px 24px rgba(10, 16, 13, 0.45);
   }
 
-  .mask-fade-r {
-    mask-image: linear-gradient(to right, #000 82%, transparent 100%);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -558,9 +594,6 @@
 @media print {
   header[data-site-header],
   footer,
-  .no-print {
-    display: none !important;
-  }
   body {
     background: #fff;
     color: #000;

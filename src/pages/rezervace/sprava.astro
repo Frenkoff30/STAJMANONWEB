@@ -1,0 +1,513 @@
+---
+/**
+ * Administrace rezervací. Vidí ji jen správce.
+ *
+ * Přístup sem hlídá middleware, ale to je jen zámek na dveřích: každý zápis
+ * pod tím ještě jednou prověří pravidla v databázi. Kdyby se sem někdo
+ * dostal jinudy, stejně nic nezmění.
+ */
+
+export const prerender = false;
+
+import RezervaceLayout from '@/layouts/RezervaceLayout.astro';
+import Zprava from '@/components/rezervace/Zprava.astro';
+import { citelnaChyba, type Profil } from '@/lib/supabase';
+import {
+  cas,
+  dlouheDatum,
+  dnesCz,
+  platneDatum,
+  rozsahSlotu,
+  type Blokace,
+  type Jizdarna,
+  type Oznameni,
+  type Slot,
+} from '@/lib/rezervace';
+
+const { supabase, uzivatel, profil } = Astro.locals;
+
+if (!supabase || !uzivatel) return Astro.redirect('/rezervace');
+
+const dnes = dnesCz();
+
+let chyba = '';
+let potvrzeni = '';
+
+if (Astro.request.method === 'POST') {
+  const formular = await Astro.request.formData();
+  const akce = String(formular.get('akce') ?? '');
+
+  // Dotazy Supabase nejsou `Promise`, ale „thenable" — proto `PromiseLike`.
+  const provest = async (
+    hlaska: string,
+    prace: () => PromiseLike<{ error: { message?: string } | null }>,
+  ) => {
+    const { error } = await prace();
+    if (error) chyba = citelnaChyba(error);
+    else potvrzeni = hlaska;
+  };
+
+  switch (akce) {
+    case 'schvalit':
+      await provest('Člen byl schválen.', () =>
+        supabase
+          .from('profily')
+          .update({ schvaleno: true })
+          .eq('id', String(formular.get('id') ?? '')),
+      );
+      break;
+
+    case 'odebrat':
+      await provest('Členovi bylo odebráno oprávnění rezervovat.', () =>
+        supabase
+          .from('profily')
+          .update({ schvaleno: false })
+          .eq('id', String(formular.get('id') ?? '')),
+      );
+      break;
+
+    case 'role': {
+      const id = String(formular.get('id') ?? '');
+      const nova = formular.get('role') === 'spravce' ? 'spravce' : 'clen';
+
+      // Poslední správce si nesmí sebrat práva, jinak by se do administrace
+      // už nikdo nedostal a musel by ji odemykat vývojář v databázi.
+      const { count } = await supabase
+        .from('profily')
+        .select('id', { count: 'exact', head: true })
+        .eq('role', 'spravce');
+
+      if (nova === 'clen' && (count ?? 0) <= 1) {
+        chyba = 'Tohle je poslední správce, práva mu odebrat nejde.';
+      } else {
+        await provest('Role byla změněna.', () =>
+          supabase.from('profily').update({ role: nova }).eq('id', id),
+        );
+      }
+      break;
+    }
+
+    case 'blokovat': {
+      const datum = String(formular.get('datum') ?? '');
+      if (!platneDatum(datum)) {
+        chyba = 'Zadejte prosím platné datum.';
+        break;
+      }
+      await provest('Termín je zavřený.', () =>
+        supabase.from('blokace').insert({
+          datum,
+          jizdarna: String(formular.get('jizdarna') ?? '') || null,
+          slot: String(formular.get('slot') ?? '') || null,
+          duvod: String(formular.get('duvod') ?? '').trim().slice(0, 60),
+        }),
+      );
+      break;
+    }
+
+    case 'odblokovat':
+      await provest('Blokace byla zrušena.', () =>
+        supabase.from('blokace').delete().eq('id', String(formular.get('id') ?? '')),
+      );
+      break;
+
+    case 'oznamit': {
+      const text = String(formular.get('text') ?? '').trim().slice(0, 300);
+      if (!text) {
+        chyba = 'Napište prosím text oznámení.';
+        break;
+      }
+      await provest('Oznámení je nahoře nad kalendářem.', () =>
+        supabase.from('oznameni').insert({
+          text,
+          typ: formular.get('typ') === 'dulezite' ? 'dulezite' : 'info',
+        }),
+      );
+      break;
+    }
+
+    case 'smazat-oznameni':
+      await provest('Oznámení bylo smazáno.', () =>
+        supabase.from('oznameni').delete().eq('id', String(formular.get('id') ?? '')),
+      );
+      break;
+
+    case 'nastaveni': {
+      const zmeny = ['horizont_dnu', 'max_aktivnich', 'storno_minut'].map((klic) => ({
+        klic,
+        hodnota: Math.max(0, Math.min(3650, Number(formular.get(klic) ?? 0) || 0)),
+      }));
+
+      for (const zmena of zmeny) {
+        const { error } = await supabase
+          .from('nastaveni')
+          .update({ hodnota: zmena.hodnota })
+          .eq('klic', zmena.klic);
+        if (error) chyba = citelnaChyba(error);
+      }
+      if (!chyba) potvrzeni = 'Pravidla jsou uložená.';
+      break;
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ výpisy */
+
+const [
+  { data: profilyData },
+  { data: jizdarnyData },
+  { data: slotyData },
+  { data: blokaceData },
+  { data: oznameniData },
+  { data: nastaveniData },
+] = await Promise.all([
+  supabase.from('profily').select('*').order('vytvoreno', { ascending: false }),
+  supabase.from('jizdarny').select('*').order('poradi'),
+  supabase.from('sloty').select('*').order('poradi'),
+  supabase.from('blokace').select('*').gte('datum', dnes).order('datum'),
+  supabase.from('oznameni').select('*').order('poradi'),
+  supabase.from('nastaveni').select('*').order('klic'),
+]);
+
+const profily = (profilyData as Profil[]) ?? [];
+const jizdarny = (jizdarnyData as Jizdarna[]) ?? [];
+const sloty = (slotyData as Slot[]) ?? [];
+const blokace = (blokaceData as Blokace[]) ?? [];
+const oznameni = (oznameniData as Oznameni[]) ?? [];
+const nastaveni = new Map(
+  ((nastaveniData as { klic: string; hodnota: number }[]) ?? []).map((n) => [
+    n.klic,
+    n.hodnota,
+  ]),
+);
+
+const cekajici = profily.filter((p) => !p.schvaleno);
+const clenove = profily.filter((p) => p.schvaleno);
+
+const nazevJizdarny = (kod: string | null) =>
+  kod ? (jizdarny.find((j) => j.kod === kod)?.nazev ?? kod) : 'všechny jízdárny';
+
+const nazevSlotu = (kod: string | null) => {
+  if (!kod) return 'celý den';
+  const s = sloty.find((x) => x.kod === kod);
+  return s ? rozsahSlotu(s) : kod;
+};
+---
+
+<RezervaceLayout
+  title="Správa rezervací"
+  description="Administrace rezervačního systému."
+  heading="Správa rezervací"
+  lead="Schvalování členů, zavírání termínů a pravidla rezervací."
+  profil={profil}
+  email={uzivatel.email}
+  aktivni="sprava"
+  noindex
+>
+  {potvrzeni && <Zprava typ="ok" class="mb-6">{potvrzeni}</Zprava>}
+  {chyba && <Zprava typ="chyba" class="mb-6">{chyba}</Zprava>}
+
+  <!-- ------------------------------------------------ čekající na schválení -->
+  <section>
+    <h2 class="t-3">
+      Čeká na schválení
+      {cekajici.length > 0 && <span class="text-brass-700">({cekajici.length})</span>}
+    </h2>
+    <p class="mt-2 text-[0.9375rem] text-ink-3">
+      Dokud člověka neschválíte, rozvrh vidí, ale rezervovat nemůže.
+    </p>
+
+    {
+      cekajici.length === 0 ? (
+        <p class="mt-6 border-t border-ink/12 pt-6 text-ink-3">
+          Nikdo nečeká, všechno je vyřízené.
+        </p>
+      ) : (
+        <ul class="mt-6 space-y-px">
+          {cekajici.map((p) => (
+            <li class="flex flex-wrap items-center justify-between gap-4 border-t border-ink/12 py-5 last:border-b">
+              <div>
+                <p class="font-display text-[1.25rem]">{p.jmeno || 'Bez jména'}</p>
+                <p class="mt-0.5 text-[0.875rem] text-ink-3">
+                  {p.telefon || 'telefon neuveden'}
+                </p>
+              </div>
+              <form method="post">
+                <input type="hidden" name="akce" value="schvalit" />
+                <input type="hidden" name="id" value={p.id} />
+                <button type="submit" class="btn btn-primary min-h-0 px-6 py-2.5 text-[0.75rem]">
+                  Schválit
+                </button>
+              </form>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </section>
+
+  <!-- ------------------------------------------------------------- členové -->
+  <section class="mt-16">
+    <h2 class="t-3">Členové ({clenove.length})</h2>
+
+    <ul class="mt-6 space-y-px">
+      {
+        clenove.map((p) => (
+          <li class="flex flex-wrap items-center justify-between gap-4 border-t border-ink/12 py-5 last:border-b">
+            <div>
+              <p class="font-display text-[1.25rem]">
+                {p.jmeno || 'Bez jména'}
+                {p.role === 'spravce' && (
+                  <span class="ml-3 border border-brass-400 bg-brass-100 px-2 py-0.5 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-brass-900">
+                    správce
+                  </span>
+                )}
+              </p>
+              <p class="mt-0.5 text-[0.875rem] text-ink-3">
+                {p.telefon || 'telefon neuveden'}
+              </p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+              <form method="post">
+                <input type="hidden" name="akce" value="role" />
+                <input type="hidden" name="id" value={p.id} />
+                <input
+                  type="hidden"
+                  name="role"
+                  value={p.role === 'spravce' ? 'clen' : 'spravce'}
+                />
+                <button
+                  type="submit"
+                  class="text-[0.8125rem] font-semibold uppercase tracking-[0.1em] text-ink-3 transition-colors hover:text-brass-700"
+                >
+                  {p.role === 'spravce' ? 'Zrušit správce' : 'Udělat správcem'}
+                </button>
+              </form>
+
+              <form method="post">
+                <input type="hidden" name="akce" value="odebrat" />
+                <input type="hidden" name="id" value={p.id} />
+                <button type="submit" class="btn btn-outline min-h-0 px-5 py-2 text-[0.75rem]">
+                  Pozastavit
+                </button>
+              </form>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <!-- ------------------------------------------------------------- blokace -->
+  <section class="mt-16">
+    <h2 class="t-3">Zavřené termíny</h2>
+    <p class="mt-2 text-[0.9375rem] text-ink-3">
+      Závody, soustředění, údržba. Zavřený termín nejde rezervovat a v
+      kalendáři je vidět důvod.
+    </p>
+
+    <form method="post" class="card mt-6 p-7">
+      <input type="hidden" name="akce" value="blokovat" />
+
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label for="b-datum" class="form-label">Datum</label>
+          <input
+            type="date"
+            id="b-datum"
+            name="datum"
+            required
+            min={dnes}
+            class="form-control"
+          />
+        </div>
+
+        <div>
+          <label for="b-jizdarna" class="form-label">Jízdárna</label>
+          <select id="b-jizdarna" name="jizdarna" class="form-control">
+            <option value="">Všechny</option>
+            {jizdarny.map((j) => <option value={j.kod}>{j.nazev}</option>)}
+          </select>
+        </div>
+
+        <div>
+          <label for="b-slot" class="form-label">Čas</label>
+          <select id="b-slot" name="slot" class="form-control">
+            <option value="">Celý den</option>
+            {sloty.map((s) => <option value={s.kod}>{rozsahSlotu(s)}</option>)}
+          </select>
+        </div>
+
+        <div>
+          <label for="b-duvod" class="form-label">Důvod</label>
+          <input
+            type="text"
+            id="b-duvod"
+            name="duvod"
+            maxlength="60"
+            placeholder="Např. závody, trénink, údržba"
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary mt-7">Zavřít termín</button>
+    </form>
+
+    {
+      blokace.length > 0 && (
+        <ul class="mt-8 space-y-px">
+          {blokace.map((b) => (
+            <li class="flex flex-wrap items-center justify-between gap-4 border-t border-ink/12 py-4 last:border-b">
+              <div>
+                <p class="font-semibold">{dlouheDatum(b.datum)}</p>
+                <p class="mt-0.5 text-[0.875rem] text-ink-3">
+                  {nazevJizdarny(b.jizdarna)} · {nazevSlotu(b.slot)}
+                  {b.duvod && <span> · {b.duvod}</span>}
+                </p>
+              </div>
+              <form method="post">
+                <input type="hidden" name="akce" value="odblokovat" />
+                <input type="hidden" name="id" value={b.id} />
+                <button
+                  type="submit"
+                  class="text-[0.8125rem] font-semibold uppercase tracking-[0.1em] text-ink-3 transition-colors hover:text-brass-700"
+                >
+                  Otevřít zpět
+                </button>
+              </form>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </section>
+
+  <!-- ------------------------------------------------------------ oznámení -->
+  <section class="mt-16">
+    <h2 class="t-3">Oznámení nad kalendářem</h2>
+    <p class="mt-2 text-[0.9375rem] text-ink-3">
+      Krátká hláška pro všechny, třeba změna ceny nebo přesun materiálu.
+    </p>
+
+    <form method="post" class="card mt-6 p-7">
+      <input type="hidden" name="akce" value="oznamit" />
+
+      <label for="o-text" class="form-label">Text</label>
+      <textarea id="o-text" name="text" rows="2" maxlength="300" class="form-control resize-y"
+      ></textarea>
+
+      <div class="mt-5">
+        <label for="o-typ" class="form-label">Zvýraznění</label>
+        <select id="o-typ" name="typ" class="form-control">
+          <option value="info">Běžná informace</option>
+          <option value="dulezite">Důležité</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary mt-7">Zveřejnit</button>
+    </form>
+
+    {
+      oznameni.length > 0 && (
+        <ul class="mt-8 space-y-px">
+          {oznameni.map((o) => (
+            <li class="flex flex-wrap items-start justify-between gap-4 border-t border-ink/12 py-4 last:border-b">
+              <p class="min-w-0 flex-1 text-[0.9375rem]">{o.text}</p>
+              <form method="post">
+                <input type="hidden" name="akce" value="smazat-oznameni" />
+                <input type="hidden" name="id" value={o.id} />
+                <button
+                  type="submit"
+                  class="text-[0.8125rem] font-semibold uppercase tracking-[0.1em] text-ink-3 transition-colors hover:text-brass-700"
+                >
+                  Smazat
+                </button>
+              </form>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </section>
+
+  <!-- ------------------------------------------------------------ pravidla -->
+  <section class="mt-16">
+    <h2 class="t-3">Pravidla rezervací</h2>
+
+    <form method="post" class="card mt-6 p-7">
+      <input type="hidden" name="akce" value="nastaveni" />
+
+      <div class="grid gap-5 sm:grid-cols-3">
+        <div>
+          <label for="horizont_dnu" class="form-label">Dní dopředu</label>
+          <input
+            type="number"
+            id="horizont_dnu"
+            name="horizont_dnu"
+            min="1"
+            max="365"
+            value={nastaveni.get('horizont_dnu') ?? 21}
+            class="form-control"
+          />
+        </div>
+
+        <div>
+          <label for="max_aktivnich" class="form-label">Rezervací na člena</label>
+          <input
+            type="number"
+            id="max_aktivnich"
+            name="max_aktivnich"
+            min="1"
+            max="200"
+            value={nastaveni.get('max_aktivnich') ?? 15}
+            class="form-control"
+          />
+        </div>
+
+        <div>
+          <label for="storno_minut" class="form-label">Storno (minut předem)</label>
+          <input
+            type="number"
+            id="storno_minut"
+            name="storno_minut"
+            min="0"
+            max="1440"
+            value={nastaveni.get('storno_minut') ?? 0}
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <p class="mt-4 text-[0.8125rem] text-ink-3">
+        Storno 0 znamená, že rezervace jde zrušit až do začátku termínu.
+      </p>
+
+      <button type="submit" class="btn btn-primary mt-7">Uložit pravidla</button>
+    </form>
+  </section>
+
+  <!-- ----------------------------------------------------------- jízdárny -->
+  <section class="mt-16">
+    <h2 class="t-3">Jízdárny a časy</h2>
+    <p class="mt-2 text-[0.9375rem] text-ink-3">
+      Kapacity a rozvrh dne. Změna je zásah do celého systému, tak ji dělá
+      vývojář v souboru <code class="text-ink">supabase/schema.sql</code>.
+    </p>
+
+    <ul class="mt-6 space-y-px">
+      {
+        jizdarny.map((j) => (
+          <li class="flex flex-wrap items-center justify-between gap-4 border-t border-ink/12 py-4 last:border-b">
+            <p class="font-semibold">{j.nazev}</p>
+            <p class="text-[0.875rem] text-ink-3">kapacita {j.kapacita}</p>
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="mt-6 text-[0.875rem] text-ink-3">
+      Časy: {sloty.map((s) => `${cas(s.zacatek)}–${cas(s.konec)}`).join(', ')}
+    </p>
+  </section>
+</RezervaceLayout>

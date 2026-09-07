@@ -1,0 +1,177 @@
+---
+/**
+ * Registrace nového jezdce.
+ *
+ * Účet vznikne hned, ale rezervovat s ním nejde. Nejdřív si člověk potvrdí
+ * e-mail a pak ho ještě musí pustit dál stáj. Dvě brány místo jedné:
+ * potvrzení e-mailu odfiltruje roboty, schválení stájí cizí lidi.
+ */
+
+export const prerender = false;
+
+import RezervaceLayout from '@/layouts/RezervaceLayout.astro';
+import Zprava from '@/components/rezervace/Zprava.astro';
+import { citelnaChyba, rezervaceNastaveny } from '@/lib/supabase';
+
+const { supabase, uzivatel, profil } = Astro.locals;
+
+if (uzivatel) return Astro.redirect('/rezervace');
+
+let chyba = '';
+let hotovo = false;
+let jmeno = '';
+let email = '';
+let telefon = '';
+
+if (Astro.request.method === 'POST' && supabase) {
+  const formular = await Astro.request.formData();
+
+  jmeno = String(formular.get('jmeno') ?? '').trim().slice(0, 80);
+  email = String(formular.get('email') ?? '').trim();
+  telefon = String(formular.get('telefon') ?? '').trim().slice(0, 30);
+  const heslo = String(formular.get('heslo') ?? '');
+  const past = String(formular.get('web') ?? '');
+
+  if (past) {
+    // Skryté pole, které vidí jen robot. Tvářit se, že je hotovo.
+    hotovo = true;
+  } else if (jmeno.length < 3) {
+    chyba = 'Napište prosím celé jméno a příjmení.';
+  } else if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(email)) {
+    chyba = 'Zkontrolujte prosím tvar e-mailové adresy.';
+  } else if (heslo.length < 8) {
+    chyba = 'Heslo musí mít aspoň 8 znaků.';
+  } else {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password: heslo,
+      options: {
+        // Jméno a telefon si přebere databázový trigger a založí z nich profil.
+        data: { jmeno, telefon },
+        emailRedirectTo: new URL('/rezervace/potvrdit', Astro.url.origin).toString(),
+      },
+    });
+
+    if (error) chyba = citelnaChyba(error);
+    else hotovo = true;
+  }
+}
+---
+
+<RezervaceLayout
+  title="Registrace do rezervací"
+  description="Registrace člena stáje do rezervačního systému jízdáren."
+  heading="Registrace"
+  lead="Účet pro členy stáje. Po potvrzení e-mailu ho ještě schválí stáj, pak můžete rezervovat."
+  profil={profil}
+  email={null}
+  uzky
+  noindex
+>
+  {
+    !rezervaceNastaveny ? (
+      <Zprava typ="info">
+        Rezervační systém se právě spouští. Termíny zatím domlouvejte
+        telefonicky.
+      </Zprava>
+    ) : hotovo ? (
+      <div class="card p-7 lg:p-9">
+        <Zprava typ="ok">
+          <strong>Hotovo, poslali jsme vám e-mail.</strong>
+          <p class="mt-1">
+            Klikněte v něm na potvrzovací odkaz. Pak už zbývá jen schválení
+            stájí, o kterém vám dáme vědět.
+          </p>
+        </Zprava>
+        <p class="mt-6 text-[0.875rem] text-ink-3">
+          E-mail nedorazil? Podívejte se do spamu. Kdyby nic, ozvěte se nám
+          telefonicky a účet vám založíme ručně.
+        </p>
+        <a href="/rezervace" class="btn btn-primary mt-7">Zpět na kalendář</a>
+      </div>
+    ) : (
+      <form method="post" class="card p-7 lg:p-9">
+        {chyba && <Zprava typ="chyba" class="mb-6">{chyba}</Zprava>}
+
+        {/* Past na roboty. Člověk tohle pole nevidí, robot ho vyplní. */}
+        <div class="absolute left-[-9999px]" aria-hidden="true">
+          <label for="web">Web</label>
+          <input type="text" id="web" name="web" tabindex="-1" autocomplete="off" />
+        </div>
+
+        <div class="space-y-5">
+          <div>
+            <label for="jmeno" class="form-label">Jméno a příjmení</label>
+            <input
+              type="text"
+              id="jmeno"
+              name="jmeno"
+              value={jmeno}
+              required
+              autocomplete="name"
+              class="form-control"
+            />
+            <p class="mt-2 text-[0.8125rem] text-ink-3">
+              Pod tímhle jménem vás uvidí ostatní členové v kalendáři.
+            </p>
+          </div>
+
+          <div>
+            <label for="email" class="form-label">E-mail</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={email}
+              required
+              autocomplete="email"
+              autocapitalize="off"
+              spellcheck="false"
+              class="form-control"
+            />
+          </div>
+
+          <div>
+            <label for="telefon" class="form-label">Telefon</label>
+            <input
+              type="tel"
+              id="telefon"
+              name="telefon"
+              value={telefon}
+              autocomplete="tel"
+              class="form-control"
+            />
+            <p class="mt-2 text-[0.8125rem] text-ink-3">
+              Nepovinné. Pomůže stáji poznat, koho schvaluje.
+            </p>
+          </div>
+
+          <div>
+            <label for="heslo" class="form-label">Heslo</label>
+            <input
+              type="password"
+              id="heslo"
+              name="heslo"
+              required
+              minlength="8"
+              autocomplete="new-password"
+              class="form-control"
+            />
+            <p class="mt-2 text-[0.8125rem] text-ink-3">Aspoň 8 znaků.</p>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-8 w-full">
+          Vytvořit účet
+        </button>
+
+        <p class="mt-6 text-center text-[0.875rem]">
+          Účet už máte?{' '}
+          <a href="/rezervace/prihlaseni" class="link-underline font-semibold text-brass-700">
+            Přihlaste se
+          </a>
+        </p>
+      </form>
+    )
+  }
+</RezervaceLayout>

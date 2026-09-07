@@ -1,0 +1,429 @@
+---
+/**
+ * Týdenní mřížka jedné jízdárny: sloupce dny, řádky časy.
+ *
+ * Je to opravdová `<table>`, ne mřížka z divů. Odečítačka obrazovky tak sama
+ * řekne „středa, 18:00 – 19:00", což je u rozvrhu to jediné, co dává smysl.
+ *
+ * Buňka je odkaz jen tehdy, když se s ní dá něco dělat. Zavřený, obsazený
+ * nebo proběhlý termín odkaz není, aby se na něj nedalo omylem kliknout.
+ */
+
+import {
+  cas,
+  dlouheDatum,
+  jeMinulost,
+  kratkeDatum,
+  mista,
+  najdiBlokaci,
+  rozsahSlotu,
+  volnaMista,
+  zkratkaDne,
+  type Blokace,
+  type Jizdarna,
+  type ObsazenostSlotu,
+  type Slot,
+} from '@/lib/rezervace';
+
+interface Props {
+  jizdarna: Jizdarna;
+  dny: string[];
+  sloty: Slot[];
+  /** Klíč je `jizdarna|datum|slot`. */
+  obsazenost: Map<string, ObsazenostSlotu>;
+  blokace: Blokace[];
+  dnes: string;
+  prihlasen: boolean;
+  clen: boolean;
+}
+
+const { jizdarna, dny, sloty, obsazenost, blokace, dnes, prihlasen, clen } =
+  Astro.props;
+
+/** Kam vede klik na volný termín. Nepřihlášeného pošleme na přihlášení. */
+function odkaz(datum: string, slot: string): string {
+  const cil = `/rezervace/nova?jizdarna=${jizdarna.kod}&datum=${datum}&slot=${slot}`;
+  return prihlasen ? cil : `/rezervace/prihlaseni?dal=${encodeURIComponent(cil)}`;
+}
+---
+
+<div class="obal">
+  <table class="kal">
+    <caption class="sr-only">
+      Obsazenost jízdárny {jizdarna.nazev}. Kapacita {mista(jizdarna.kapacita)} v
+      jednom termínu.
+    </caption>
+
+    <thead>
+      <tr>
+        <th scope="col" class="rohova">Čas</th>
+        {
+          dny.map((den) => (
+            <th scope="col" class:list={['denni', den === dnes && 'je-dnes']}>
+              <span class="zkratka">{zkratkaDne(den)}</span>
+              <span class="datum">{kratkeDatum(den)}</span>
+            </th>
+          ))
+        }
+      </tr>
+    </thead>
+
+    <tbody>
+      {
+        sloty.map((slot) => (
+          <tr>
+            <th scope="row" class="casova">
+              <span>{cas(slot.zacatek)}</span>
+              <span class="do">{cas(slot.konec)}</span>
+            </th>
+
+            {
+              dny.map((den) => {
+                const zavreno = najdiBlokaci(blokace, jizdarna.kod, den, slot.kod);
+                const stav = obsazenost.get(`${jizdarna.kod}|${den}|${slot.kod}`);
+                const obsazeno = stav?.obsazeno ?? 0;
+                const volno = Math.max(0, jizdarna.kapacita - obsazeno);
+                const pryc = jeMinulost(den, slot.zacatek);
+                const moje = Boolean(stav?.moje_id);
+                const popis = `${dlouheDatum(den)}, ${rozsahSlotu(slot)}`;
+
+                if (pryc) {
+                  return (
+                    <td class="bunka je-pryc">
+                      <span class="sr-only">{popis} — proběhlo</span>
+                    </td>
+                  );
+                }
+
+                if (zavreno) {
+                  return (
+                    <td class="bunka je-zavreno">
+                      <span class="stitek">{zavreno.duvod || 'Zavřeno'}</span>
+                      <span class="sr-only">
+                        {popis} — zavřeno{zavreno.duvod ? `: ${zavreno.duvod}` : ''}
+                      </span>
+                    </td>
+                  );
+                }
+
+                const jmena = stav?.jmena ?? null;
+                const vypis = jmena ? jmena.slice(0, 2) : [];
+                const dalsi = jmena ? jmena.length - vypis.length : 0;
+
+                const obsah = (
+                  <>
+                    {clen && vypis.length > 0 && (
+                      <span class="jmena">
+                        {vypis.map((jmeno) => (
+                          <span class="jmeno">{jmeno}</span>
+                        ))}
+                        {dalsi > 0 && <span class="jmeno vic">+{dalsi} další</span>}
+                      </span>
+                    )}
+                    {!clen && obsazeno > 0 && (
+                      <span class="pocet">
+                        {obsazeno}/{jizdarna.kapacita}
+                      </span>
+                    )}
+                    {volno > 0 ? (
+                      /* U zcela volného termínu by se „Volno" opakovalo v
+                         devadesáti buňkách. Necháme mluvit barvu a text
+                         ukážeme, až na buňku někdo najede nebo se na ni
+                         dostane tabulátorem. */
+                      <span class:list={['volno', obsazeno === 0 && 'tise']}>
+                        {obsazeno === 0 ? 'Volno' : volnaMista(volno)}
+                      </span>
+                    ) : (
+                      <span class="plno">Obsazeno</span>
+                    )}
+                    <span class="sr-only">
+                      {popis} —{' '}
+                      {volno > 0 ? volnaMista(volno) : 'obsazeno'}
+                      {moje ? ', máte tu rezervaci' : ''}
+                    </span>
+                  </>
+                );
+
+                const trida = [
+                  'bunka',
+                  moje && 'je-moje',
+                  volno === 0 && !moje && 'je-plno',
+                  volno > 0 && obsazeno === 0 && 'je-volno',
+                ];
+
+                // Plný termín, ve kterém nemám rezervaci, nikam nevede.
+                if (volno === 0 && !moje) {
+                  return <td class:list={trida}>{obsah}</td>;
+                }
+
+                return (
+                  <td class:list={trida}>
+                    <a href={odkaz(den, slot.kod)} class="klik">
+                      {obsah}
+                    </a>
+                  </td>
+                );
+              })
+            }
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<p class="posuv" aria-hidden="true">Tabulkou jde posouvat do stran →</p>
+
+<ul class="legenda">
+  <li><span class="vzor v-volno"></span> Volno</li>
+  <li><span class="vzor v-plno"></span> Obsazeno</li>
+  <li><span class="vzor v-moje"></span> Moje rezervace</li>
+  <li><span class="vzor v-zavreno"></span> Zavřeno stájí</li>
+</ul>
+
+<style>
+  .obal {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
+    background: #fff;
+  }
+
+  .kal {
+    width: 100%;
+    min-width: 44rem;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.75rem;
+  }
+
+  /* Hlavička dnů drží nahoře, sloupec s časem vlevo. Na mobilu, kde se
+     tabulka posouvá do stran, je to jediný způsob, jak se v ní vyznat. */
+  .kal thead th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: var(--color-loden-900);
+    color: #fff;
+    font-weight: 600;
+    padding: 0.3rem 0.4rem;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .rohova {
+    left: 0;
+    z-index: 4 !important;
+    width: 4rem;
+    min-width: 4rem;
+    font-size: 0.625rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .denni .zkratka {
+    display: block;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+  }
+  .denni .datum {
+    display: block;
+    font-size: 0.625rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 400;
+  }
+  /* Musí přebít `.kal thead th` výše, proto ta delší cesta. */
+  .kal thead th.je-dnes {
+    background: var(--color-brass-700);
+  }
+  .kal thead th.je-dnes .datum {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .casova {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: var(--color-paper-2);
+    border-right: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+    padding: 0.2rem 0.35rem;
+    text-align: center;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    line-height: 1.25;
+  }
+  .casova .do {
+    display: block;
+    font-weight: 400;
+    font-size: 0.625rem;
+    color: var(--color-ink-3);
+  }
+  .casova .do::before {
+    content: '–\00a0';
+  }
+
+  .bunka {
+    border-right: 1px solid color-mix(in srgb, var(--color-ink) 8%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+    padding: 0;
+    /* 44 px je spodní hranice pro pohodlné klepnutí prstem. Myší se trefíte
+       i do menšího, tak na počítači řádky ještě o kus stáhneme (níž). */
+    height: 2.75rem;
+    min-width: 4.75rem;
+    vertical-align: top;
+    background: #fff;
+  }
+
+  .bunka > .klik,
+  .bunka > span:not(.sr-only) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+    justify-content: center;
+    height: 100%;
+    padding: 0.2rem 0.4rem;
+    text-align: left;
+  }
+
+  .klik {
+    text-decoration: none;
+    color: inherit;
+    transition: background-color 160ms var(--ease-out-natural);
+  }
+  .klik:hover {
+    background: var(--color-brass-100);
+  }
+  .klik:focus-visible {
+    outline: 2px solid var(--color-brass-600);
+    outline-offset: -2px;
+  }
+
+  .volno {
+    font-size: 0.625rem;
+    color: var(--color-loden-500);
+  }
+  .volno.tise {
+    opacity: 0;
+    transition: opacity 160ms var(--ease-out-natural);
+  }
+  .klik:hover .volno.tise,
+  .klik:focus-visible .volno.tise {
+    opacity: 1;
+  }
+  /* Na dotykovém displeji se nikam nenajíždí, tak ať je text vidět aspoň lehce. */
+  @media (hover: none) {
+    .volno.tise {
+      opacity: 0.6;
+    }
+  }
+
+  /* Myš se trefí i do nižšího řádku, tak ať se rozvrh vejde na obrazovku. */
+  @media (pointer: fine) {
+    .bunka {
+      height: 2.25rem;
+    }
+    .kal thead th {
+      padding: 0.25rem 0.4rem;
+    }
+  }
+  .plno {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--color-ink-3);
+  }
+  .pocet {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .jmena {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+  .jmeno {
+    font-size: 0.6875rem;
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+  .jmeno.vic {
+    color: var(--color-ink-3);
+    font-size: 0.625rem;
+  }
+
+  .je-volno {
+    background: color-mix(in srgb, var(--color-loden-100) 45%, #fff);
+  }
+  .je-plno {
+    background: var(--color-paper-2);
+  }
+  .je-moje {
+    background: var(--color-brass-100);
+    box-shadow: inset 3px 0 0 var(--color-brass-600);
+  }
+  .je-pryc {
+    background: repeating-linear-gradient(
+      -45deg,
+      var(--color-paper-2) 0 6px,
+      #fff 6px 12px
+    );
+  }
+  .je-zavreno {
+    background: var(--color-sand-300);
+  }
+  .je-zavreno .stitek {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--color-brass-900);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .posuv {
+    margin-top: 0.6rem;
+    font-size: 0.75rem;
+    color: var(--color-ink-3);
+  }
+  @media (min-width: 768px) {
+    .posuv {
+      display: none;
+    }
+  }
+
+  .legenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.25rem;
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    color: var(--color-ink-3);
+  }
+  .legenda li {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+  .vzor {
+    width: 1rem;
+    height: 1rem;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
+  }
+  .v-volno {
+    background: color-mix(in srgb, var(--color-loden-100) 45%, #fff);
+  }
+  .v-plno {
+    background: var(--color-paper-2);
+  }
+  .v-moje {
+    background: var(--color-brass-100);
+    box-shadow: inset 3px 0 0 var(--color-brass-600);
+  }
+  .v-zavreno {
+    background: var(--color-sand-300);
+  }
+</style>

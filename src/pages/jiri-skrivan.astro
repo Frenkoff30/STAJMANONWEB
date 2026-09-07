@@ -130,10 +130,10 @@ const jsonLd = {
       lead={page.sekce.jezdeckaRodinaSkrivanova.lead}
     />
 
-    <div class="mt-10 grid gap-px border border-ink/12 bg-ink/12 sm:grid-cols-2">
+    <div class="mt-10 grid gap-x-10 gap-y-8 sm:grid-cols-2">
       {
         family.map((f, i) => (
-          <div class="bg-paper p-8 lg:p-10" data-reveal style={`--reveal-delay:${i * 70}ms`}>
+          <div class="border-t border-ink/12 pt-5" data-reveal style={`--reveal-delay:${i * 70}ms`}>
             <p class="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-brass-700">
               {f.role}
             </p>

@@ -1,0 +1,63 @@
+---
+/**
+ * Shell pro rezervace.
+ *
+ * Zbytek webu je časopis s velkými fotkami, tohle je nástroj. Proto místo
+ * fotky jen tmavý pruh s nadpisem: rozvrh má být vidět hned, ne až po
+ * odrolování přes obrázek.
+ */
+
+import BaseLayout from './BaseLayout.astro';
+import UcetLista from '@/components/rezervace/UcetLista.astro';
+import type { Profil } from '@/lib/supabase';
+
+interface Props {
+  title: string;
+  description: string;
+  heading: string;
+  lead?: string;
+  profil: Profil | null;
+  email: string | null;
+  aktivni?: 'kalendar' | 'moje' | 'sprava';
+  /** Úzký sloupec pro formuláře. Kalendář potřebuje celou šířku. */
+  uzky?: boolean;
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description,
+  heading,
+  lead,
+  profil,
+  email,
+  aktivni,
+  uzky = false,
+  noindex = false,
+} = Astro.props;
+---
+
+<BaseLayout {title} {description} {noindex}>
+  <div class="grain relative overflow-hidden bg-loden-950 text-white">
+    <div class="container-x py-10 lg:py-14">
+      <nav aria-label="Drobečková navigace" class="mb-5">
+        <ol class="flex flex-wrap items-center gap-2 text-[0.75rem] text-white/55">
+          <li><a href="/" class="link-underline hover:text-white">Úvod</a></li>
+          <li aria-hidden="true">/</li>
+          <li><a href="/rezervace" class="link-underline hover:text-white">Rezervace</a></li>
+        </ol>
+      </nav>
+
+      <h1 class="t-1 max-w-3xl text-white">{heading}</h1>
+      {lead && <p class="lead mt-4 max-w-2xl text-white/70">{lead}</p>}
+    </div>
+  </div>
+
+  <UcetLista {profil} {email} {aktivni} />
+
+  <div class="bg-paper py-10 lg:py-14">
+    <div class:list={['container-x', uzky && 'max-w-2xl']}>
+      <slot />
+    </div>
+  </div>
+</BaseLayout>

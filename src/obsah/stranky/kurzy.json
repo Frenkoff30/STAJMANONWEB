@@ -19,7 +19,7 @@
     },
     "coSiZabalit": {
       "title": "Co si zabalit",
-      "lead": "Ubytování je v nově zařízených třílůžkových pokojích, jeden pokoj je čtyřlůžkový s palandami. Lůžkoviny a povlečení jsou součástí vybavení."
+      "lead": "Ubytování je v nově zařízených třílůžkových pokojích, jeden je čtyřlůžkový s palandami. Povlečení nosit nemusíte."
     },
     "kolikToStoji": {
       "title": "Kolik to stojí"
@@ -33,7 +33,7 @@
   },
   "terminyNote": {
     "before": "V případě zájmu nás kontaktujte na",
-    "after": "Zašleme vám přihlášku a bližší informace."
+    "after": "Pošleme vám přihlášku a podrobnosti."
   },
   "programNote": "Všechny lekce jsou přizpůsobeny jezdeckým zkušenostem dětí, které jsou rozdělené do tří skupin podle dovedností. Věnujeme se i úplným začátečníkům, u nich výcvik probíhá na lonži.",
   "cenaLabels": {
@@ -59,7 +59,7 @@
     "name": "Miroslava Skřivanová,",
     "phone": "606 836 449",
     "phoneHref": "+420606836449",
-    "after": "Licence: cvičitel, rozhodčí, stylový komisař, stavitel parkuru."
+    "after": "Trenér s licencí ČJF a třicetiletou praxí."
   },
   "cta": {
     "heading": "Zbývají poslední místa.",

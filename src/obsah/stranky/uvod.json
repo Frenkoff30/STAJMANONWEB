@@ -8,14 +8,14 @@
     "headingStart": "Místo, kde se",
     "headingAccent": "koně",
     "headingEnd": "berou vážně.",
-    "lead": "Sportovní stáj, jezdecká škola a penzion pod jednou střechou. Krytá hala 23 × 66 metrů, kolbiště, na kterém se jede Velká cena Litomyšle, a přes čtyřicet jezdeckých akcí ročně.",
+    "lead": "Sportovní stáj, jezdecká škola a penzion pod jednou střechou. Tři kilometry od Litomyšle.",
     "primaryCta": {
-      "label": "Ubytování a rezervace",
-      "href": "/penzion"
+      "label": "Rezervovat jízdárnu",
+      "href": "/rezervace"
     },
     "secondaryCta": {
-      "label": "Jezdecká škola",
-      "href": "/jezdecka-skola"
+      "label": "Ubytování a penzion",
+      "href": "/penzion"
     },
     "quickEvents": {
       "label": "Nejbližší akce",
@@ -32,133 +32,80 @@
   },
   "pillarsIntro": {
     "heading": "Jeden areál,\ntři různé důvody.",
-    "lead": "Vrcholový sport, výuka dětí a klidné ubytování na venkově se tu potkávají na jednom místě a navzájem si nepřekáží.",
+    "lead": "Vrcholový sport, výuka dětí a klidné ubytování na venkově.",
     "linkLabel": "Prohlédnout areál",
     "linkHref": "/areal"
   },
   "pillars": [
     {
       "title": "Sportovní stáj",
-      "text": "Trénink a ustájení na profesionální úrovni. Přes třicet let výsledků na domácích i zahraničních kolbištích, tři vítězství v Českém skokovém poháru.",
+      "text": "Trénink a ustájení na profesionální úrovni. Přes třicet let výsledků.",
       "href": "/sluzby",
-      "cta": "Služby a ustájení",
-      "image": "vc-skok",
-      "alt": "Skok na parkuru Velké ceny Litomyšle"
+      "cta": "Služby a ustájení"
     },
     {
       "title": "Jezdecká škola",
-      "text": "Od prvního sednutí na lonži po ZZVJ. Celoroční výuka pro děti od sedmi let i pro dospělé, na ponících i velkých koních, vždy pod odborným dohledem.",
+      "text": "Od prvního sednutí na lonži po ZZVJ. Celoročně, na ponících i velkých koních.",
       "href": "/jezdecka-skola",
-      "cta": "Jak výuka probíhá",
-      "image": "skola-01",
-      "alt": "Výuka jízdy na koni v kryté hale"
+      "cta": "Jak výuka probíhá"
     },
     {
       "title": "Penzion a restaurace",
-      "text": "24 lůžek s vlastním sociálním zařízením, restaurace se snídaněmi a terasa s výhledem na kolbiště. Tři kilometry od zámku v Litomyšli.",
+      "text": "24 lůžek, restaurace a terasa s výhledem na kolbiště.",
       "href": "/penzion",
-      "cta": "Ubytování a ceny",
-      "image": "pokoj-02",
-      "alt": "Pokoj penzionu Jízdárna Suchá"
+      "cta": "Ubytování a ceny"
     }
   ],
-  "facilities": {
-    "title": "Postaveno pro celoroční provoz.",
-    "lead": "Komplex 30 boxů, kryté haly a penzionu vznikl v roce 2007 za přispění prostředků státního rozpočtu z programu Ministerstva pro místní rozvoj.",
-    "linkLabel": "Vybavení a technické parametry",
-    "linkHref": "/areal"
-  },
   "calendar": {
     "title": "Co se u nás chystá",
-    "lead": "Skokové a drezurní závody, všestrannost, spřežení, jezdecké hry pro děti i soustředění. Loni jsme uspořádali přes čtyřicet akcí.",
+    "lead": "Závody, jezdecké hry pro děti i soustředění. Přes čtyřicet akcí ročně.",
     "actionLabel": "Celý kalendář"
   },
   "penzion": {
-    "image": "restaurace-01",
-    "imageAlt": "Restaurace penzionu Jízdárna Suchá",
+    "image": "pokoj-04",
+    "imageAlt": "Pokoj penzionu s obrazy koní na stěně",
     "title": "Přespat kousek od koní.",
-    "lead": "Dvou až čtyřlůžkové pokoje s vlastní koupelnou, kapacita 24 lůžek. Restaurace s obsluhou, snídaně na objednávku a venkovní terasa s výhledem na kolbiště a pastviny.",
-    "stats": [
-      {
-        "label": "Od",
-        "value": "740 Kč",
-        "note": "osoba / noc"
-      },
-      {
-        "label": "Kapacita",
-        "value": "24 lůžek",
-        "note": "restaurace pro 40 hostů"
-      }
-    ],
-    "bullets": [
-      "Vlastní koupelna a WC na každém pokoji",
-      "Snídaně na objednávku, rychlé občerstvení",
-      "Domácím mazlíčkům vstup povolen",
-      "Zámek Litomyšl (UNESCO) tři kilometry"
-    ],
+    "lead": "Dvou až čtyřlůžkové pokoje s vlastní koupelnou. Restaurace, snídaně na objednávku a terasa nad kolbištěm.",
     "primaryCta": {
       "label": "Ubytování a ceník",
       "href": "/penzion"
     },
-    "secondaryCtaLabel": "Rezervovat"
+    "secondaryCtaLabel": "Zavolat a rezervovat"
   },
   "skola": {
     "title": "Od lonže k prvnímu parkuru.",
-    "lead": "Jezdecká škola funguje od roku 2003. Výuka probíhá celoročně díky kryté hale, na ponících i velkých koních. Bezpečnostní třmeny, vesty a tříbodové helmy jsou samozřejmostí.",
+    "lead": "Od roku 2003. Celoročně díky kryté hale, na ponících i velkých koních.",
     "items": [
       {
         "title": "Jezdecká škola",
-        "text": "Docházka 1–2× týdně, individuální lekce i výuka ve skupině. Ochranné pomůcky na začátek půjčujeme.",
+        "text": "Docházka 1–2× týdně, individuálně i ve skupině.",
         "href": "/jezdecka-skola"
       },
       {
         "title": "Prázdninové kurzy",
-        "text": "Osm týdenních turnusů, 6 lekcí, teorie 2× denně, plná penze a celodenní program.",
+        "text": "Osm týdenních turnusů, šest lekcí, plná penze.",
         "href": "/kurzy"
       },
       {
         "title": "Pobyty s výukou",
-        "text": "Velikonoce a podzimní prázdniny s intenzivní přípravou na ZZVJ pro začátečníky i pokročilé.",
+        "text": "Velikonoce a podzimní prázdniny, příprava na ZZVJ.",
         "href": "/pobyty"
       }
     ],
     "imageTall": "kurzy-pony",
-    "imageTallAlt": "Dvě dívky na ponym během prázdninového kurzu",
-    "imageSquare": "deti-kun",
-    "imageSquareAlt": "Dívka s koněm na jezdeckém kurzu",
-    "yearValue": "2003",
-    "yearText": "rok, kdy jsme otevřeli jezdeckou školu. Od té doby jí prošly stovky dětí. Část z nich dodnes startuje na našich závodech."
+    "imageTallAlt": "Dvě dívky na ponym během prázdninového kurzu"
   },
   "uspechy": {
     "image": "skrivan-01",
     "imageAlt": "Jiří Skřivan na parkuru",
     "title": "Třicet let na kolbišti.",
-    "text": "Jiří Skřivan začal závodit ve dvanácti letech a svůj první parkur vyhrál na klisně Manon, po které se stáj jmenuje. Po stážích u Paula Darragha a Markuse Fuchse založil v roce 1992 vlastní stáj. V roce 2002 přišel s myšlenkou celorepublikového seriálu Velkých cen, ze kterého vznikl Český skokový pohár.",
+    "text": "Jiří Skřivan vyhrál svůj první parkur na klisně Manon, po které se stáj jmenuje. Od té doby sbírá stáj tituly doma i v zahraničí.",
     "primaryCtaLabel": "Kompletní výsledky",
     "secondaryCtaLabel": "Jiří Skřivan"
   },
-  "galerie": {
-    "title": "Jak to u nás vypadá",
-    "actionLabel": "Celá galerie",
-    "buttonLabel": "Otevřít fotogalerii",
-    "featured": [
-      "vc-skok",
-      "kurzy-pony",
-      "restaurace-01",
-      "hala-01",
-      "vc-divaci",
-      "pokoj-02",
-      "skola-01",
-      "kolbiste-02",
-      "deti-parkur",
-      "terasa-01",
-      "zavody-oxer",
-      "areal-letecky"
-    ]
-  },
   "cta": {
     "heading": "Přijeďte se podívat.\nNejlépe o víkendu, kdy se závodí.",
-    "lead": "Ustájení, výuka, kurz pro dítě nebo jen víkend na venkově, ozvěte se a domluvíme se. Areál najdete tři kilometry od Litomyšle.",
+    "lead": "Ustájení, výuka, kurz pro děti nebo jen víkend na venkově. Ozvěte se.",
     "buttonLabel": "Napsat nám"
   }
 }

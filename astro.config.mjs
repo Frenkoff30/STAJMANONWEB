@@ -12,14 +12,25 @@ export default defineConfig({
 
   /**
    * Web zůstává statický — všechny stránky se předgenerují při buildu.
-   * Adaptér je tu jen kvůli redakčnímu systému: /keystatic a /api/keystatic
-   * jsou jediné dvě serverové cesty (mají `prerender: false`).
+   * Serverové jsou jen dvě věci: redakční systém (/keystatic, /api/keystatic)
+   * a rezervace jízdáren (/rezervace/*). Obojí má `prerender: false`.
    */
   adapter: vercel(),
 
+  /**
+   * Odmítne POST z cizí domény. Bez toho by šlo z podvržené stránky odeslat
+   * jménem přihlášeného člena rezervaci nebo změnu údajů.
+   */
+  security: {
+    checkOrigin: true,
+  },
+
   integrations: [
     sitemap({
-      filter: (page) => !page.includes('/keystatic'),
+      // Do mapy webu patří kalendář, ne přihlašování a administrace.
+      filter: (page) =>
+        !page.includes('/keystatic') &&
+        !/\/rezervace\/./.test(page),
     }),
     react(),
     keystatic(),

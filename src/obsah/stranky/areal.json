@@ -5,7 +5,7 @@
   },
   "hero": {
     "heading": "Areál Jízdárna Suchá",
-    "lead": "Krytá hala, dvě venkovní plochy, třicet boxů a penzion, všechno na jednom místě tři kilometry od Litomyšle.",
+    "lead": "Krytá hala, dvě venkovní plochy, třicet boxů a penzion. Všechno na jednom místě.",
     "image": "areal-letecky",
     "imageAlt": "Letecký pohled na areál Jízdárna Suchá"
   },
@@ -16,7 +16,7 @@
     },
     "odUsedlostiKArealu": {
       "title": "Od usedlosti k areálu.",
-      "lead": "Třicet let postupného budování od přestavěného statku po komplex, kde se ročně koná přes čtyřicet jezdeckých akcí."
+      "lead": "Třicet let postupného budování od přestavěného statku po dnešní komplex."
     },
     "kdeNasNajdete": {
       "title": "Kde nás najdete"
@@ -26,17 +26,17 @@
     {
       "year": "1992",
       "title": "Zemědělská usedlost u Litomyšle",
-      "text": "Po návratu ze zahraničí zakoupil Jiří Skřivan zemědělskou usedlost nedaleko Litomyšle. Po přestavbě zde byl zahájen provoz sportovní stáje."
+      "text": "Přestavěný statek u Litomyšle, první boxy a první koně."
     },
     {
       "year": "1995",
       "title": "Nová stáj v Litomyšli",
-      "text": "Stáj se přestěhovala do nově vybudované moderní stáje přímo v Litomyšli."
+      "text": "Provoz se přesunul do nové stáje přímo v Litomyšli."
     },
     {
       "year": "1997",
       "title": "Přírodní areál u Primátorské hráze",
-      "text": "Pro pořádání jezdeckých závodů vzniklo pískové kolbiště, přírodní tribuna a travnaté kolbiště."
+      "text": "Pískové kolbiště s přírodní tribunou a travnatá plocha pro závody."
     },
     {
       "year": "2002",
@@ -46,29 +46,7 @@
     {
       "year": "2007",
       "title": "Areál Jízdárna Suchá",
-      "text": "V areálu Hřebčína Suchá byla dokončena stavba 30 boxů s krytou halou 23 × 66 m a penzionu s ubytováním, a to za přispění prostředků státního rozpočtu z programu Ministerstva pro místní rozvoj."
-    }
-  ],
-  "gallery": [
-    {
-      "image": "hala-01",
-      "alt": "Krytá jezdecká hala 23 × 66 m",
-      "label": "Krytá hala"
-    },
-    {
-      "image": "kolbiste-01",
-      "alt": "Venkovní kolbiště s parkurovými překážkami",
-      "label": "Kolbiště"
-    },
-    {
-      "image": "boxy-01",
-      "alt": "Stájová chodba s boxy pro koně",
-      "label": "Stáje a boxy"
-    },
-    {
-      "image": "areal-budovy",
-      "alt": "Budovy areálu s parkovištěm",
-      "label": "Zázemí"
+      "text": "Krytá hala 23 × 66 m, třicet boxů a penzion. Postaveno za přispění prostředků státního rozpočtu z programu Ministerstva pro místní rozvoj."
     }
   ],
   "mapa": {

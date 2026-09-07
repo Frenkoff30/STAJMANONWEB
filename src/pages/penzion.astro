@@ -24,7 +24,7 @@ const terasaImg = photo(page.images.terasa)!;
 const okoliImg = photo(page.images.okoli)!;
 
 /** Pokoje napřed, pak restaurace, terasa a exteriér. */
-const penzionPhotos = photosByTag('penzion');
+const penzionPhotos = photosByTag('penzion').slice(0, 6);
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -81,12 +81,12 @@ const jsonLd = {
 >
   <!-- Rychlé shrnutí -->
   <Section tone="paper" space="md" id="prehled">
-    <div class="grid gap-px border border-ink/12 bg-ink/12 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
       {
         page.prehled.map((s, i) => (
-          <div class="bg-paper p-7" data-reveal style={`--reveal-delay:${i * 70}ms`}>
+          <div class="border-t border-ink/12 pt-5" data-reveal style={`--reveal-delay:${i * 70}ms`}>
             <Icon name={s.icon as 'bed'} class="h-6 w-6 text-brass-600" />
-            <p class="mt-5 font-display text-[1.625rem] leading-none">{s.value}</p>
+            <p class="mt-4 font-display text-[1.5rem] leading-none">{s.value}</p>
             <p class="mt-2 text-[0.875rem] text-ink-3">{s.note}</p>
           </div>
         ))
@@ -267,11 +267,11 @@ const jsonLd = {
       </div>
 
       <div class="lg:col-span-8">
-        <ul class="grid gap-px border border-ink/12 bg-ink/12 sm:grid-cols-2">
+        <ul class="grid gap-x-10 gap-y-6 sm:grid-cols-2">
           {
             nearby.map((n, i) => (
               <li
-                class="bg-paper-2 p-7"
+                class="border-t border-ink/12 pt-4"
                 data-reveal
                 style={`--reveal-delay:${Math.min(i * 50, 250)}ms`}
               >

@@ -63,14 +63,14 @@ const images = page.images
 
               <p class="prose-manon mt-6">{s.description}</p>
 
-              <dl class="mt-10 grid gap-px border border-ink/12 bg-ink/12 sm:grid-cols-2">
+              <dl class="mt-10 grid gap-x-10 gap-y-5 sm:grid-cols-2">
                 {[
                   { k: 'Příjezd', v: s.arrival, icon: 'clock' as const },
                   { k: 'Odjezd', v: s.departure, icon: 'clock' as const },
                   { k: 'Výuka', v: s.lessons, icon: 'horse' as const },
                   { k: 'Navíc', v: s.extras, icon: 'sparkle' as const },
                 ].map((row) => (
-                  <div class="flex items-start gap-4 bg-paper p-6">
+                  <div class="flex items-start gap-4 border-t border-ink/12 pt-4">
                     <Icon name={row.icon} class="mt-0.5 h-5 w-5 shrink-0 text-brass-600" />
                     <div>
                       <dt class="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-ink-3/70">
@@ -87,7 +87,7 @@ const images = page.images
                   <p class="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-ink-3/70">
                     Cena
                   </p>
-                  <p class="mt-2 font-display text-[2.5rem] leading-none">{s.price}</p>
+                  <p class="mt-1.5 font-display text-[1.5rem] leading-none">{s.price}</p>
                   <ul class="mt-4 space-y-1.5">
                     {s.priceNotes.map((n) => (
                       <li class="flex gap-3 text-[0.875rem] text-ink-3">

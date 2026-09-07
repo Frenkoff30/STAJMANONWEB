@@ -16,8 +16,8 @@
     }
   },
   "pribeh": [
-    "Neváhejte nás kontaktovat v případě zájmu o koupi či prodej koní. Rádi s vámi osobně projednáme možnosti výběru koně z naší nabídky nebo možnost prodeje koně, který už pro vás není vhodný.",
-    "Koně si u nás lze také **pronajmout** dlouhodobě, na jednotlivé hodiny nebo na soustředění, včetně možnosti následného odkoupení."
+    "Neváhejte nás kontaktovat, když sháníte koně nebo naopak potřebujete svého prodat. Domluvíme se osobně.",
+    "Koně si u nás lze také **pronajmout**, s možností pozdějšího odkoupení."
   ],
   "kontaktLabel": "Napsat nám",
   "ocekavani": {
@@ -25,7 +25,7 @@
     "items": [
       {
         "title": "Kvalitní průprava",
-        "text": "Denní trénink vedený podle individuality koně, profesionální přístup a vyvážené krmení."
+        "text": "Profesionální přístup, vyvážené krmení a práce podle povahy konkrétního koně."
       },
       {
         "title": "Otevřená komunikace",
@@ -37,7 +37,7 @@
       },
       {
         "title": "Prodej za vás",
-        "text": "Zprostředkujeme i prodej koně, který už pro vás není vhodný."
+        "text": "Zprostředkujeme i prodej, pokud vám kůň přestane vyhovovat."
       }
     ]
   },

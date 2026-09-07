@@ -1,0 +1,103 @@
+---
+/**
+ * Nastavení nového hesla po kliknutí na odkaz z e-mailu.
+ *
+ * Sem se dá dostat jen s platnou session, kterou vytvořilo `/rezervace/potvrdit`
+ * ověřením tokenu z e-mailu. Bez ní se ukáže jen upozornění, že odkaz vypršel.
+ */
+
+export const prerender = false;
+
+import RezervaceLayout from '@/layouts/RezervaceLayout.astro';
+import Zprava from '@/components/rezervace/Zprava.astro';
+import { citelnaChyba, rezervaceNastaveny } from '@/lib/supabase';
+
+const { supabase, uzivatel, profil } = Astro.locals;
+
+let chyba = '';
+let hotovo = false;
+
+if (Astro.request.method === 'POST' && supabase && uzivatel) {
+  const formular = await Astro.request.formData();
+  const heslo = String(formular.get('heslo') ?? '');
+  const znovu = String(formular.get('znovu') ?? '');
+
+  if (heslo.length < 8) {
+    chyba = 'Heslo musí mít aspoň 8 znaků.';
+  } else if (heslo !== znovu) {
+    chyba = 'Hesla se neshodují.';
+  } else {
+    const { error } = await supabase.auth.updateUser({ password: heslo });
+    if (error) chyba = citelnaChyba(error);
+    else hotovo = true;
+  }
+}
+---
+
+<RezervaceLayout
+  title="Nové heslo"
+  description="Nastavení nového hesla do rezervačního systému."
+  heading="Nové heslo"
+  profil={profil}
+  email={uzivatel?.email ?? null}
+  uzky
+  noindex
+>
+  {
+    !rezervaceNastaveny ? (
+      <Zprava typ="info">Rezervační systém se právě spouští.</Zprava>
+    ) : hotovo ? (
+      <div class="card p-7 lg:p-9">
+        <Zprava typ="ok">Heslo je změněné, jste přihlášení.</Zprava>
+        <a href="/rezervace" class="btn btn-primary mt-7">Na kalendář</a>
+      </div>
+    ) : !uzivatel ? (
+      <div class="card p-7 lg:p-9">
+        <Zprava typ="chyba">
+          Odkaz na změnu hesla už neplatí. Odkazy vydrží hodinu a jdou použít
+          jednou.
+        </Zprava>
+        <a href="/rezervace/zapomenute-heslo" class="btn btn-primary mt-7">
+          Poslat nový odkaz
+        </a>
+      </div>
+    ) : (
+      <form method="post" class="card p-7 lg:p-9">
+        {chyba && <Zprava typ="chyba" class="mb-6">{chyba}</Zprava>}
+
+        <div class="space-y-5">
+          <div>
+            <label for="heslo" class="form-label">Nové heslo</label>
+            <input
+              type="password"
+              id="heslo"
+              name="heslo"
+              required
+              minlength="8"
+              autocomplete="new-password"
+              class="form-control"
+            />
+            <p class="mt-2 text-[0.8125rem] text-ink-3">Aspoň 8 znaků.</p>
+          </div>
+
+          <div>
+            <label for="znovu" class="form-label">Heslo pro kontrolu</label>
+            <input
+              type="password"
+              id="znovu"
+              name="znovu"
+              required
+              minlength="8"
+              autocomplete="new-password"
+              class="form-control"
+            />
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-8 w-full">
+          Uložit heslo
+        </button>
+      </form>
+    )
+  }
+</RezervaceLayout>

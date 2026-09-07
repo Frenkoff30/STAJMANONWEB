@@ -93,23 +93,12 @@ export const strankaUvod = stranka(
         text: odstavec('Popis'),
         href: fields.text({ label: 'Odkaz' }),
         cta: fields.text({ label: 'Text odkazu' }),
-        image: foto('Fotka', true),
-        alt: popisFotky(),
       }),
       {
         label: 'Tři důvody',
-        description: 'Číslování 01, 02, 03 doplní web sám podle pořadí.',
+        description: 'Pořadí na stránce se mění přetažením.',
         itemLabel: (props) => props.fields.title.value || 'Bez nadpisu',
       },
-    ),
-    facilities: fields.object(
-      {
-        title: fields.text({ label: 'Nadpis' }),
-        lead: odstavec('Text'),
-        linkLabel: fields.text({ label: 'Text odkazu' }),
-        linkHref: fields.text({ label: 'Odkaz' }),
-      },
-      { label: 'Pás s parametry areálu' },
     ),
     calendar: fields.object(
       {
@@ -125,15 +114,6 @@ export const strankaUvod = stranka(
         imageAlt: popisFotky(),
         title: fields.text({ label: 'Nadpis' }),
         lead: odstavec('Text'),
-        stats: fields.array(
-          fields.object({
-            label: fields.text({ label: 'Popisek', description: 'Například: Od' }),
-            value: fields.text({ label: 'Údaj', description: 'Například: 740 Kč' }),
-            note: fields.text({ label: 'Doplněk', description: 'Například: osoba / noc' }),
-          }),
-          { label: 'Dva údaje v rámečku', itemLabel: (props) => props.fields.value.value },
-        ),
-        bullets: seznam('Odrážky'),
         primaryCta: odkaz('Hlavní tlačítko'),
         secondaryCtaLabel: fields.text({
           label: 'Text tlačítka na e-mail',
@@ -149,10 +129,6 @@ export const strankaUvod = stranka(
         items: karty('Nabídka výuky', { href: true }),
         imageTall: foto('Fotka na výšku', true),
         imageTallAlt: popisFotky(),
-        imageSquare: foto('Fotka na čtverec', true),
-        imageSquareAlt: popisFotky(),
-        yearValue: fields.text({ label: 'Letopočet v rámečku' }),
-        yearText: odstavec('Text v rámečku'),
       },
       { label: 'Pás o jezdecké škole' },
     ),
@@ -166,20 +142,6 @@ export const strankaUvod = stranka(
         secondaryCtaLabel: fields.text({ label: 'Text druhého tlačítka' }),
       },
       { label: 'Pás o úspěších' },
-    ),
-    galerie: fields.object(
-      {
-        title: fields.text({ label: 'Nadpis' }),
-        actionLabel: fields.text({ label: 'Text odkazu vpravo' }),
-        buttonLabel: fields.text({ label: 'Text tlačítka pod pásem' }),
-        featured: fields.array(foto('Fotka', true), {
-          label: 'Fotky v pohyblivém pásu',
-          description:
-            'Vybírejte z fotek, které už jsou ve Fotogalerii. Pořadí se mění přetažením.',
-          itemLabel: (props) => props.value ?? 'Vyberte fotku',
-        }),
-      },
-      { label: 'Pás s fotkami' },
     ),
     cta: fields.object(
       {
@@ -215,14 +177,6 @@ export const strankaAreal = stranka(
         text: odstavec('Popis'),
       }),
       { label: 'Historie areálu', itemLabel: (props) => `${props.fields.year.value} — ${props.fields.title.value}` },
-    ),
-    gallery: fields.array(
-      fields.object({
-        image: foto('Fotka', true),
-        alt: popisFotky(),
-        label: fields.text({ label: 'Popisek přes fotku' }),
-      }),
-      { label: 'Čtyři fotky areálu', itemLabel: (props) => props.fields.label.value },
     ),
     mapa: fields.object(
       {
@@ -301,7 +255,6 @@ export const strankaSluzby = stranka(
     sekce: fields.object(
       {
         coProVasUdelame: sekce('Sekce: výpis služeb'),
-        kdeSePracuje: sekce('Sekce: plochy'),
       },
       { label: 'Nadpisy sekcí' },
     ),

@@ -1,0 +1,232 @@
+---
+/**
+ * Potvrzení jednoho termínu: zarezervovat, nebo zrušit.
+ *
+ * Mezikrok je tu schválně. Rezervace se nedá vytvořit prostým kliknutím
+ * v kalendáři, takže ji nezaloží omylem prst na mobilu ani prohlížeč, který
+ * si dopředu stahuje odkazy. Zápis dělá vždycky POST.
+ */
+
+export const prerender = false;
+
+import RezervaceLayout from '@/layouts/RezervaceLayout.astro';
+import Zprava from '@/components/rezervace/Zprava.astro';
+import { citelnaChyba } from '@/lib/supabase';
+import {
+  dlouheDatum,
+  jeMinulost,
+  mista,
+  najdiBlokaci,
+  platneDatum,
+  pondeliTydne,
+  rozsahSlotu,
+  type Blokace,
+  type Jizdarna,
+  type ObsazenostSlotu,
+  type Slot,
+} from '@/lib/rezervace';
+
+const { supabase, profil, uzivatel } = Astro.locals;
+
+// Sem se bez přihlášení nedostane, o to se postaralo middleware.
+if (!supabase || !uzivatel) return Astro.redirect('/rezervace');
+
+const parametry = Astro.url.searchParams;
+const kodJizdarny = parametry.get('jizdarna') ?? '';
+const datum = parametry.get('datum') ?? '';
+const kodSlotu = parametry.get('slot') ?? '';
+
+if (!platneDatum(datum)) return Astro.redirect('/rezervace');
+
+const [vysledekJizdarny, vysledekSlotu] = await Promise.all([
+  supabase.from('jizdarny').select('*').eq('kod', kodJizdarny).maybeSingle(),
+  supabase.from('sloty').select('*').eq('kod', kodSlotu).maybeSingle(),
+]);
+
+const jizdarna = vysledekJizdarny.data as Jizdarna | null;
+const slot = vysledekSlotu.data as Slot | null;
+
+if (!jizdarna || !slot) return Astro.redirect('/rezervace');
+
+const zpetNaKalendar = `/rezervace?od=${pondeliTydne(datum)}&jizdarna=${jizdarna.kod}`;
+const clen = Boolean(profil?.schvaleno);
+
+let chyba = '';
+
+/* ------------------------------------------------------------------ zápis */
+
+if (Astro.request.method === 'POST') {
+  const formular = await Astro.request.formData();
+  const akce = formular.get('akce');
+
+  if (akce === 'zrusit') {
+    const { error } = await supabase
+      .from('rezervace')
+      .delete()
+      .eq('jizdarna', jizdarna.kod)
+      .eq('datum', datum)
+      .eq('slot', slot.kod)
+      .eq('uzivatel', uzivatel.id);
+
+    if (error) chyba = citelnaChyba(error);
+    else return Astro.redirect(`${zpetNaKalendar}&ok=zruseno`);
+  }
+
+  if (akce === 'rezervovat') {
+    const poznamka = String(formular.get('poznamka') ?? '')
+      .trim()
+      .slice(0, 60);
+
+    // `uzivatel` se bere ze session, ne z formuláře. Poslat cizí id nejde.
+    const { error } = await supabase.from('rezervace').insert({
+      jizdarna: jizdarna.kod,
+      datum,
+      slot: slot.kod,
+      uzivatel: uzivatel.id,
+      poznamka,
+    });
+
+    if (error) chyba = citelnaChyba(error);
+    else return Astro.redirect(`${zpetNaKalendar}&ok=rezervovano`);
+  }
+}
+
+/* ------------------------------------------------------------------ stav */
+
+const [{ data: bunky }, { data: blokaceData }] = await Promise.all([
+  supabase.rpc('kalendar', { od: datum, dokdy: datum }),
+  supabase.from('blokace').select('*').eq('datum', datum),
+]);
+
+const stav = ((bunky as ObsazenostSlotu[]) ?? []).find(
+  (b) => b.jizdarna === jizdarna.kod && b.slot === slot.kod && b.datum === datum,
+);
+
+const zavreno = najdiBlokaci(
+  (blokaceData as Blokace[]) ?? [],
+  jizdarna.kod,
+  datum,
+  slot.kod,
+);
+
+const obsazeno = stav?.obsazeno ?? 0;
+const volno = Math.max(0, jizdarna.kapacita - obsazeno);
+const mam = Boolean(stav?.moje_id);
+const pryc = jeMinulost(datum, slot.zacatek);
+const jmena = stav?.jmena ?? [];
+---
+
+<RezervaceLayout
+  title={`${jizdarna.nazev} — ${dlouheDatum(datum)}`}
+  description="Potvrzení rezervace jízdárny."
+  heading={mam ? 'Vaše rezervace' : 'Rezervace termínu'}
+  profil={profil}
+  email={uzivatel.email}
+  uzky
+  noindex
+>
+  <div class="card p-7 lg:p-9">
+    <p class="eyebrow text-brass-700">{jizdarna.nazev}</p>
+    <p class="t-3 mt-2">{dlouheDatum(datum)}</p>
+    <p class="mt-1 font-display text-[1.75rem]">{rozsahSlotu(slot)}</p>
+
+    <dl class="mt-7 space-y-px border-t border-ink/12">
+      <div class="flex justify-between gap-4 border-b border-ink/12 py-3 text-[0.9375rem]">
+        <dt class="text-ink-3">Kapacita</dt>
+        <dd class="font-semibold">{mista(jizdarna.kapacita)}</dd>
+      </div>
+      <div class="flex justify-between gap-4 border-b border-ink/12 py-3 text-[0.9375rem]">
+        <dt class="text-ink-3">Obsazeno</dt>
+        <dd class="font-semibold">
+          {obsazeno} z {jizdarna.kapacita}
+        </dd>
+      </div>
+      {
+        clen && jmena.length > 0 && (
+          <div class="flex justify-between gap-4 border-b border-ink/12 py-3 text-[0.9375rem]">
+            <dt class="text-ink-3">Kdo tu jezdí</dt>
+            <dd class="text-right">
+              {jmena.map((jmeno) => (
+                <span class="block">{jmeno}</span>
+              ))}
+            </dd>
+          </div>
+        )
+      }
+    </dl>
+
+    {chyba && <Zprava typ="chyba" class="mt-7">{chyba}</Zprava>}
+
+    <div class="mt-8">
+      {
+        mam ? (
+          <form method="post">
+            <input type="hidden" name="akce" value="zrusit" />
+            <Zprava typ="ok" class="mb-6">
+              Tenhle termín máte zarezervovaný.
+            </Zprava>
+            <div class="flex flex-wrap gap-3">
+              <button type="submit" class="btn btn-outline">Zrušit rezervaci</button>
+              <a href={zpetNaKalendar} class="btn btn-primary">Zpět na kalendář</a>
+            </div>
+          </form>
+        ) : pryc ? (
+          <>
+            <Zprava typ="info" class="mb-6">Tenhle termín už je za námi.</Zprava>
+            <a href={zpetNaKalendar} class="btn btn-primary">Zpět na kalendář</a>
+          </>
+        ) : zavreno ? (
+          <>
+            <Zprava typ="info" class="mb-6">
+              Termín má stáj zavřený{zavreno.duvod ? `: ${zavreno.duvod}` : ''}.
+            </Zprava>
+            <a href={zpetNaKalendar} class="btn btn-primary">Zpět na kalendář</a>
+          </>
+        ) : !clen ? (
+          <>
+            <Zprava typ="dulezite" class="mb-6">
+              Váš účet zatím čeká na schválení stájí. Jakmile ho potvrdí, budete
+              moct rezervovat.
+            </Zprava>
+            <a href={zpetNaKalendar} class="btn btn-primary">Zpět na kalendář</a>
+          </>
+        ) : volno === 0 ? (
+          <>
+            <Zprava typ="info" class="mb-6">
+              Termín je plně obsazený. Zkuste jiný čas, nebo se podívejte za
+              chvíli, jestli někdo nezrušil.
+            </Zprava>
+            <a href={zpetNaKalendar} class="btn btn-primary">Zpět na kalendář</a>
+          </>
+        ) : (
+          <form method="post">
+            <input type="hidden" name="akce" value="rezervovat" />
+
+            <label for="poznamka" class="form-label">
+              Poznámka pro ostatní (nepovinné)
+            </label>
+            <input
+              type="text"
+              id="poznamka"
+              name="poznamka"
+              maxlength="60"
+              class="form-control"
+              placeholder="Např. skoky, lonž, výuka"
+              autocomplete="off"
+            />
+            <p class="mt-2 text-[0.8125rem] text-ink-3">
+              Uvidí ji ostatní členové v kalendáři u vašeho jména.
+            </p>
+
+            <div class="mt-8 flex flex-wrap gap-3">
+              <button type="submit" class="btn btn-primary">
+                Zarezervovat termín
+              </button>
+              <a href={zpetNaKalendar} class="btn btn-outline">Zpět</a>
+            </div>
+          </form>
+        )
+      }
+    </div>
+  </div>
+</RezervaceLayout>

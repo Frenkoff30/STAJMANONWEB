@@ -12,12 +12,12 @@
   "sekce": {
     "dvaTerminyMimoPrazdniny": {
       "title": "Dva termíny mimo prázdniny",
-      "lead": "Pobyty jsou vhodné pro začínající i pokročilé jezdce od osmi let. Lekce jsou vždy přizpůsobené zkušenostem jezdce."
+      "lead": "Vhodné od osmi let. Lekce se vždycky přizpůsobí tomu, co jezdec umí."
     }
   },
   "cta": {
     "heading": "Napište nám a pošleme přihlášku.",
-    "lead": "V případě zájmu o pobyt nás kontaktujte e-mailem, zašleme vám přihlášku a bližší informace, případně odpovíme na další otázky.",
+    "lead": "Napište nám e-mail a ozveme se s přihláškou i odpověďmi na dotazy.",
     "secondaryLabel": "Letní kurzy"
   },
   "images": [

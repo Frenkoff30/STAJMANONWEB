@@ -41,6 +41,7 @@ Web běží na `http://localhost:4321`.
 | Obrázky | `astro:assets` + **sharp** | Automatický převod na WebP, responsivní `srcset`, lazy loading. 50 MB zdrojových fotek → ~2 MB skutečně přenášených dat. |
 | Mapa | OpenStreetMap `<iframe>` | Bez API klíče a bez trackovacích cookies. |
 | Redakční systém | **Keystatic** | Administrace na `/keystatic`, obsah jako JSON v repozitáři. Žádná databáze, žádný měsíční poplatek, obsah je verzovaný v gitu. |
+| Rezervace | **Supabase** (Postgres + Auth) | Jediná část webu s databází. Přihlašování a pravidla „kdo co smí" hlídá databáze, ne prohlížeč. |
 | Hosting | **Vercel** (`@astrojs/vercel`) | Uložení v administraci = commit = automatický build. |
 | Formulář | jeden PHP skript v `public/` | Funguje na běžném hostingu s `mail()`, i bez JavaScriptu. Na Vercelu se přepne na formulářovou službu. |
 
@@ -50,6 +51,7 @@ Web běží na `http://localhost:4321`.
 
 ```
 keystatic.config.ts    definice redakčního systému (kolekce, singletony)
+supabase/schema.sql    databáze rezervací: tabulky, pravidla, kontroly
 keystatic.fields.ts    sdílená pole (fotka, záhlaví, nadpis sekce…)
 keystatic.stranky.ts   pole pro texty jednotlivých stránek
 scripts/               pomocné skripty (zmenšení fotek, úklid buildu)
@@ -58,6 +60,8 @@ src/
 ├── components/        Header, Footer, SEO, Lightbox, EventRow, Prose…
 ├── data/              čtecí vrstva nad obsahem + pomocné funkce
 ├── layouts/           BaseLayout (shell) + PageLayout (shell s hero fotkou)
+├── lib/               připojení k Supabase a logika rezervací
+├── middleware.ts      přihlášený člověk a hlídání přístupu k /rezervace
 ├── obsah/             ★ VEŠKERÝ OBSAH, spravuje ho redakční systém
 ├── pages/             jedna .astro = jedna URL
 └── styles/global.css  design systém: barvy, typografie, komponentní třídy
@@ -202,6 +206,7 @@ starém webu ležel pod matoucími adresami.
 | `/jiri-skrivan` | `jiri-skrivan.php` |
 | `/galerie` | `fotogalerie.php` (Gallery2) |
 | `/kontakt` | `kontakt.php` |
+| `/rezervace` | nová stránka (rozvrh jízdáren, dřív tabulka v Google Sheets) |
 
 Přesměrování ze všech starých adres řeší `public/.htaccess` (Apache) nebo
 `public/_redirects` (Netlify). Odkazy zvenčí i pozice ve vyhledávačích tak
@@ -229,8 +234,21 @@ podporu české diakritiky.
 a spol., protože ty by kolidovaly s Tailwind utilitami pro výšku.
 
 **Sekce nemají kickery.** Žádné „TŘI DŮVODY SEM PŘIJET" nad nadpisem ani
-dekorativní linky — hierarchii nese samotný headline. Třída `.eyebrow` zůstává
+dekorativní linky, hierarchii nese samotný headline. Třída `.eyebrow` zůstává
 jen pro funkční popisky (patička, karty, tabulky).
+
+**Žádné rámečky, žádné číslování.** Přehledy údajů (parametry areálu, ceny,
+okolí, klíčová čísla) jsou sloupce oddělené vlásečnicí nad každou položkou,
+ne mřížka orámovaných čtverců. Stejně tak seznamy nemají ozdobné číslice
+01, 02, 03: pořadí nese samotné řazení. Výjimkou je přepínač jízdáren
+v rezervacích, kde výplň označuje vybranou položku, tedy nese informaci.
+
+```html
+<!-- takhle ano -->
+<dl class="grid gap-x-10 gap-y-8 sm:grid-cols-3">
+  <div class="border-t border-ink/12 pt-5">…</div>
+</dl>
+```
 
 ### Orientace na dlouhých stránkách
 
@@ -298,6 +316,141 @@ fulltext a filtry, které si sbalené roky samy rozbalí.
 
 ---
 
+## Rezervace jízdáren
+
+Na `/rezervace` běží týdenní rozvrh tří jízdáren. Je to jediná část webu
+s databází: obsah zbytku webu žije v gitu, ale rezervace se mění každou
+hodinu a musí být vidět okamžitě.
+
+| Vrstva | Volba | Proč |
+| --- | --- | --- |
+| Databáze | **Supabase** (PostgreSQL) | Zdarma pro tuhle velikost, zálohy a přihlašování v jednom. |
+| Přihlašování | **Supabase Auth** | Hashování hesel, potvrzovací e-maily, reset hesla a omezení počtu pokusů jsou hotové a odladěné. Vlastní přihlašování je nejčastější místo, kde se web dá prolomit. |
+| Pravidla | **Row Level Security** v databázi | Kdo co smí, rozhoduje databáze. Web je jen okno do ní. |
+| Stránky | Astro s `prerender: false` | Zbytek webu zůstává statický, serverové je jen `/rezervace/*`. |
+
+### Kdo co vidí
+
+| | Kalendář | Jména jezdců | Rezervovat |
+| --- | --- | --- | --- |
+| Kdokoli | ano | ne | ne |
+| Přihlášený, neschválený | ano | ne | ne |
+| Schválený člen | ano | ano | ano |
+| Správce | ano | ano | ano + administrace |
+
+Účet vzniká ve dvou krocích: člověk se zaregistruje a potvrdí e-mail, pak ho
+ještě musí schválit stáj v `/rezervace/sprava`. Do té doby rozvrh jen vidí.
+
+### Jak to spustit (jednorázově)
+
+1. **Založit projekt** na [supabase.com](https://supabase.com), region Frankfurt.
+2. **Vytvořit tabulky.** V Supabase *SQL Editor → New query* vložit celý obsah
+   `supabase/schema.sql` a spustit. Skript jde pustit i podruhé, nic nesmaže.
+3. **Nastavit proměnné** ve Vercelu (*Settings → Environment Variables*) a
+   lokálně v `.env`:
+
+   | Proměnná | Kde ji vzít |
+   | --- | --- |
+   | `SUPABASE_URL` | Supabase → Settings → API → Project URL |
+   | `SUPABASE_ANON_KEY` | tamtéž, klíč `anon` / `public` |
+
+4. **Upravit e-mailové šablony.** Supabase → *Authentication → Email Templates*.
+   V šablonách *Confirm signup* a *Reset password* nahradit odkaz za:
+
+   ```
+   {{ .SiteURL }}/rezervace/potvrdit?token_hash={{ .TokenHash }}&type=signup
+   ```
+
+   (u obnovy hesla `type=recovery`). Bez téhle úpravy odkaz funguje jen
+   v prohlížeči, ve kterém registrace začala, což lidem otevírajícím e-mail
+   na mobilu nevyjde.
+
+5. **Povolit adresu webu.** Supabase → *Authentication → URL Configuration*,
+   do *Site URL* dát `https://www.stajmanon.cz` a do *Redirect URLs* přidat
+   `https://www.stajmanon.cz/rezervace/potvrdit`.
+6. **Zaregistrovat se** na `/rezervace/registrace` a z prvního účtu udělat
+   správce. V SQL editoru:
+
+   ```sql
+   update public.profily set role = 'spravce', schvaleno = true
+   where id = (select id from auth.users where email = 'vas@email.cz');
+   ```
+
+Dokud proměnné chybí, stránka `/rezervace` se jen omluví, že se systém
+spouští. Zbytek webu funguje dál, build nespadne.
+
+### Co se spravuje na webu
+
+`/rezervace/sprava`, vidí ji jen správce:
+
+| Sekce | Co dělá |
+| --- | --- |
+| **Čeká na schválení** | pustí nového jezdce k rezervacím |
+| **Členové** | pozastavení člena, jmenování dalšího správce |
+| **Zavřené termíny** | závody, soustředění, údržba. Zavřený termín nejde rezervovat a v kalendáři je u něj vidět důvod |
+| **Oznámení** | hláška nad kalendářem pro všechny |
+| **Pravidla** | jak daleko dopředu jde rezervovat, kolik rezervací smí mít člen, do kdy jde rušit |
+
+Jízdárny, jejich kapacity a časové sloty jsou v `supabase/schema.sql`.
+Mění je vývojář, protože změna kapacity se dotkne už uložených rezervací.
+
+Výchozí stav odpovídá rozpisu, na který je stáj zvyklá:
+
+| Jízdárna | Kapacita |
+| --- | --- |
+| Krytá hala | 5 jezdců |
+| Venkovní jízdárna | 2 jezdci |
+| Venkovní malá jízdárna | 2 jezdci |
+
+Časy: 6:30–8:30, 8:30–9:00 a pak po hodině až do 21:00.
+
+### Proč se tomu dá věřit
+
+Bezpečnost neleží v šablonách, ale v databázi. I kdyby někdo web obešel
+a mluvil s databází přímo, platí pořád totéž:
+
+- **Rezervovat může jen schválený člen.** Kontroluje to pravidlo RLS
+  i trigger `rezervace_kontrola`.
+- **Rezervovat jde jen sám za sebe.** Vlastník rezervace se bere
+  z přihlášení, ne z formuláře. Poslat cizí id nikam nevede.
+- **Kapacita se nedá přebookovat.** Dva lidé, kteří kliknou na poslední místo
+  ve stejnou chvíli, se v databázi seřadí za sebe (`pg_advisory_xact_lock`)
+  a druhý dostane hlášku, že je obsazeno.
+- **Do minulosti ani přes blokaci se nerezervuje.**
+- **Jména jezdců nepřihlášený nedostane.** Rozhoduje o tom funkce
+  `kalendar()` v databázi, ne šablona.
+- **Roli ani schválení si nikdo nepřepíše.** Trigger `profil_chran_prava`
+  vrátí obě hodnoty zpět každému, kdo není správce.
+- **Poslední správce nemůže přijít o práva**, jinak by se do administrace
+  už nikdo nedostal.
+- **Přihlašovací token je v cookie `httpOnly`**, takže se k němu JavaScript
+  na stránce nedostane.
+- **Odhlášení a všechny zápisy jdou přes POST** a Astro odmítne požadavek
+  z cizí domény (`security.checkOrigin`).
+- **Stránky rezervací se neukládají do mezipaměti**, aby se po odhlášení
+  nedal tlačítkem zpět zobrazit cizí kalendář.
+
+### Kde co leží
+
+```
+supabase/schema.sql             tabulky, pravidla RLS, kontroly, výchozí data
+src/lib/supabase.ts             připojení k databázi, překlad chybových hlášek
+src/lib/rezervace.ts            počítání s datem a časem, skloňování
+src/middleware.ts               načtení přihlášeného člověka, hlídání přístupu
+src/layouts/RezervaceLayout.astro
+src/components/rezervace/       kalendář, lišta účtu, hlášky
+src/pages/rezervace/
+├── index.astro                 týdenní kalendář
+├── nova.astro                  potvrzení a zrušení jednoho termínu
+├── moje.astro                  moje rezervace a údaje
+├── sprava.astro                administrace
+├── prihlaseni.astro, registrace.astro, odhlaseni.ts
+├── zapomenute-heslo.astro, nove-heslo.astro
+└── potvrdit.ts                 cíl odkazů z e-mailů
+```
+
+---
+
 ## Kontaktní formulář
 
 `public/kontakt-odeslat.php` — jediný kus serverového kódu na webu.
@@ -325,7 +478,8 @@ Vzor je v `.env.example`.
 ## Nasazení
 
 Web je statický: všech 17 stránek se předgeneruje při buildu. Serverové jsou
-jen dvě cesty, `/keystatic` a `/api/keystatic`, tedy samotná administrace.
+jen dvě věci, administrace (`/keystatic`, `/api/keystatic`) a rezervace
+jízdáren (`/rezervace/*`).
 
 ### Vercel
 
@@ -342,6 +496,8 @@ adres a bezpečnostní hlavičky, zbytek zajistí adaptér `@astrojs/vercel`.
 | `PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` | název GitHub App |
 | `PUBLIC_FORM_ENDPOINT` | kam odesílat kontaktní formulář |
 | `PUBLIC_FORM_ACCESS_KEY` | klíč formulářové služby |
+| `SUPABASE_URL` | databáze rezervací |
+| `SUPABASE_ANON_KEY` | tamtéž, veřejný klíč |
 
 ### Zprovoznění administrace (jednorázově)
 
@@ -357,8 +513,8 @@ přesunu pod jiný GitHub účet je potřeba ji přepsat.
 
 ### Apache hosting
 
-Pokud by web měl běžet na běžném hostingu s PHP, administrace tam fungovat
-nebude (potřebuje serverovou část). Web samotný ano: stačí z
+Pokud by web měl běžet na běžném hostingu s PHP, administrace ani rezervace
+tam fungovat nebudou (obojí potřebuje serverovou část). Web samotný ano: stačí z
 `astro.config.mjs` odebrat adaptér, spustit `npm run build` a nahrát obsah
 `dist/`. Obsah by se pak upravoval jen lokálně přes `npm run dev`.
 
@@ -376,3 +532,9 @@ nebude (potřebuje serverovou část). Web samotný ano: stačí z
   doména, dá se nahradit vlastní serverovou funkcí a odesílat e-maily přímo.
 - **Cizojazyčné verze.** Staré `/en/` a `/de/` na původním webu nefungovaly.
   Astro má i18n připravené, kdyby byl o překlad zájem.
+- **E-maily z rezervací.** Systém teď posílá jen potvrzení registrace a obnovu
+  hesla, o které se stará Supabase. Upozornění stáji na nového jezdce
+  ke schválení, členovi na schválení účtu a připomínku den před termínem by
+  bylo potřeba doplnit (Supabase *Database Webhooks* a odesílací služba).
+- **Opakované rezervace.** Kdo jezdí každé úterý v šest, musí si teď každý
+  týden kliknout znovu. Šlo by přidat „zopakovat na další čtyři týdny".

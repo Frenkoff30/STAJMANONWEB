@@ -1,0 +1,145 @@
+---
+/**
+ * Přihlášení do rezervací.
+ *
+ * Heslo se nikam neukládá a nikam neloguje, jen se pošle Supabase, která ho
+ * porovná s hashem. Zpátky přijde token, který server uloží do cookie
+ * nedostupné JavaScriptu.
+ */
+
+export const prerender = false;
+
+import RezervaceLayout from '@/layouts/RezervaceLayout.astro';
+import Zprava from '@/components/rezervace/Zprava.astro';
+import { citelnaChyba, rezervaceNastaveny } from '@/lib/supabase';
+
+const { supabase, uzivatel, profil } = Astro.locals;
+
+/**
+ * Kam po přihlášení. Přijímáme jen adresu na tomhle webu — jinak by stačilo
+ * poslat někomu odkaz `?dal=https://podvod.cz` a přihlášení by ho tam hodilo.
+ */
+function bezpecnyCil(hodnota: string | null): string {
+  if (!hodnota) return '/rezervace';
+  if (!hodnota.startsWith('/') || hodnota.startsWith('//')) return '/rezervace';
+  return hodnota;
+}
+
+const dal = bezpecnyCil(Astro.url.searchParams.get('dal'));
+
+if (uzivatel) return Astro.redirect(dal);
+
+let chyba = '';
+let email = '';
+
+if (Astro.request.method === 'POST' && supabase) {
+  const formular = await Astro.request.formData();
+  email = String(formular.get('email') ?? '').trim();
+  const heslo = String(formular.get('heslo') ?? '');
+
+  if (!email || !heslo) {
+    chyba = 'Vyplňte prosím e-mail i heslo.';
+  } else {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password: heslo,
+    });
+
+    if (error) chyba = citelnaChyba(error);
+    else return Astro.redirect(bezpecnyCil(String(formular.get('dal') ?? dal)));
+  }
+}
+
+const odhlasen = Astro.url.searchParams.has('odhlasen');
+const potvrzeno = Astro.url.searchParams.has('potvrzeno');
+const spatnyOdkaz = Astro.url.searchParams.get('odkaz') === 'neplatny';
+---
+
+<RezervaceLayout
+  title="Přihlášení do rezervací"
+  description="Přihlášení členů stáje do rezervačního systému jízdáren."
+  heading="Přihlášení"
+  lead="Rezervovat jízdárnu mohou členové stáje se schváleným účtem."
+  profil={profil}
+  email={null}
+  uzky
+  noindex
+>
+  {
+    !rezervaceNastaveny ? (
+      <Zprava typ="info">
+        Rezervační systém se právě spouští. Termíny zatím domlouvejte
+        telefonicky.
+      </Zprava>
+    ) : (
+      <>
+        {odhlasen && (
+          <Zprava typ="ok" class="mb-6">
+            Odhlášení proběhlo, na shledanou.
+          </Zprava>
+        )}
+
+        {potvrzeno && (
+          <Zprava typ="ok" class="mb-6">
+            E-mail je potvrzený. Teď se můžete přihlásit.
+          </Zprava>
+        )}
+
+        {spatnyOdkaz && (
+          <Zprava typ="chyba" class="mb-6">
+            Odkaz z e-mailu už neplatí. Odkazy vydrží hodinu a jdou použít
+            jednou. Nechte si prosím poslat nový.
+          </Zprava>
+        )}
+
+        <form method="post" class="card p-7 lg:p-9">
+          <input type="hidden" name="dal" value={dal} />
+
+          {chyba && <Zprava typ="chyba" class="mb-6">{chyba}</Zprava>}
+
+          <div class="space-y-5">
+            <div>
+              <label for="email" class="form-label">E-mail</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={email}
+                required
+                autocomplete="email"
+                autocapitalize="off"
+                spellcheck="false"
+                class="form-control"
+              />
+            </div>
+
+            <div>
+              <label for="heslo" class="form-label">Heslo</label>
+              <input
+                type="password"
+                id="heslo"
+                name="heslo"
+                required
+                autocomplete="current-password"
+                class="form-control"
+              />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary mt-8 w-full">
+            Přihlásit se
+          </button>
+
+          <div class="mt-6 flex flex-wrap justify-between gap-3 text-[0.875rem]">
+            <a href="/rezervace/zapomenute-heslo" class="link-underline text-ink-3">
+              Zapomenuté heslo
+            </a>
+            <a href="/rezervace/registrace" class="link-underline font-semibold text-brass-700">
+              Nemám účet, chci se zaregistrovat
+            </a>
+          </div>
+        </form>
+      </>
+    )
+  }
+</RezervaceLayout>

@@ -1,0 +1,217 @@
+---
+/**
+ * Přehled vlastních rezervací a úprava kontaktních údajů.
+ */
+
+export const prerender = false;
+
+import RezervaceLayout from '@/layouts/RezervaceLayout.astro';
+import Zprava from '@/components/rezervace/Zprava.astro';
+import { citelnaChyba, type Profil } from '@/lib/supabase';
+import {
+  cas,
+  dlouheDatum,
+  dnesCz,
+  jeMinulost,
+  pondeliTydne,
+} from '@/lib/rezervace';
+
+const { supabase, uzivatel, profil } = Astro.locals;
+
+if (!supabase || !uzivatel) return Astro.redirect('/rezervace');
+
+let chyba = '';
+let potvrzeni = '';
+
+/** Profil z middleware. Po uložení ho přepíšeme, ať formulář ukazuje novou hodnotu. */
+let mujProfil: Profil | null = profil;
+
+if (Astro.request.method === 'POST') {
+  const formular = await Astro.request.formData();
+  const akce = formular.get('akce');
+
+  if (akce === 'zrusit') {
+    const id = String(formular.get('id') ?? '');
+    const { error } = await supabase
+      .from('rezervace')
+      .delete()
+      .eq('id', id)
+      .eq('uzivatel', uzivatel.id);
+
+    if (error) chyba = citelnaChyba(error);
+    else potvrzeni = 'Rezervace byla zrušena.';
+  }
+
+  if (akce === 'profil') {
+    const jmeno = String(formular.get('jmeno') ?? '').trim().slice(0, 80);
+    const telefon = String(formular.get('telefon') ?? '').trim().slice(0, 30);
+
+    if (jmeno.length < 3) {
+      chyba = 'Napište prosím celé jméno a příjmení.';
+    } else {
+      // Roli ani schválení tudy změnit nejde, hlídá to trigger v databázi.
+      const { data: novy, error } = await supabase
+        .from('profily')
+        .update({ jmeno, telefon })
+        .eq('id', uzivatel.id)
+        .select()
+        .maybeSingle<Profil>();
+
+      if (error) {
+        chyba = citelnaChyba(error);
+      } else {
+        potvrzeni = 'Údaje jsou uložené.';
+        mujProfil = novy ?? mujProfil;
+      }
+    }
+  }
+}
+
+interface RadekRezervace {
+  id: string;
+  datum: string;
+  slot: string;
+  jizdarna: string;
+  poznamka: string;
+  jizdarny: { nazev: string } | null;
+  sloty: { zacatek: string; konec: string } | null;
+}
+
+const dnes = dnesCz();
+
+const { data } = await supabase
+  .from('rezervace')
+  .select('id, datum, slot, jizdarna, poznamka, jizdarny(nazev), sloty(zacatek, konec)')
+  .eq('uzivatel', uzivatel.id)
+  .gte('datum', dnes)
+  .order('datum')
+  .order('slot');
+
+const rezervace = ((data ?? []) as unknown as RadekRezervace[]).filter(
+  (r) => !jeMinulost(r.datum, r.sloty?.zacatek ?? '00:00'),
+);
+
+---
+
+<RezervaceLayout
+  title="Moje rezervace"
+  description="Přehled vlastních rezervací jízdáren."
+  heading="Moje rezervace"
+  lead="Co máte zamluvené a co o vás stáj ví."
+  profil={mujProfil}
+  email={uzivatel.email}
+  aktivni="moje"
+  noindex
+>
+  {potvrzeni && <Zprava typ="ok" class="mb-6">{potvrzeni}</Zprava>}
+  {chyba && <Zprava typ="chyba" class="mb-6">{chyba}</Zprava>}
+
+  {
+    mujProfil && !mujProfil.schvaleno && (
+      <Zprava typ="dulezite" class="mb-6">
+        <strong>Účet zatím čeká na schválení stájí.</strong>
+        <p class="mt-1">Do té doby rezervovat nejde. Rozvrh ale vidíte celý.</p>
+      </Zprava>
+    )
+  }
+
+  <section>
+    <h2 class="t-3">Nadcházející termíny</h2>
+
+    {
+      rezervace.length === 0 ? (
+        <div class="card mt-6 p-7">
+          <p class="text-ink-3">
+            Zatím tu nic nemáte. Vyberte si termín v{' '}
+            <a href="/rezervace" class="link-underline font-semibold text-brass-700">
+              kalendáři
+            </a>
+            .
+          </p>
+        </div>
+      ) : (
+        <ul class="mt-6 space-y-px">
+          {rezervace.map((r) => (
+            <li class="flex flex-wrap items-center justify-between gap-4 border-t border-ink/12 py-5 last:border-b">
+              <div class="min-w-0">
+                <p class="eyebrow text-brass-700">{r.jizdarny?.nazev ?? r.jizdarna}</p>
+                <p class="mt-1 font-display text-[1.25rem]">{dlouheDatum(r.datum)}</p>
+                <p class="mt-0.5 text-[0.9375rem] text-ink-3">
+                  {cas(r.sloty?.zacatek ?? '')} – {cas(r.sloty?.konec ?? '')}
+                  {r.poznamka && <span> · {r.poznamka}</span>}
+                </p>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <a
+                  href={`/rezervace?od=${pondeliTydne(r.datum)}&jizdarna=${r.jizdarna}`}
+                  class="text-[0.8125rem] font-semibold uppercase tracking-[0.1em] text-ink-3 transition-colors hover:text-ink"
+                >
+                  V kalendáři
+                </a>
+                <form method="post">
+                  <input type="hidden" name="akce" value="zrusit" />
+                  <input type="hidden" name="id" value={r.id} />
+                  <button type="submit" class="btn btn-outline min-h-0 px-5 py-2 text-[0.75rem]">
+                    Zrušit
+                  </button>
+                </form>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </section>
+
+  <section class="mt-14">
+    <h2 class="t-3">Moje údaje</h2>
+
+    <form method="post" class="card mt-6 p-7 lg:p-9">
+      <input type="hidden" name="akce" value="profil" />
+
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label for="jmeno" class="form-label">Jméno a příjmení</label>
+          <input
+            type="text"
+            id="jmeno"
+            name="jmeno"
+            value={mujProfil?.jmeno ?? ''}
+            required
+            autocomplete="name"
+            class="form-control"
+          />
+        </div>
+
+        <div>
+          <label for="telefon" class="form-label">Telefon</label>
+          <input
+            type="tel"
+            id="telefon"
+            name="telefon"
+            value={mujProfil?.telefon ?? ''}
+            autocomplete="tel"
+            class="form-control"
+          />
+        </div>
+
+        <div class="sm:col-span-2">
+          <label for="email" class="form-label">E-mail</label>
+          <input
+            type="email"
+            id="email"
+            value={uzivatel.email}
+            disabled
+            class="form-control opacity-60"
+          />
+          <p class="mt-2 text-[0.8125rem] text-ink-3">
+            Přihlašovací adresu měníme ručně, ozvěte se nám.
+          </p>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary mt-8">Uložit údaje</button>
+    </form>
+  </section>
+</RezervaceLayout>

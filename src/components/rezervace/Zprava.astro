@@ -1,0 +1,37 @@
+---
+/**
+ * Hláška nad obsahem: potvrzení, chyba, informace od stáje.
+ * Chyby a potvrzení mají `role="alert"`, aby je odečítačka řekla hned.
+ */
+
+import Icon from '@/components/Icon.astro';
+
+interface Props {
+  typ?: 'ok' | 'chyba' | 'info' | 'dulezite';
+  class?: string;
+}
+
+const { typ = 'info', class: className = '' } = Astro.props;
+
+const ikony = {
+  ok: 'check',
+  chyba: 'info',
+  info: 'info',
+  dulezite: 'info',
+} as const;
+
+const barvy = {
+  ok: 'border-loden-300 bg-loden-100/60 text-loden-900',
+  chyba: 'border-[#c9a89f] bg-[#fbf1ee] text-[#7d2a1c]',
+  info: 'border-sand-400 bg-paper-2 text-ink-2',
+  dulezite: 'border-brass-400 bg-brass-100 text-brass-900',
+} as const;
+---
+
+<div
+  class:list={['flex items-start gap-3 border p-4 text-[0.9375rem]', barvy[typ], className]}
+  role={typ === 'ok' || typ === 'chyba' ? 'alert' : undefined}
+>
+  <Icon name={ikony[typ]} class="mt-0.5 h-4 w-4 shrink-0" />
+  <div class="min-w-0"><slot /></div>
+</div>

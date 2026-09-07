@@ -48,7 +48,6 @@ const requirements = page.requirements;
               data-reveal
               style={`--reveal-delay:${i * 70}ms`}
             >
-              <span class="index-num">{String(i + 1).padStart(2, '0')}</span>
               <div>
                 <h2 class="font-display text-[1.375rem] leading-snug sm:text-[1.625rem]">
                   {e.title}
@@ -85,10 +84,10 @@ const requirements = page.requirements;
         />
       </div>
 
-      <dl class="grid gap-px border border-white/12 bg-white/12 sm:grid-cols-2 lg:col-span-7">
+      <dl class="grid gap-x-10 gap-y-7 sm:grid-cols-2 lg:col-span-7">
         {
           requirements.map((r, i) => (
-            <div class="bg-loden-950 p-7" data-reveal style={`--reveal-delay:${i * 70}ms`}>
+            <div class="border-t border-white/15 pt-4" data-reveal style={`--reveal-delay:${i * 70}ms`}>
               <dt class="flex items-center gap-3 font-display text-[1.25rem] text-white">
                 <Icon name="check" class="h-4 w-4 text-brass-300" strokeWidth={2.2} />
                 {r.title}

@@ -1,0 +1,85 @@
+---
+/**
+ * Žádost o obnovu hesla.
+ *
+ * Odpověď je vždycky stejná, ať už účet existuje nebo ne. Jinak by tenhle
+ * formulář sloužil jako seznam e-mailů členů stáje: napíšu adresu a podle
+ * hlášky poznám, jestli tu někdo takový je.
+ */
+
+export const prerender = false;
+
+import RezervaceLayout from '@/layouts/RezervaceLayout.astro';
+import Zprava from '@/components/rezervace/Zprava.astro';
+import { rezervaceNastaveny } from '@/lib/supabase';
+
+const { supabase, profil } = Astro.locals;
+
+let hotovo = false;
+let email = '';
+
+if (Astro.request.method === 'POST' && supabase) {
+  const formular = await Astro.request.formData();
+  email = String(formular.get('email') ?? '').trim();
+
+  if (email) {
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: new URL('/rezervace/potvrdit?dal=heslo', Astro.url.origin).toString(),
+    });
+  }
+
+  hotovo = true;
+}
+---
+
+<RezervaceLayout
+  title="Zapomenuté heslo"
+  description="Obnova hesla do rezervačního systému Stáje Manon."
+  heading="Zapomenuté heslo"
+  lead="Pošleme vám odkaz, kterým si nastavíte nové."
+  profil={profil}
+  email={null}
+  uzky
+  noindex
+>
+  {
+    !rezervaceNastaveny ? (
+      <Zprava typ="info">Rezervační systém se právě spouští.</Zprava>
+    ) : hotovo ? (
+      <div class="card p-7 lg:p-9">
+        <Zprava typ="ok">
+          Pokud u nás účet s touhle adresou existuje, je odkaz na cestě.
+          Platí hodinu.
+        </Zprava>
+        <a href="/rezervace/prihlaseni" class="btn btn-primary mt-7">
+          Zpět na přihlášení
+        </a>
+      </div>
+    ) : (
+      <form method="post" class="card p-7 lg:p-9">
+        <label for="email" class="form-label">E-mail</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          value={email}
+          required
+          autocomplete="email"
+          autocapitalize="off"
+          spellcheck="false"
+          class="form-control"
+        />
+
+        <button type="submit" class="btn btn-primary mt-7 w-full">
+          Poslat odkaz
+        </button>
+
+        <p class="mt-6 text-center text-[0.875rem]">
+          <a href="/rezervace/prihlaseni" class="link-underline text-ink-3">
+            Zpět na přihlášení
+          </a>
+        </p>
+      </form>
+    )
+  }
+</RezervaceLayout>

@@ -8,14 +8,12 @@ import Icon from '@/components/Icon.astro';
 import Lines from '@/components/Lines.astro';
 import { site } from '@/data/site';
 import { upcomingPublicEvents } from '@/data/events';
-import { facilities } from '@/data/services';
 import { turnusy } from '@/data/courses';
 import { majorTitles } from '@/data/achievements';
-import { pickPhotos } from '@/data/gallery';
 import { photo } from '@/data/images';
 import page from '@/obsah/stranky/uvod.json';
 
-const nextEvents = upcomingPublicEvents().slice(0, 5);
+const nextEvents = upcomingPublicEvents().slice(0, 3);
 const freeTurnusy = turnusy.filter(
   (t) => t.status === 'volno' || t.status === 'posledni',
 ).length;
@@ -23,14 +21,8 @@ const freeTurnusy = turnusy.filter(
 const heroImg = photo(page.hero.image)!;
 const restauraceImg = photo(page.penzion.image)!;
 const kurzyImg = photo(page.skola.imageTall)!;
-const halaImg = photo(page.skola.imageSquare)!;
 const skrivanImg = photo(page.uspechy.image)!;
 
-const pillars = page.pillars
-  .map((p, i) => ({ ...p, n: String(i + 1).padStart(2, '0'), img: photo(p.image) }))
-  .filter((p) => p.img);
-
-const featuredPhotos = pickPhotos(page.galerie.featured);
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -156,36 +148,22 @@ const jsonLd = {
       <div class="lg:col-span-8">
         <ul class="space-y-px">
           {
-            pillars.map((p, i) => (
+            page.pillars.map((p, i) => (
               <li
                 class="group relative border-t border-ink/12 last:border-b"
                 data-reveal
                 style={`--reveal-delay:${i * 90}ms`}
               >
-                <a href={p.href} class="grid gap-5 py-7 sm:grid-cols-[auto_1fr_auto] sm:items-start sm:gap-8">
-                  <span class="index-num pt-2">{p.n}</span>
-
-                  <div class="min-w-0">
-                    <h3 class="t-3 transition-colors group-hover:text-brass-700">
-                      {p.title}
-                    </h3>
-                    <p class="mt-3 max-w-xl text-[0.9375rem] leading-relaxed text-ink-3">
-                      {p.text}
-                    </p>
-                    <span class="link-arrow mt-5">
-                      {p.cta}
-                      <Icon name="arrow-right" class="h-3.5 w-3.5" />
-                    </span>
-                  </div>
-
-                  <span class="hidden w-32 shrink-0 overflow-hidden sm:block lg:w-40">
-                    <Image
-                      src={p.img!}
-                      alt={p.alt}
-                      widths={[220, 440]}
-                      sizes="13rem"
-                      class="aspect-[4/3] h-full w-full object-cover"
-                    />
+                <a href={p.href} class="block py-7">
+                  <h3 class="t-3 transition-colors group-hover:text-brass-700">
+                    {p.title}
+                  </h3>
+                  <p class="mt-3 max-w-xl text-[0.9375rem] leading-relaxed text-ink-3">
+                    {p.text}
+                  </p>
+                  <span class="link-arrow mt-5">
+                    {p.cta}
+                    <Icon name="arrow-right" class="h-3.5 w-3.5" />
                   </span>
                 </a>
               </li>
@@ -196,49 +174,8 @@ const jsonLd = {
     </div>
   </Section>
 
-  <!-- ============================================================== ČÍSLA -->
-  <Section tone="dark" space="md" rise>
-    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
-      <div class="lg:col-span-5">
-        <SectionHead
-          title={page.facilities.title}
-          lead={page.facilities.lead}
-          tone="light"
-        />
-        <a href={page.facilities.linkHref} class="link-arrow mt-8 text-brass-300">
-          {page.facilities.linkLabel}
-          <Icon name="arrow-right" class="h-3.5 w-3.5" />
-        </a>
-      </div>
-
-      <div class="lg:col-span-7">
-        <dl class="grid grid-cols-2 gap-px border border-white/12 bg-white/12">
-          {
-            facilities.map((f, i) => (
-              <div
-                class="bg-loden-950 p-5 lg:p-7"
-                data-reveal
-                style={`--reveal-delay:${i * 80}ms`}
-              >
-                <dt class="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-brass-300">
-                  {f.name}
-                </dt>
-                <dd class="mt-3 font-display text-[1.75rem] leading-none text-white lg:text-[2.25rem]">
-                  {f.size}
-                </dd>
-                <dd class="mt-4 text-[0.875rem] leading-relaxed text-white/55">
-                  {f.text}
-                </dd>
-              </div>
-            ))
-          }
-        </dl>
-      </div>
-    </div>
-  </Section>
-
   <!-- =========================================================== KALENDÁŘ -->
-  <Section tone="paper" space="lg">
+  <Section tone="paper-2" space="lg">
     <SectionHead
       title={page.calendar.title}
       lead={page.calendar.lead}
@@ -250,16 +187,16 @@ const jsonLd = {
       <div class="border-t border-ink/12"></div>
     </div>
 
-    <div class="mt-10 flex flex-wrap gap-3">
+    <div class="mt-8 flex flex-wrap gap-3">
       <a href="/akce" class="btn btn-outline">Kalendář akcí 2026</a>
       <a href="/vysledky" class="btn btn-outline">Výsledkové listiny</a>
     </div>
   </Section>
 
   <!-- ============================================================ PENZION -->
-  <section class="relative bg-paper-2">
+  <section class="relative bg-white">
     <div class="grid lg:grid-cols-2">
-      <div class="parallax relative min-h-[16rem] overflow-hidden lg:min-h-[30rem]">
+      <div class="parallax relative min-h-[14rem] overflow-hidden lg:min-h-[24rem]">
         <Image
           src={restauraceImg}
           alt={page.penzion.imageAlt}
@@ -269,41 +206,19 @@ const jsonLd = {
         />
       </div>
 
-      <div class="flex items-center px-5 py-14 sm:px-8 lg:px-14 lg:py-20 xl:px-20">
+      <div class="flex items-center px-5 py-10 sm:px-8 lg:px-12 lg:py-14 xl:px-16">
         <div class="max-w-xl" data-reveal>
           <h2 class="t-2">{page.penzion.title}</h2>
-          <p class="lead mt-6">{page.penzion.lead}</p>
+          <p class="lead mt-4">{page.penzion.lead}</p>
 
-          <dl class="mt-10 grid gap-px border border-ink/12 bg-ink/12 sm:grid-cols-2">
-            {
-              page.penzion.stats.map((s) => (
-                <div class="bg-paper-2 p-6">
-                  <dt class="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-ink-3/70">
-                    {s.label}
-                  </dt>
-                  <dd class="mt-2 font-display text-[2rem] leading-none">{s.value}</dd>
-                  <dd class="mt-2 text-[0.8125rem] text-ink-3">{s.note}</dd>
-                </div>
-              ))
-            }
-          </dl>
-
-          <ul class="mt-8 space-y-2.5 text-[0.9375rem] text-ink-3">
-            {
-              page.penzion.bullets.map((t) => (
-                <li class="flex gap-3">
-                  <Icon name="check" class="mt-1 h-4 w-4 shrink-0 text-brass-600" strokeWidth={2.2} />
-                  {t}
-                </li>
-              ))
-            }
-          </ul>
-
-          <div class="mt-10 flex flex-wrap gap-3">
+          <div class="mt-8 flex flex-wrap gap-3">
             <a href={page.penzion.primaryCta.href} class="btn btn-primary">
               {page.penzion.primaryCta.label}
             </a>
-            <a href={`mailto:${site.emailPenzion}`} class="btn btn-outline">
+            {/* Ubytování se domlouvá po telefonu, online rezervace má jen
+                jízdárna. */}
+            <a href={`tel:${site.phoneHref}`} class="btn btn-outline">
+              <Icon name="phone" class="h-4 w-4" />
               {page.penzion.secondaryCtaLabel}
             </a>
           </div>
@@ -313,7 +228,7 @@ const jsonLd = {
   </section>
 
   <!-- ============================================================== ŠKOLA -->
-  <Section tone="white" space="lg">
+  <Section tone="paper" space="lg">
     <div class="grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-14">
       <div class="lg:col-span-5" data-reveal>
         <h2 class="t-2">{page.skola.title}</h2>
@@ -338,42 +253,21 @@ const jsonLd = {
       </div>
 
       <div class="lg:col-span-7">
-        <div class="grid grid-cols-2 gap-4" data-reveal>
-          <div class="overflow-hidden">
-            <Image
-              src={kurzyImg}
-              alt={page.skola.imageTallAlt}
-              widths={[400, 800]}
-              sizes="(min-width: 1024px) 28vw, 45vw"
-              class="aspect-[3/4] h-full w-full object-cover"
-            />
-          </div>
-          <div class="mt-10 grid gap-4">
-            <div class="overflow-hidden">
-              <Image
-                src={halaImg}
-                alt={page.skola.imageSquareAlt}
-                widths={[400, 800]}
-                sizes="(min-width: 1024px) 28vw, 45vw"
-                class="aspect-square h-full w-full object-cover"
-              />
-            </div>
-            <div class="bg-loden-900 p-6 text-white">
-              <p class="font-display text-[2.5rem] leading-none text-brass-300">
-                {page.skola.yearValue}
-              </p>
-              <p class="mt-3 text-[0.875rem] leading-relaxed text-white/65">
-                {page.skola.yearText}
-              </p>
-            </div>
-          </div>
+        <div class="overflow-hidden" data-reveal>
+          <Image
+            src={kurzyImg}
+            alt={page.skola.imageTallAlt}
+            widths={[600, 1200]}
+            sizes="(min-width: 1024px) 55vw, 100vw"
+            class="aspect-[4/3] w-full object-cover"
+          />
         </div>
       </div>
     </div>
   </Section>
 
   <!-- ============================================================ ÚSPĚCHY -->
-  <Section tone="loden" space="lg">
+  <Section tone="dark" space="lg">
     <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
       <div class="lg:col-span-5">
         <div class="overflow-hidden" data-reveal>
@@ -392,9 +286,9 @@ const jsonLd = {
 
         <p class="lead mt-6 text-white/70">{page.uspechy.text}</p>
 
-        <ul class="mt-9 space-y-px">
+        <ul class="mt-8 space-y-px">
           {
-            majorTitles.map((m, i) => (
+            majorTitles.slice(0, 3).map((m, i) => (
               <li
                 class="flex items-baseline gap-6 border-t border-white/12 py-4 last:border-b"
                 data-reveal
@@ -418,39 +312,6 @@ const jsonLd = {
           </a>
         </div>
       </div>
-    </div>
-  </Section>
-
-  <!-- ============================================================ GALERIE -->
-  <Section tone="paper" space="md" bleed>
-    <div class="container-x">
-      <SectionHead
-        title={page.galerie.title}
-        action={{ label: page.galerie.actionLabel, href: '/galerie' }}
-      />
-    </div>
-
-    <div class="mt-9 overflow-hidden" aria-hidden="true">
-      <div class="flex w-max animate-marquee gap-4 hover:[animation-play-state:paused]">
-        {
-          [...featuredPhotos, ...featuredPhotos].map((p) => (
-            <div class="w-[13rem] shrink-0 overflow-hidden sm:w-[17rem]">
-              <Image
-                src={p.src}
-                alt=""
-                widths={[352, 704]}
-                sizes="22rem"
-                loading="lazy"
-                class="aspect-[4/3] h-full w-full object-cover"
-              />
-            </div>
-          ))
-        }
-      </div>
-    </div>
-
-    <div class="container-x mt-10">
-      <a href="/galerie" class="btn btn-outline">{page.galerie.buttonLabel}</a>
     </div>
   </Section>
 

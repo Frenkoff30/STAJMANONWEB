@@ -55,10 +55,3 @@ export const photos: GalleryPhoto[] = collection<RawPhoto>(
 export function photosByTag(tag: GalleryTag): GalleryPhoto[] {
   return photos.filter((p) => p.tag === tag);
 }
-
-/** Vybrané fotky v zadaném pořadí, podle názvu z galerie. */
-export function pickPhotos(names: readonly string[]): GalleryPhoto[] {
-  return names
-    .map((n) => photos.find((p) => p.file === n))
-    .filter((p): p is GalleryPhoto => Boolean(p));
-}
