@@ -18,11 +18,14 @@ export default defineConfig({
   adapter: vercel(),
 
   /**
-   * Odmítne POST z cizí domény. Bez toho by šlo z podvržené stránky odeslat
-   * jménem přihlášeného člena rezervaci nebo změnu údajů.
+   * Astro tu na Vercelu porovnává hlavičku Origin s adresou, na kterou žádost
+   * dorazila na serveru — a ty se tam kvůli tomu, jak Vercel žádosti předává,
+   * neshodují, takže by to blokovalo i běžné přihlášení z vlastního webu.
+   * Ochranu proti cizím POST požadavkům dál drží cookie `sameSite: 'lax'`
+   * (viz src/lib/supabase.ts) — ta se na jinou doménu nepošle.
    */
   security: {
-    checkOrigin: true,
+    checkOrigin: false,
   },
 
   integrations: [
