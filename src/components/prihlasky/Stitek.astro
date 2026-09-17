@@ -1,0 +1,44 @@
+---
+/**
+ * Malý štítek ve správě přihlášek: stav přihlášky, platba, faktura.
+ */
+
+import { stavy, type StavPrihlasky } from '@/lib/prihlasky/db';
+
+type Barva = 'brass' | 'loden' | 'sand' | 'seda';
+
+interface Props {
+  /** Stav přihlášky, text i barva se odvodí. */
+  stav?: StavPrihlasky;
+  barva?: Barva;
+  class?: string;
+}
+
+const barvaStavu: Record<StavPrihlasky, Barva> = {
+  nova: 'brass',
+  prijata: 'loden',
+  nahradnik: 'sand',
+  odmitnuta: 'seda',
+  zrusena: 'seda',
+};
+
+const { stav, class: className = '' } = Astro.props;
+const barva = Astro.props.barva ?? (stav ? barvaStavu[stav] : 'sand');
+
+const tridy: Record<Barva, string> = {
+  brass: 'border-brass-400 bg-brass-100 text-brass-900',
+  loden: 'border-loden-300 bg-loden-100 text-loden-900',
+  sand: 'border-sand-500 bg-paper-2 text-ink-2',
+  seda: 'border-ink/15 bg-transparent text-ink-3',
+};
+---
+
+<span
+  class:list={[
+    'inline-block whitespace-nowrap border px-2 py-0.5 text-[0.6875rem] font-semibold uppercase tracking-[0.08em]',
+    tridy[barva],
+    className,
+  ]}
+>
+  {stav ? stavy[stav] : <slot />}
+</span>

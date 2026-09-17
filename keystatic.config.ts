@@ -93,6 +93,10 @@ const akce = collection({
         description: 'Nechte prázdné, pokud rozpis není.',
       },
     ),
+    prihlaska: volitelnyText(
+      'Online přihláška',
+      'Kód tábora ze správy přihlášek, například letni-tabor-2027. U akce se pak ukáže tlačítko Přihlásit se. Nechte prázdné, pokud se na akci online nepřihlašuje.',
+    ),
   },
 });
 

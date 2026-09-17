@@ -451,6 +451,96 @@ src/pages/rezervace/
 
 ---
 
+## Přihlášky na tábory
+
+Online přihláška na tábor na `/prihlaska/<kód tábora>`. Rodič nic neregistruje,
+jen vyplní formulář. Stáj pak přihlášky vyřizuje ve vlastní správě
+`/prihlasky/sprava`. S rezervacemi jízdáren nesdílí tabulky, správce ani
+přihlášení (správa má vlastní cookie `prihlasky-auth`).
+
+Na přihlášku vede tlačítko **Přihlásit se** u akce v kalendáři. Stačí akci
+v redakčním systému vyplnit pole *Online přihláška* kódem tábora. Zatím je
+tak napojená jediná, smyšlená akce „Letní jezdecký tábor“
+(`/prihlaska/letni-tabor-2027`). Stránka s přihláškou není v mapě webu
+a vyhledávače ji neindexují.
+
+### Jak přihláška probíhá
+
+1. Rodič vybere variantu ceny a příplatky (cena se dopočítá sama), vyplní dítě,
+   sebe a kdo platí. **Platí firma**: po zadání IČO se název, sídlo a DIČ
+   doplní z ARES.
+2. Přihláška se uloží, rodiči přijde shrnutí a stáji upozornění s odkazem.
+3. Ve správě stáj místo **potvrdí**, dá mezi **náhradníky**, **odmítne** nebo
+   **zruší**. Rodiči odejde e-mail. Po potvrzení dostane u platby převodem
+   částku, variabilní symbol, splatnost a QR Platbu. U firmy dostane informaci,
+   že faktura půjde na e-mail firmy.
+4. Když platí firma, správa ukáže všechny údaje pro fakturu. Fakturu stáj
+   vystaví ve svém účetním programu a zapíše si její číslo.
+5. Až peníze dorazí, stáj klikne **Peníze dorazily** a rodiči odejde potvrzení.
+
+Místa se potvrzují ručně, ne automaticky. Kapacita turnusů není jedno číslo
+(místa s vlastním koněm, na lonži), a o tom, kdo se vejde, rozhoduje stáj.
+
+### Jak to spustit (jednorázově)
+
+1. V Supabase *SQL Editor → New query* vložit celý `supabase/prihlasky.sql`
+   a spustit. Založí tabulky a tábor `letni-tabor-2027`. Skript jde pustit
+   i podruhé.
+2. Založit účet správce: Supabase → *Authentication → Users → Add user*
+   (e-mail, heslo, *Auto Confirm User*) a zapsat ho do `prihlasky_spravci`,
+   SQL je na konci `supabase/prihlasky.sql`.
+3. E-maily: účet na [resend.com](https://resend.com), ověřit doménu
+   `stajmanon.cz` (DNS záznamy, které Resend vypíše) a ve Vercelu nastavit
+   `RESEND_API_KEY`, `PRIHLASKY_EMAIL_OD` a případně `PRIHLASKY_EMAIL_STAJ`,
+   viz `.env.example`.
+
+Bez kroku 3 všechno funguje, jen se e-maily neposílají a web místo nich ukáže,
+jak by vypadaly. Na vyzkoušení to stačí.
+
+Další tábor se zatím zakládá v databázi (tabulka `tabory`, vzor je
+`letni-tabor-2027` v `supabase/prihlasky.sql`) a jeho kód se pak napíše
+k akci do pole *Online přihláška*. Až se přihlášky osvědčí, můžou sem vést
+i tlačítka „Přihlásit“ na `/kurzy` a `/pobyty`.
+
+### Proč se tomu dá věřit
+
+- **Cenu počítá databáze** z ceníku tábora (`odeslat_prihlasku()`). Cenu
+  poslanou z formuláře ignoruje.
+- **Přihlášky vidí jen správce přihlášek.** Anonymní klíč do tabulky
+  nezapíše ani ji nepřečte, přihláška vzniká jen přes funkci výše.
+- **Dvojklik ani obnovení stránky nezaloží druhou přihlášku** (jednorázový
+  token formuláře) a nepošle druhý e-mail.
+- **Zápisy ve správě jsou POST s přesměrováním**, obnovení stránky nic
+  nezopakuje.
+- **Honeypot a strop 40 přihlášek za 10 minut** proti robotům.
+- **Údaje od rodičů se v e-mailech escapují** a ukázka e-mailu běží
+  v izolovaném `iframe`.
+- **QR Platba obsahuje jen účet stáje, částku, VS a splatnost.** Obrázek pro
+  e-mail se generuje z těchhle tří údajů, nic osobního není v adrese.
+
+### Kde co leží
+
+```
+supabase/prihlasky.sql              tabulky, funkce odeslat_prihlasku(), RLS, první tábor
+src/lib/prihlasky/
+├── db.ts                           připojení, typy, překlad chyb
+├── formular.ts                     načtení a kontrola formuláře, IČO
+├── platba.ts                       ceny, splatnost, IBAN, QR Platba
+├── email.ts                        šablony e-mailů, odeslání přes Resend
+└── spravce.ts                      kdo je přihlášený ve správě
+src/layouts/PrihlaskyLayout.astro
+src/components/prihlasky/           pole formuláře, štítky stavů
+src/pages/prihlaska/[kod].astro     veřejná přihláška
+src/pages/prihlasky/
+├── sprava/index.astro              přehled táborů a přihlášek
+├── sprava/[id].astro               detail: potvrzení, platba, faktura, poznámka
+├── prihlaseni.astro, odhlaseni.ts
+├── ares.ts                         údaje o firmě podle IČO
+└── qr.ts                           QR Platba jako obrázek do e-mailu
+```
+
+---
+
 ## Kontaktní formulář
 
 `public/kontakt-odeslat.php` — jediný kus serverového kódu na webu.

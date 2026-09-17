@@ -1,0 +1,36 @@
+---
+/**
+ * Jedno pole formuláře: popisek, samotný vstup (slot), nápověda a chyba.
+ * Vstup uvnitř má mít `id` shodné s `pole` a `aria-describedby={`${pole}-info`}`.
+ */
+
+interface Props {
+  pole: string;
+  label: string;
+  povinne?: boolean;
+  napoveda?: string;
+  chyba?: string;
+  class?: string;
+}
+
+const { pole, label, povinne = false, napoveda, chyba, class: className = '' } = Astro.props;
+---
+
+<div class={className}>
+  <label for={pole} class="form-label">
+    {label}
+    {povinne && <span class="text-brass-700" aria-hidden="true">*</span>}
+  </label>
+  <slot />
+  {
+    chyba ? (
+      <p id={`${pole}-info`} class="form-error">{chyba}</p>
+    ) : (
+      napoveda && (
+        <p id={`${pole}-info`} class="mt-1.5 text-[0.8125rem] text-ink-3">
+          {napoveda}
+        </p>
+      )
+    )
+  }
+</div>

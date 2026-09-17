@@ -1,0 +1,247 @@
+---
+/**
+ * Správa přihlášek: přehled táborů a seznam přihlášek.
+ * Vyřizuje se v detailu přihlášky, tady se jen hledá a třídí.
+ */
+
+export const prerender = false;
+
+import PrihlaskyLayout from '@/layouts/PrihlaskyLayout.astro';
+import Stitek from '@/components/prihlasky/Stitek.astro';
+import Icon from '@/components/Icon.astro';
+import { stavy, type Prihlaska, type StavPrihlasky, type Tabor } from '@/lib/prihlasky/db';
+import { kc, terminTaboru, vek } from '@/lib/prihlasky/platba';
+import { bezCache, datumCas, nactiSpravce } from '@/lib/prihlasky/spravce';
+
+bezCache(Astro.response.headers);
+
+const spravce = await nactiSpravce(Astro);
+if (!spravce) {
+  return Astro.redirect(
+    `/prihlasky/prihlaseni?dal=${encodeURIComponent(Astro.url.pathname + Astro.url.search)}`,
+  );
+}
+
+const [{ data: taboryData }, { data: prihlaskyData }] = await Promise.all([
+  spravce.supabase.from('tabory').select('*').order('zacatek', { ascending: false }),
+  spravce.supabase
+    .from('prihlasky')
+    .select(
+      'id, vs, tabor, varianta, cena, dite_jmeno, dite_narozeni, dite_zkusenosti, zastupce_jmeno, zastupce_telefon, platce, firma_nazev, stav, zaplaceno, faktura_cislo, vytvoreno',
+    )
+    .order('vytvoreno', { ascending: false }),
+]);
+
+const tabory = (taboryData as Tabor[]) ?? [];
+const vsechny = (prihlaskyData as Prihlaska[]) ?? [];
+
+const filtrTabor = Astro.url.searchParams.get('tabor') ?? '';
+const filtrStav = Astro.url.searchParams.get('stav') ?? '';
+
+const vTaboru = vsechny.filter((p) => !filtrTabor || p.tabor === filtrTabor);
+const seznam = vTaboru.filter((p) => {
+  if (!filtrStav) return true;
+  if (filtrStav === 'vyrazene') return p.stav === 'odmitnuta' || p.stav === 'zrusena';
+  return p.stav === filtrStav;
+});
+
+const taborPodleKodu = new Map(tabory.map((t) => [t.kod, t]));
+
+const souhrn = tabory.map((t) => {
+  const jeho = vsechny.filter((p) => p.tabor === t.kod);
+  const prijate = jeho.filter((p) => p.stav === 'prijata');
+  return {
+    tabor: t,
+    nove: jeho.filter((p) => p.stav === 'nova').length,
+    prijate: prijate.length,
+    zaplacene: prijate.filter((p) => p.zaplaceno).length,
+  };
+});
+
+const zalozky: { kod: string; label: string; pocet: number }[] = [
+  { kod: '', label: 'Všechny', pocet: vTaboru.length },
+  ...(['nova', 'prijata', 'nahradnik'] as StavPrihlasky[]).map((s) => ({
+    kod: s,
+    label: s === 'nahradnik' ? 'Náhradníci' : stavy[s],
+    pocet: vTaboru.filter((p) => p.stav === s).length,
+  })),
+  {
+    kod: 'vyrazene',
+    label: 'Odmítnuté a zrušené',
+    pocet: vTaboru.filter((p) => p.stav === 'odmitnuta' || p.stav === 'zrusena').length,
+  },
+];
+
+const odkaz = (zmeny: { tabor?: string; stav?: string }) => {
+  const parametry = new URLSearchParams();
+  const tabor = zmeny.tabor ?? filtrTabor;
+  const stav = zmeny.stav ?? filtrStav;
+  if (tabor) parametry.set('tabor', tabor);
+  if (stav) parametry.set('stav', stav);
+  const q = parametry.toString();
+  return `/prihlasky/sprava${q ? `?${q}` : ''}`;
+};
+---
+
+<PrihlaskyLayout
+  title="Přihlášky na tábory"
+  heading="Přihlášky na tábory"
+  lead="Nové přihlášky potvrďte nebo odmítněte v detailu. Rodičům pak automaticky odejde e-mail."
+  spravce={spravce}
+>
+  <!-- ------------------------------------------------------------ tábory -->
+  <section>
+    <h2 class="t-3">Tábory</h2>
+
+    {
+      tabory.length === 0 ? (
+        <p class="mt-6 border-t border-ink/12 pt-6 text-ink-3">
+          Zatím tu žádný tábor není. Zakládá se v databázi, viz
+          <code class="text-ink">supabase/prihlasky.sql</code>.
+        </p>
+      ) : (
+        <ul class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {souhrn.map((s) => (
+            <li>
+              <a
+                href={odkaz({ tabor: filtrTabor === s.tabor.kod ? '' : s.tabor.kod, stav: '' })}
+                aria-current={filtrTabor === s.tabor.kod ? 'true' : undefined}
+                class:list={[
+                  'card card-hover block h-full p-6',
+                  filtrTabor === s.tabor.kod && 'border-brass-600',
+                ]}
+              >
+                <p class="eyebrow">{terminTaboru(s.tabor)}</p>
+                <p class="mt-2 font-display text-[1.375rem] leading-snug">{s.tabor.nazev}</p>
+                <p class="mt-1 text-[0.8125rem] text-ink-3">
+                  {s.tabor.otevreno ? 'Přihlášky otevřené' : 'Přihlášky uzavřené'} ·{' '}
+                  <span class="text-brass-700">/prihlaska/{s.tabor.kod}</span>
+                </p>
+
+                <dl class="mt-5 grid grid-cols-3 gap-3 border-t border-ink/12 pt-4">
+                  <div>
+                    <dt class="text-[0.6875rem] font-semibold uppercase tracking-[0.1em] text-ink-3">
+                      Přijato
+                    </dt>
+                    <dd class="mt-1 font-display text-[1.375rem] leading-none">
+                      {s.prijate}
+                      {s.tabor.kapacita > 0 && (
+                        <span class="text-[0.9375rem] text-ink-3">/{s.tabor.kapacita}</span>
+                      )}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt class="text-[0.6875rem] font-semibold uppercase tracking-[0.1em] text-ink-3">
+                      Zaplaceno
+                    </dt>
+                    <dd class="mt-1 font-display text-[1.375rem] leading-none">{s.zaplacene}</dd>
+                  </div>
+                  <div>
+                    <dt class="text-[0.6875rem] font-semibold uppercase tracking-[0.1em] text-brass-700">
+                      Nové
+                    </dt>
+                    <dd class="mt-1 font-display text-[1.375rem] leading-none text-brass-700">
+                      {s.nove}
+                    </dd>
+                  </div>
+                </dl>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </section>
+
+  <!-- --------------------------------------------------------- přihlášky -->
+  <section class="mt-16">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <h2 class="t-3">
+        Přihlášky
+        {filtrTabor && taborPodleKodu.get(filtrTabor) && (
+          <span class="text-ink-3">: {taborPodleKodu.get(filtrTabor)!.nazev}</span>
+        )}
+      </h2>
+    </div>
+
+    <nav aria-label="Filtr podle stavu" class="mt-6 border-b border-ink/12">
+      <ul class="-mb-px flex flex-wrap gap-x-6">
+        {
+          zalozky.map((z) => (
+            <li>
+              <a
+                href={odkaz({ stav: z.kod })}
+                aria-current={filtrStav === z.kod ? 'page' : undefined}
+                class:list={[
+                  'inline-block border-b-2 py-3 text-[0.8125rem] font-semibold uppercase tracking-[0.1em] transition-colors',
+                  filtrStav === z.kod
+                    ? 'border-brass-600 text-brass-700'
+                    : 'border-transparent text-ink-3 hover:text-ink',
+                ]}
+              >
+                {z.label} <span class="font-normal">({z.pocet})</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    {
+      seznam.length === 0 ? (
+        <p class="py-8 text-ink-3">Tady žádné přihlášky nejsou.</p>
+      ) : (
+        <ul>
+          {seznam.map((p) => {
+            const tabor = taborPodleKodu.get(p.tabor);
+            return (
+              <li class="border-b border-ink/12">
+                <a
+                  href={`/prihlasky/sprava/${p.id}`}
+                  class="group grid gap-x-6 gap-y-2 py-5 transition-colors hover:bg-paper-2 sm:grid-cols-[1fr_auto] sm:px-3"
+                >
+                  <div class="min-w-0">
+                    <p class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <span class="font-display text-[1.25rem] group-hover:text-brass-700">
+                        {p.dite_jmeno}
+                      </span>
+                      <Stitek stav={p.stav} />
+                      {p.platce === 'firma' && <Stitek barva="sand">Firma</Stitek>}
+                      {p.stav === 'prijata' &&
+                        (p.zaplaceno ? (
+                          <Stitek barva="loden">Zaplaceno</Stitek>
+                        ) : (
+                          <Stitek barva="brass">Čeká na platbu</Stitek>
+                        ))}
+                    </p>
+                    <p class="mt-1 text-[0.875rem] text-ink-3">
+                      {tabor && `${vek(p.dite_narozeni, tabor.zacatek)} let · `}
+                      {p.dite_zkusenosti.replace(/\s*\(.*\)$/, '')} · {p.zastupce_jmeno},{' '}
+                      {p.zastupce_telefon}
+                    </p>
+                    {!filtrTabor && tabor && (
+                      <p class="mt-1 text-[0.8125rem] text-ink-3/80">{tabor.nazev}</p>
+                    )}
+                  </div>
+
+                  <div class="flex items-center gap-5 sm:text-right">
+                    <div>
+                      <p class="font-display text-[1.125rem]">{kc(p.cena)}</p>
+                      <p class="text-[0.8125rem] text-ink-3">
+                        č. {p.vs} · {datumCas(p.vytvoreno)}
+                      </p>
+                    </div>
+                    <Icon
+                      name="chevron-right"
+                      class="hidden h-4 w-4 text-ink-3 transition-transform group-hover:translate-x-1 sm:block"
+                    />
+                  </div>
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      )
+    }
+  </section>
+</PrihlaskyLayout>

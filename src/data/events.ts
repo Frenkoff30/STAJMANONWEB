@@ -32,6 +32,8 @@ export interface StableEvent {
   highlight?: boolean;
   /** Rozpis ke stažení */
   file?: { label: string; href: string };
+  /** Kód tábora v přihláškách, u akce se pak ukáže tlačítko „Přihlásit se“ */
+  prihlaska?: string;
 }
 
 export const eventKindLabels: Record<EventKind, string> = {
@@ -55,6 +57,7 @@ interface RawEvent {
   kind: EventKind;
   highlight?: boolean;
   file?: { label: string; href: string } | null;
+  prihlaska?: string;
 }
 
 export const events: StableEvent[] = collection<RawEvent>(
@@ -68,6 +71,7 @@ export const events: StableEvent[] = collection<RawEvent>(
     kind: e.kind,
     highlight: e.highlight === true,
     file: e.file && opt(e.file.href) ? e.file : undefined,
+    prihlaska: opt(e.prihlaska),
   }))
   .sort((a, b) => a.start.localeCompare(b.start));
 
@@ -128,9 +132,10 @@ export function upcomingEvents(now = new Date()): StableEvent[] {
 /**
  * Nadcházející akce bez interních pobytů a kurzů — ty mají vlastní stránky
  * a v teaseru na homepage by jen zabraly místo skutečným závodům.
+ * Výjimkou je pobyt s online přihláškou, na ten se jde přihlásit rovnou.
  */
 export function upcomingPublicEvents(now = new Date()): StableEvent[] {
-  return upcomingEvents(now).filter((e) => e.kind !== 'pobyt');
+  return upcomingEvents(now).filter((e) => e.kind !== 'pobyt' || e.prihlaska);
 }
 
 export function pastEvents(now = new Date()): StableEvent[] {

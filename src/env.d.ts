@@ -19,6 +19,11 @@ declare global {
 interface ImportMetaEnv {
   readonly SUPABASE_URL?: string;
   readonly SUPABASE_ANON_KEY?: string;
+  readonly PRIHLASKY_SUPABASE_URL?: string;
+  readonly PRIHLASKY_SUPABASE_ANON_KEY?: string;
+  readonly RESEND_API_KEY?: string;
+  readonly PRIHLASKY_EMAIL_OD?: string;
+  readonly PRIHLASKY_EMAIL_STAJ?: string;
   readonly PUBLIC_FORM_ENDPOINT?: string;
   readonly PUBLIC_FORM_ACCESS_KEY?: string;
 }

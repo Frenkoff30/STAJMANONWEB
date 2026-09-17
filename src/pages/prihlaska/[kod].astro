@@ -1,0 +1,678 @@
+---
+/**
+ * Přihláška na tábor. Adresa `/prihlaska/<kód tábora>`.
+ *
+ * Bez registrace a bez hesla: rodič vyplní formulář a hotovo. Vede sem
+ * tlačítko „Přihlásit se“ u akce v kalendáři (pole `prihlaska` u akce).
+ *
+ * Formulář funguje i bez JavaScriptu. Skript jen dopočítává cenu
+ * a doplňuje údaje o firmě z ARES.
+ */
+
+export const prerender = false;
+
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import Section from '@/components/Section.astro';
+import Icon from '@/components/Icon.astro';
+import Zprava from '@/components/rezervace/Zprava.astro';
+import Pole from '@/components/prihlasky/Pole.astro';
+import { photo } from '@/data/images';
+import { site } from '@/data/site';
+import {
+  citelnaChyba,
+  prihlaskyNastaveny,
+  verejnyKlient,
+  type Prihlaska,
+  type Tabor,
+} from '@/lib/prihlasky/db';
+import {
+  nactiFormular,
+  prazdnyFormular,
+  zkontroluj,
+  zkusenosti,
+  type Chyby,
+} from '@/lib/prihlasky/formular';
+import { kc, spoctiCenu, terminTaboru } from '@/lib/prihlasky/platba';
+import { odeslatEmail, sestavEmail, type Email } from '@/lib/prihlasky/email';
+
+// Odpověď může obsahovat vyplněné osobní údaje, nesmí se nikde uložit.
+Astro.response.headers.set('Cache-Control', 'private, no-store, max-age=0');
+
+const heroImg = photo('kurzy-pony')!;
+
+let tabor: Tabor | null = null;
+
+if (prihlaskyNastaveny && Astro.params.kod) {
+  const { data } = await verejnyKlient()
+    .from('tabory')
+    .select('*')
+    .eq('kod', Astro.params.kod)
+    .maybeSingle();
+  tabor = data as Tabor | null;
+}
+
+if (prihlaskyNastaveny && !tabor) Astro.response.status = 404;
+
+let v = tabor ? prazdnyFormular(tabor) : null;
+let chyby: Chyby = {};
+let chyba = '';
+let hotovo: { prihlaska: Prihlaska; email: Email; odeslano: boolean } | null = null;
+
+if (tabor && v && Astro.request.method === 'POST') {
+  const formular = await Astro.request.formData();
+  v = nactiFormular(formular, tabor);
+  chyby = zkontroluj(v, tabor);
+
+  if (String(formular.get('kontrola') ?? '')) {
+    // Skryté pole vyplnil robot.
+    chyba = 'Přihlášku se nepodařilo odeslat. Zkuste to prosím znovu.';
+  } else if (Object.keys(chyby).length > 0) {
+    chyba = 'V přihlášce něco chybí. Pole k doplnění jsou označená červeně.';
+  } else {
+    const { data, error } = await verejnyKlient().rpc('odeslat_prihlasku', { p: v });
+
+    if (error) {
+      chyba = citelnaChyba(error);
+    } else {
+      const vysledek = data as { id: string; vs: string; cena: number; nova: boolean };
+      const { varianta, priplatky } = spoctiCenu(tabor, v.varianta, v.priplatky);
+
+      const prihlaska: Prihlaska = {
+        ...v,
+        id: vysledek.id,
+        vs: vysledek.vs,
+        cena: vysledek.cena,
+        varianta: varianta!,
+        priplatky,
+        stav: 'nova',
+        zaplaceno: null,
+        faktura_cislo: '',
+        poznamka_staje: '',
+        vytvoreno: new Date().toISOString(),
+        zmeneno: new Date().toISOString(),
+      };
+
+      const email = sestavEmail('odeslana', tabor, prihlaska, Astro.url.origin);
+      let odeslano = false;
+
+      // Obnovení stránky po odeslání vrátí původní přihlášku. E-maily už
+      // podruhé neposíláme.
+      if (vysledek.nova) {
+        [odeslano] = await Promise.all([
+          odeslatEmail(email),
+          odeslatEmail(sestavEmail('staji', tabor, prihlaska, Astro.url.origin)),
+        ]);
+      }
+
+      hotovo = { prihlaska, email, odeslano };
+    }
+  }
+}
+
+const kontakt = site.contacts.find((c) => /kurzy|pobyty/i.test(c.role)) ?? site.contacts[0]!;
+
+const cenik = tabor
+  ? {
+      varianty: Object.fromEntries(tabor.varianty.map((x) => [x.kod, x.cena])),
+      priplatky: Object.fromEntries(tabor.priplatky.map((x) => [x.kod, x.cena])),
+    }
+  : null;
+
+const celkem = tabor && v ? spoctiCenu(tabor, v.varianta, v.priplatky).cena : 0;
+
+const proKoho = tabor
+  ? [
+      tabor.vek_od && `Děti od ${tabor.vek_od} let`,
+      tabor.kapacita > 0 && `nejvýš ${tabor.kapacita} dětí`,
+    ]
+      .filter(Boolean)
+      .join(', ')
+  : '';
+
+/** Atributy pro vstup: napojení na chybu nebo nápovědu pod ním. */
+const aria = (pole: keyof Chyby) => ({
+  id: pole,
+  name: pole,
+  'aria-invalid': chyby[pole] ? ('true' as const) : undefined,
+  'aria-describedby': `${pole}-info`,
+});
+
+const volba =
+  'flex cursor-pointer items-start gap-4 border border-ink/15 bg-paper p-4 transition-colors hover:border-ink/30 has-[:checked]:border-brass-600 has-[:checked]:bg-brass-100/50 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brass-500/40';
+---
+
+<BaseLayout
+  title={tabor ? `Přihláška: ${tabor.nazev}` : 'Přihláška na tábor'}
+  description={tabor
+    ? `Online přihláška na ${tabor.nazev}, ${terminTaboru(tabor)}.`
+    : 'Online přihláška na tábor.'}
+  overlayHeader={Boolean(tabor)}
+  noindex
+>
+  {
+    !prihlaskyNastaveny || !tabor || !v || !cenik ? (
+      <Section tone="paper" space="lg">
+        <div class="max-w-2xl">
+          <h1 class="t-1">
+            {prihlaskyNastaveny ? 'Tábor jsme nenašli' : 'Přihlášky se spouští'}
+          </h1>
+          <p class="lead mt-5">
+            {prihlaskyNastaveny
+              ? 'Odkaz je možná neúplný, nebo přihláška na tenhle termín už skončila.'
+              : 'Online přihlášky zatím nejsou zapnuté.'}{' '}
+            Napište nám na{' '}
+            <a href={`mailto:${site.email}`} class="link-underline font-semibold text-brass-700">{site.email}</a>, rádi pomůžeme.
+          </p>
+        </div>
+      </Section>
+    ) : (
+      <>
+        <PageHero
+          title={tabor.nazev}
+          lead={tabor.podtitul || terminTaboru(tabor)}
+          image={heroImg}
+          imageAlt="Děti na ponym během jezdeckého tábora"
+          crumbs={[{ label: 'Kalendář akcí', href: '/akce' }, { label: 'Přihláška' }]}
+        />
+
+        <Section tone="paper" space="lg">
+          <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+            <!-- ------------------------------------------------ o táboře -->
+            <aside class="lg:col-span-4">
+              <div class="lg:sticky lg:top-32">
+                <dl class="space-y-px">
+                  <div class="border-t border-ink/12 py-4">
+                    <dt class="eyebrow">Termín</dt>
+                    <dd class="mt-1 font-display text-[1.375rem] leading-snug">
+                      {terminTaboru(tabor)}
+                    </dd>
+                  </div>
+                  {(tabor.nastup || tabor.odjezd) && (
+                    <div class="border-t border-ink/12 py-4">
+                      <dt class="eyebrow">Nástup a odjezd</dt>
+                      <dd class="mt-1 text-[0.9375rem] text-ink-3">
+                        {tabor.nastup && <span class="block">Nástup {tabor.nastup}</span>}
+                        {tabor.odjezd && <span class="block">Odjezd {tabor.odjezd}</span>}
+                      </dd>
+                    </div>
+                  )}
+                  {proKoho && (
+                    <div class="border-t border-ink/12 py-4">
+                      <dt class="eyebrow">Pro koho</dt>
+                      <dd class="mt-1 text-[0.9375rem] text-ink-3">{proKoho}</dd>
+                    </div>
+                  )}
+                  <div class="border-t border-b border-ink/12 py-4">
+                    <dt class="eyebrow">Platba</dt>
+                    <dd class="mt-1 text-[0.9375rem] leading-relaxed text-ink-3">
+                      Převodem nejpozději {tabor.splatnost_dni} dní před nástupem, nebo na
+                      fakturu firmě. Platební údaje pošleme, až místo potvrdíme.
+                    </dd>
+                  </div>
+                </dl>
+
+                {tabor.popis && (
+                  <p class="mt-6 border-l-2 border-brass-500 pl-5 text-[0.9375rem] leading-relaxed text-ink-3">
+                    {tabor.popis}
+                  </p>
+                )}
+
+                <p class="mt-6 flex items-start gap-3 text-[0.875rem] text-ink-3">
+                  <Icon name="phone" class="mt-0.5 h-4 w-4 shrink-0 text-brass-600" />
+                  <span>
+                    S přihláškou poradí {kontakt.name},{' '}
+                    <a href={`tel:${kontakt.phoneHref}`} class="link-underline text-brass-700">{kontakt.phone}</a>.
+                  </span>
+                </p>
+              </div>
+            </aside>
+
+            <!-- ------------------------------------------------ formulář -->
+            <div id="prihlaska" class="scroll-mt-28 lg:col-span-8">
+              {hotovo ? (
+                <div class="card p-7 lg:p-10" role="status">
+                  <p class="eyebrow">Přihláška č. {hotovo.prihlaska.vs}</p>
+                  <h2 class="t-2 mt-3">Děkujeme, přihláška dorazila.</h2>
+                  <p class="lead mt-5">
+                    Teď ji projdeme a do několika dnů vám potvrdíme místo. Platební
+                    údaje přijdou spolu s potvrzením, zatím nic neplaťte.
+                  </p>
+
+                  <dl class="mt-8 grid gap-x-8 gap-y-4 border-t border-ink/12 pt-6 sm:grid-cols-3">
+                    <div>
+                      <dt class="form-label">Dítě</dt>
+                      <dd>{hotovo.prihlaska.dite_jmeno}</dd>
+                    </div>
+                    <div>
+                      <dt class="form-label">Celkem</dt>
+                      <dd class="font-display text-[1.375rem] leading-none text-brass-700">
+                        {kc(hotovo.prihlaska.cena)}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt class="form-label">Platí</dt>
+                      <dd>
+                        {hotovo.prihlaska.platce === 'firma'
+                          ? hotovo.prihlaska.firma_nazev
+                          : 'zákonný zástupce'}
+                      </dd>
+                    </div>
+                  </dl>
+
+                  {hotovo.odeslano ? (
+                    <p class="mt-8 text-[0.9375rem] text-ink-3">
+                      Shrnutí jsme poslali na{' '}
+                      <strong class="text-ink">{hotovo.prihlaska.zastupce_email}</strong>.
+                      Když nedorazí, podívejte se prosím i do spamu.
+                    </p>
+                  ) : (
+                    <div class="mt-8">
+                      <Zprava typ="info">
+                        E-maily se zatím neodesílají. Níže je ukázka potvrzení, které
+                        rodiči přijde, až bude e-mailová služba zapnutá.
+                      </Zprava>
+                      <details class="mt-4 border border-ink/12 bg-paper-2">
+                        <summary class="cursor-pointer px-5 py-4 text-[0.875rem] font-semibold">
+                          Ukázka e-mailu: {hotovo.email.predmet}
+                        </summary>
+                        <iframe
+                          srcdoc={hotovo.email.html}
+                          sandbox=""
+                          title="Ukázka potvrzovacího e-mailu"
+                          class="h-[640px] w-full border-t border-ink/12 bg-white"
+                        />
+                      </details>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <form
+                  method="post"
+                  action="#prihlaska"
+                  class="card p-7 lg:p-10"
+                  data-prihlaska
+                  data-ceny={JSON.stringify(cenik)}
+                >
+                  <input type="hidden" name="token" value={v.token} />
+                  <div class="absolute left-[-9999px]" aria-hidden="true">
+                    <label for="kontrola">Nevyplňujte</label>
+                    <input type="text" id="kontrola" name="kontrola" tabindex="-1" autocomplete="off" />
+                  </div>
+
+                  <h2 class="t-3">Přihláška</h2>
+                  <p class="mt-2 text-[0.9375rem] text-ink-3">
+                    Pole označená <span class="text-brass-700">*</span> jsou povinná.
+                    Přihláška je nezávazná, dokud vám místo nepotvrdíme.
+                  </p>
+
+                  {chyba && (
+                    <Zprava typ="chyba" class="mt-6">
+                      {chyba}
+                    </Zprava>
+                  )}
+
+                  <!-- 1. Termín a cena -->
+                  <fieldset class="mt-10">
+                    <legend class="flex items-baseline gap-3">
+                      <span class="eyebrow">01</span>
+                      <span class="t-3">Cena</span>
+                    </legend>
+
+                    <div class="mt-5 space-y-2">
+                      {tabor.varianty.map((x) => (
+                        <label class={volba}>
+                          <input
+                            type="radio"
+                            name="varianta"
+                            value={x.kod}
+                            checked={v.varianta === x.kod}
+                            required
+                            class="mt-1 h-4 w-4 shrink-0 accent-brass-600"
+                          />
+                          <span class="min-w-0 flex-1">
+                            <span class="block font-semibold">{x.nazev}</span>
+                            {x.popis && (
+                              <span class="mt-0.5 block text-[0.875rem] text-ink-3">{x.popis}</span>
+                            )}
+                          </span>
+                          <span class="shrink-0 font-display text-[1.125rem]">{kc(x.cena)}</span>
+                        </label>
+                      ))}
+                    </div>
+                    {chyby.varianta && <p class="form-error">{chyby.varianta}</p>}
+
+                    {tabor.priplatky.length > 0 && (
+                      <div class="mt-5 space-y-2">
+                        {tabor.priplatky.map((x) => (
+                          <label class={volba}>
+                            <input
+                              type="checkbox"
+                              name="priplatky"
+                              value={x.kod}
+                              checked={v.priplatky.includes(x.kod)}
+                              class="mt-1 h-4 w-4 shrink-0 accent-brass-600"
+                            />
+                            <span class="min-w-0 flex-1">
+                              <span class="block font-semibold">{x.nazev}</span>
+                              {x.popis && (
+                                <span class="mt-0.5 block text-[0.875rem] text-ink-3">{x.popis}</span>
+                              )}
+                            </span>
+                            <span class="shrink-0 font-display text-[1.125rem]">+ {kc(x.cena)}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+
+                    <p class="mt-5 flex items-baseline justify-between gap-4 border-t border-ink/12 pt-4">
+                      <span class="form-label mb-0">Celkem</span>
+                      <output class="font-display text-[1.5rem] text-brass-700" data-celkem>
+                        {kc(celkem)}
+                      </output>
+                    </p>
+                  </fieldset>
+
+                  <!-- 2. Dítě -->
+                  <fieldset class="mt-12">
+                    <legend class="flex items-baseline gap-3">
+                      <span class="eyebrow">02</span>
+                      <span class="t-3">Dítě</span>
+                    </legend>
+
+                    <div class="mt-5 grid gap-5 sm:grid-cols-2">
+                      <Pole pole="dite_jmeno" label="Jméno a příjmení" povinne chyba={chyby.dite_jmeno}>
+                        <input type="text" {...aria('dite_jmeno')} value={v.dite_jmeno} required maxlength="80" class="form-control" />
+                      </Pole>
+
+                      <Pole pole="dite_narozeni" label="Datum narození" povinne chyba={chyby.dite_narozeni}>
+                        <input type="date" {...aria('dite_narozeni')} value={v.dite_narozeni} required class="form-control" />
+                      </Pole>
+
+                      <Pole pole="dite_zkusenosti" label="Jezdecké zkušenosti" povinne chyba={chyby.dite_zkusenosti}>
+                        <select {...aria('dite_zkusenosti')} required class="form-control">
+                          <option value="" selected={!v.dite_zkusenosti}>Vyberte</option>
+                          {zkusenosti.map((z) => (
+                            <option value={z} selected={v.dite_zkusenosti === z}>{z}</option>
+                          ))}
+                        </select>
+                      </Pole>
+
+                      <Pole pole="dite_pojistovna" label="Zdravotní pojišťovna" chyba={chyby.dite_pojistovna}>
+                        <input type="text" {...aria('dite_pojistovna')} value={v.dite_pojistovna} maxlength="60" placeholder="Např. VZP" class="form-control" />
+                      </Pole>
+
+                      <Pole
+                        pole="dite_zdravi"
+                        label="Zdravotní omezení, alergie, léky"
+                        napoveda="Vidí jen vedoucí tábora. Když nic, nechte prázdné."
+                        chyba={chyby.dite_zdravi}
+                        class="sm:col-span-2"
+                      >
+                        <textarea {...aria('dite_zdravi')} rows="3" maxlength="1000" class="form-control resize-y">{v.dite_zdravi}</textarea>
+                      </Pole>
+                    </div>
+                  </fieldset>
+
+                  <!-- 3. Zákonný zástupce -->
+                  <fieldset class="mt-12">
+                    <legend class="flex items-baseline gap-3">
+                      <span class="eyebrow">03</span>
+                      <span class="t-3">Zákonný zástupce</span>
+                    </legend>
+
+                    <div class="mt-5 grid gap-5 sm:grid-cols-2">
+                      <Pole pole="zastupce_jmeno" label="Jméno a příjmení" povinne chyba={chyby.zastupce_jmeno}>
+                        <input type="text" {...aria('zastupce_jmeno')} value={v.zastupce_jmeno} required maxlength="80" autocomplete="name" class="form-control" />
+                      </Pole>
+
+                      <Pole pole="zastupce_telefon" label="Telefon" povinne chyba={chyby.zastupce_telefon}>
+                        <input type="tel" {...aria('zastupce_telefon')} value={v.zastupce_telefon} required maxlength="30" autocomplete="tel" placeholder="+420" class="form-control" />
+                      </Pole>
+
+                      <Pole pole="zastupce_email" label="E-mail" povinne napoveda="Sem pošleme potvrzení a platební údaje." chyba={chyby.zastupce_email}>
+                        <input type="email" {...aria('zastupce_email')} value={v.zastupce_email} required maxlength="120" autocomplete="email" autocapitalize="off" spellcheck="false" class="form-control" />
+                      </Pole>
+
+                      <Pole pole="zastupce_adresa" label="Adresa" chyba={chyby.zastupce_adresa}>
+                        <input type="text" {...aria('zastupce_adresa')} value={v.zastupce_adresa} maxlength="200" autocomplete="street-address" class="form-control" />
+                      </Pole>
+                    </div>
+                  </fieldset>
+
+                  <!-- 4. Kdo platí -->
+                  <fieldset class="mt-12">
+                    <legend class="flex items-baseline gap-3">
+                      <span class="eyebrow">04</span>
+                      <span class="t-3">Kdo tábor platí</span>
+                    </legend>
+
+                    <div class="mt-5 grid gap-2 sm:grid-cols-2">
+                      <label class={volba}>
+                        <input type="radio" name="platce" value="osoba" checked={v.platce === 'osoba'} class="mt-1 h-4 w-4 shrink-0 accent-brass-600" />
+                        <span>
+                          <span class="block font-semibold">Platím já</span>
+                          <span class="mt-0.5 block text-[0.875rem] text-ink-3">
+                            Převodem, s QR kódem pro mobilní banku.
+                          </span>
+                        </span>
+                      </label>
+                      <label class={volba}>
+                        <input type="radio" name="platce" value="firma" checked={v.platce === 'firma'} class="mt-1 h-4 w-4 shrink-0 accent-brass-600" />
+                        <span>
+                          <span class="block font-semibold">Platí firma</span>
+                          <span class="mt-0.5 block text-[0.875rem] text-ink-3">
+                            Zaměstnavatel nebo vaše firma. Vystavíme fakturu.
+                          </span>
+                        </span>
+                      </label>
+                    </div>
+
+                    <div class="mt-6 border-l-2 border-brass-500 pl-5 sm:pl-6" data-firma>
+                      <p class="text-[0.875rem] text-ink-3">
+                        Stačí zadat IČO, název a sídlo firmy doplníme z ARES.
+                      </p>
+
+                      <div class="mt-5 grid gap-5 sm:grid-cols-2">
+                        <Pole pole="firma_ico" label="IČO" povinne chyba={chyby.firma_ico} class="sm:col-span-2">
+                          <div class="flex gap-2">
+                            <input
+                              type="text"
+                              {...aria('firma_ico')}
+                              value={v.firma_ico}
+                              inputmode="numeric"
+                              maxlength="12"
+                              autocomplete="off"
+                              class="form-control max-w-[12rem]"
+                              data-ico
+                            />
+                            <button type="button" class="btn btn-outline shrink-0 px-5" data-ares hidden>
+                              Doplnit z ARES
+                            </button>
+                          </div>
+                          <p class="mt-1.5 text-[0.8125rem] text-ink-3" data-ares-stav aria-live="polite"></p>
+                        </Pole>
+
+                        <Pole pole="firma_nazev" label="Název firmy" povinne chyba={chyby.firma_nazev} class="sm:col-span-2">
+                          <input type="text" {...aria('firma_nazev')} value={v.firma_nazev} maxlength="160" autocomplete="organization" class="form-control" data-ares-nazev />
+                        </Pole>
+
+                        <Pole pole="firma_adresa" label="Sídlo" povinne chyba={chyby.firma_adresa} class="sm:col-span-2">
+                          <input type="text" {...aria('firma_adresa')} value={v.firma_adresa} maxlength="200" class="form-control" data-ares-adresa />
+                        </Pole>
+
+                        <Pole pole="firma_dic" label="DIČ" chyba={chyby.firma_dic}>
+                          <input type="text" {...aria('firma_dic')} value={v.firma_dic} maxlength="14" class="form-control" data-ares-dic />
+                        </Pole>
+
+                        <Pole pole="firma_objednavka" label="Číslo objednávky" napoveda="Jen když ho firma chce mít na faktuře." chyba={chyby.firma_objednavka}>
+                          <input type="text" {...aria('firma_objednavka')} value={v.firma_objednavka} maxlength="60" class="form-control" />
+                        </Pole>
+
+                        <Pole pole="firma_email" label="E-mail pro fakturu" povinne napoveda="Třeba účtárna nebo personální oddělení." chyba={chyby.firma_email} class="sm:col-span-2">
+                          <input type="email" {...aria('firma_email')} value={v.firma_email} maxlength="120" autocapitalize="off" spellcheck="false" class="form-control" />
+                        </Pole>
+                      </div>
+                    </div>
+                  </fieldset>
+
+                  <!-- 5. Doplnění -->
+                  <fieldset class="mt-12">
+                    <legend class="flex items-baseline gap-3">
+                      <span class="eyebrow">05</span>
+                      <span class="t-3">Něco dalšího?</span>
+                    </legend>
+
+                    <Pole pole="poznamka" label="Poznámka" napoveda="S kým chce dítě bydlet, strava, vlastní kůň, cokoli dalšího." chyba={chyby.poznamka} class="mt-5">
+                      <textarea {...aria('poznamka')} rows="3" maxlength="1000" class="form-control resize-y">{v.poznamka}</textarea>
+                    </Pole>
+
+                    <div class="mt-8 space-y-4">
+                      <label class="flex cursor-pointer items-start gap-3 text-[0.9375rem]">
+                        <input
+                          type="checkbox"
+                          id="souhlas_podminky"
+                          name="souhlas_podminky"
+                          value="ano"
+                          checked={v.souhlas_podminky}
+                          required
+                          aria-invalid={chyby.souhlas_podminky ? 'true' : undefined}
+                          class="mt-1 h-4 w-4 shrink-0 accent-brass-600"
+                        />
+                        <span>
+                          Souhlasím se{' '}
+                          <a href="/kurzy#cena" target="_blank" class="link-underline font-semibold text-brass-700">
+                            storno podmínkami
+                          </a>{' '}
+                          a se zpracováním osobních údajů pro účely tábora.{' '}
+                          <span class="text-brass-700" aria-hidden="true">*</span>
+                        </span>
+                      </label>
+                      {chyby.souhlas_podminky && <p class="form-error">{chyby.souhlas_podminky}</p>}
+
+                      <label class="flex cursor-pointer items-start gap-3 text-[0.9375rem]">
+                        <input
+                          type="checkbox"
+                          name="souhlas_foto"
+                          value="ano"
+                          checked={v.souhlas_foto}
+                          class="mt-1 h-4 w-4 shrink-0 accent-brass-600"
+                        />
+                        <span class="text-ink-3">
+                          Fotky z tábora, na kterých je dítě, smíte zveřejnit na webu a
+                          sociálních sítích stáje.
+                        </span>
+                      </label>
+                    </div>
+                  </fieldset>
+
+                  <div class="mt-10 flex flex-wrap items-center justify-between gap-5 border-t border-ink/12 pt-8">
+                    <p class="text-[0.9375rem] text-ink-3">
+                      Celkem{' '}
+                      <output class="font-display text-[1.375rem] text-ink" data-celkem>
+                        {kc(celkem)}
+                      </output>
+                    </p>
+                    <button type="submit" class="btn btn-primary" data-odeslat>
+                      Odeslat přihlášku
+                      <Icon name="arrow-right" class="h-4 w-4" />
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        </Section>
+      </>
+    )
+  }
+</BaseLayout>
+
+<style is:global>
+  /* Firemní údaje jen když platí firma. Bez JavaScriptu, jen CSS. */
+  [data-prihlaska]:has(input[name='platce'][value='osoba']:checked) [data-firma] {
+    display: none;
+  }
+</style>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-prihlaska]');
+
+  if (form) {
+    const cenik = JSON.parse(form.dataset.ceny ?? '{}') as {
+      varianty: Record<string, number>;
+      priplatky: Record<string, number>;
+    };
+    const kc = (n: number) => `${n.toLocaleString('cs-CZ')} Kč`;
+
+    /* ---- cena ---------------------------------------------------------- */
+    const prepocitat = () => {
+      const data = new FormData(form);
+      const varianta = cenik.varianty[String(data.get('varianta'))] ?? 0;
+      const priplatky = data
+        .getAll('priplatky')
+        .reduce<number>((s, kod) => s + (cenik.priplatky[String(kod)] ?? 0), 0);
+      form.querySelectorAll('[data-celkem]').forEach((el) => {
+        el.textContent = kc(varianta + priplatky);
+      });
+    };
+    form.addEventListener('change', prepocitat);
+
+    /* ---- ARES ---------------------------------------------------------- */
+    const ico = form.querySelector<HTMLInputElement>('[data-ico]')!;
+    const tlacitko = form.querySelector<HTMLButtonElement>('[data-ares]')!;
+    const stav = form.querySelector<HTMLElement>('[data-ares-stav]')!;
+    const pole = {
+      nazev: form.querySelector<HTMLInputElement>('[data-ares-nazev]')!,
+      adresa: form.querySelector<HTMLInputElement>('[data-ares-adresa]')!,
+      dic: form.querySelector<HTMLInputElement>('[data-ares-dic]')!,
+    };
+    let posledni = '';
+
+    tlacitko.hidden = false;
+
+    const nacist = async () => {
+      const hodnota = ico.value.replace(/\s/g, '');
+      if (!/^\d{8}$/.test(hodnota) || hodnota === posledni) return;
+      posledni = hodnota;
+
+      tlacitko.disabled = true;
+      stav.textContent = 'Hledám firmu v ARES…';
+
+      try {
+        const odpoved = await fetch(`/prihlasky/ares?ico=${hodnota}`);
+        const data = await odpoved.json();
+
+        if (!odpoved.ok) {
+          stav.textContent = data.chyba ?? 'Firmu se nepodařilo najít.';
+          posledni = '';
+          return;
+        }
+
+        pole.nazev.value = data.nazev;
+        pole.adresa.value = data.adresa;
+        pole.dic.value = data.dic;
+        stav.textContent = `Doplněno z ARES: ${data.nazev}`;
+      } catch {
+        stav.textContent = 'ARES teď neodpovídá. Údaje prosím vyplňte ručně.';
+        posledni = '';
+      } finally {
+        tlacitko.disabled = false;
+      }
+    };
+
+    tlacitko.addEventListener('click', () => {
+      posledni = '';
+      nacist();
+    });
+    ico.addEventListener('input', () => {
+      if (/^\d{8}$/.test(ico.value.replace(/\s/g, ''))) nacist();
+    });
+
+    /* ---- dvojklik ------------------------------------------------------ */
+    form.addEventListener('submit', () => {
+      const odeslat = form.querySelector<HTMLButtonElement>('[data-odeslat]');
+      if (odeslat) odeslat.disabled = true;
+    });
+  }
+</script>

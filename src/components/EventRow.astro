@@ -3,6 +3,7 @@ import Icon from './Icon.astro';
 import {
   eventKindLabels,
   formatRange,
+  isUpcoming,
   parseDate,
   type StableEvent,
 } from '@/data/events';
@@ -98,6 +99,17 @@ const monthShort = [
         >
           <Icon name="download" class="h-3.5 w-3.5" />
           {event.file.label}
+        </a>
+      )
+    }
+    {
+      event.prihlaska && isUpcoming(event) && (
+        <a
+          href={`/prihlaska/${event.prihlaska}`}
+          class:list={['link-arrow mt-3 flex w-fit', onDark && 'text-brass-300 hover:text-white']}
+        >
+          Přihlásit se
+          <Icon name="arrow-right" class="h-3.5 w-3.5" />
         </a>
       )
     }
