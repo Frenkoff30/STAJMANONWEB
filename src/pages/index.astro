@@ -84,7 +84,16 @@ const jsonLd = {
     </div>
 
     <!-- Spodní lišta: rychlé vstupy -->
-    <div class="relative border-t border-white/15 backdrop-blur-sm">
+    <!--
+      Odkazy dřív končily na okraji obsahu, takže se při najetí myší podbarvila
+      jen jejich část a zbytek lišty až ke kraji obrazovky zůstal tmavý.
+      Záporné odsazení (`-mx-[50vw]`) proto krajní odkaz roztáhne přes celý
+      okraj a stejně velký vnitřní okraj (`px-[50vw]`) vrátí text zpátky na
+      původní místo — text tedy dál lícuje s nadpisem nad lištou, ale podbarvení
+      jde od kraje ke kraji. `overflow-hidden` to přetečení ořízne, aby
+      nevznikalo vodorovné posouvání stránky.
+    -->
+    <div class="relative overflow-hidden border-t border-white/15 backdrop-blur-sm">
       <div class="container-x grid divide-white/15 sm:grid-cols-3 sm:divide-x">
         {
           [
@@ -109,7 +118,7 @@ const jsonLd = {
           ].map((item) => (
             <a
               href={item.href}
-              class="group flex items-center gap-4 border-t border-white/15 py-5 text-white transition-colors first:border-t-0 hover:bg-white/[0.06] sm:border-t-0 sm:px-6 sm:first:pl-0 sm:last:pr-0"
+              class="group -mx-[50vw] flex items-center gap-4 border-t border-white/15 px-[50vw] py-5 text-white transition-colors first:border-t-0 hover:bg-white/[0.06] sm:mx-0 sm:border-t-0 sm:px-6 sm:first:-ml-[50vw] sm:first:pl-[50vw] sm:last:-mr-[50vw] sm:last:pr-[50vw]"
             >
               <Icon name={item.icon} class="h-5 w-5 shrink-0 text-brass-300" />
               <span class="min-w-0 flex-1">
