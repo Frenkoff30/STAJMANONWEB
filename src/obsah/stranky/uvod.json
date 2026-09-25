@@ -20,10 +20,10 @@
     "quickEvents": {
       "label": "Nejbližší akce",
       "href": "/akce",
-      "fallback": "Kalendář 2026"
+      "fallback": "Kalendář akcí"
     },
     "quickCourses": {
-      "label": "Prázdninové kurzy 2026",
+      "label": "Prázdninové kurzy",
       "href": "/kurzy"
     },
     "quickPhone": {
@@ -50,8 +50,8 @@
       "cta": "Jak výuka probíhá"
     },
     {
-      "title": "Penzion a restaurace",
-      "text": "24 lůžek, restaurace a terasa s výhledem na kolbiště.",
+      "title": "Penzion a občerstvení",
+      "text": "24 lůžek a terasa s výhledem na kolbiště.",
       "href": "/penzion",
       "cta": "Ubytování a ceny"
     }
@@ -65,7 +65,7 @@
     "image": "pokoj-04",
     "imageAlt": "Pokoj penzionu s obrazy koní na stěně",
     "title": "Přespat kousek od koní.",
-    "lead": "Dvou až čtyřlůžkové pokoje s vlastní koupelnou. Restaurace, snídaně na objednávku a terasa nad kolbištěm.",
+    "lead": "Dvou až čtyřlůžkové pokoje s vlastní koupelnou. Snídaně na objednávku a terasa nad kolbištěm.",
     "primaryCta": {
       "label": "Ubytování a ceník",
       "href": "/penzion"

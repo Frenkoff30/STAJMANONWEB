@@ -52,10 +52,10 @@ const jsonLd = {
           <div class="overflow-hidden" data-reveal>
             <Image
               src={portraitImg}
-              alt="Jiří Skřivan na parkuru"
-              widths={[400, 800, 1200]}
+              alt={page.images.portraitAlt}
+              widths={[400, 800, 1200, 1600]}
               sizes="(min-width: 1024px) 38vw, 100vw"
-              class="aspect-[4/5] w-full object-cover"
+              class="aspect-[3/2] w-full object-cover"
             />
           </div>
 
@@ -84,8 +84,8 @@ const jsonLd = {
 
   <!-- Milníky -->
   <Section tone="dark" space="lg" id="milniky">
-    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
-      <div class="lg:col-span-7">
+    <div class="grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-14">
+      <div class="lg:col-span-6">
         <SectionHead title={page.sekce.nejvyznamnejsiTituly.title} tone="light" />
         <ul class="mt-10 space-y-px">
           {
@@ -109,14 +109,14 @@ const jsonLd = {
         </a>
       </div>
 
-      <div class="lg:col-span-5">
+      <div class="lg:col-span-6">
         <div class="overflow-hidden" data-reveal>
           <Image
             src={sportImg}
             alt={page.images.sportAlt}
-            widths={[320, 640]}
-            sizes="(min-width: 1024px) 38vw, 100vw"
-            class="aspect-[2/3] w-full object-cover"
+            widths={[400, 800, 1200, 1600]}
+            sizes="(min-width: 1024px) 46vw, 100vw"
+            class="aspect-[3/2] w-full object-cover"
           />
         </div>
       </div>

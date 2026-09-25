@@ -11,17 +11,17 @@
   },
   "sekce": {
     "dvaTerminyMimoPrazdniny": {
-      "title": "Dva termíny mimo prázdniny",
+      "title": "Termíny mimo prázdniny",
       "lead": "Vhodné od osmi let. Lekce se vždycky přizpůsobí tomu, co jezdec umí."
     }
   },
   "cta": {
-    "heading": "Napište nám a pošleme přihlášku.",
-    "lead": "Napište nám e-mail a ozveme se s přihláškou i odpověďmi na dotazy.",
+    "heading": "Nevíte si s něčím rady?",
+    "lead": "Přihláška je online u každého termínu. Když potřebujete něco doladit, napište nám e-mail a ozveme se.",
     "secondaryLabel": "Letní kurzy"
   },
   "images": [
-    "deti-parkur",
-    "skola-02"
+    "deti-skupina",
+    "skola-01"
   ]
 }

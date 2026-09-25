@@ -7,7 +7,7 @@
     "heading": "Jezdecká škola",
     "lead": "Pro začínající i pokročilé jezdce od sedmi let. Na ponících i velkých koních, celoročně, vždy pod odborným dohledem.",
     "image": "skola-01",
-    "imageAlt": "Výuka jízdy na koni v kryté hale"
+    "imageAlt": "Jezdkyně při lekci v kryté jízdárně"
   },
   "sekce": {
     "krokZaKrokemK": {
@@ -20,6 +20,10 @@
     "klubZaTimVsim": {
       "title": "Klub za tím vším.",
       "lead": "Hlavní činností klubu je organizace jezdeckých akcí a účast na nich, výuka dětí a mládeže a pořádání víkendových pobytů a prázdninových kurzů."
+    },
+    "cenik": {
+      "title": "Ceník jezdecké školy",
+      "lead": "Ceny platí pro výuku na školních koních a ponících, včetně zapůjčení ochranných pomůcek."
     }
   },
   "steps": [
@@ -50,10 +54,10 @@
     "skokový výcvik, základy drezurního a voltižního ježdění"
   ],
   "images": {
-    "lekce": "deti-parkur",
-    "lekceAlt": "Dítě na ponym na parkuru jezdeckých her",
-    "bezpecnost": "skola-02",
-    "bezpecnostAlt": "Dívka se stará o koně před lekcí"
+    "lekce": "kurzy-pony",
+    "lekceAlt": "Děti na ponym při výuce skákání",
+    "bezpecnost": "skola-pony-parkur",
+    "bezpecnostAlt": "Dítě na ponym na parkuru pod dohledem cvičitele"
   },
   "bezpecnostNote": "Při pravidelné sportovní činnosti poskytujeme zvýhodněné cenové podmínky.",
   "klubText": [
@@ -63,5 +67,52 @@
   "cta": {
     "heading": "Chcete přihlásit dítě do jezdecké školy?",
     "lead": "Ozvěte se Miroslavě Skřivanové, poradí s termíny, vybavením i tím, jestli je vaše dítě na ježdění připravené."
-  }
+  },
+  "cenik": {
+    "items": [
+      {
+        "title": "Jednorázová lekce",
+        "price": "650 Kč",
+        "note": "za lekci",
+        "text": "Na vyzkoušení i pro nepravidelné ježdění. Termín domlouváme dopředu telefonicky."
+      },
+      {
+        "title": "Permanentka na 10 lekcí",
+        "price": "6 000 Kč",
+        "note": "deset lekcí",
+        "text": "Chcete si vyzkoušet víc jízd? Permanentka vyjde levněji než jednotlivé lekce a čerpá se podle vašich možností."
+      },
+      {
+        "title": "Pravidelná docházka ve školním roce",
+        "price": "2 200 Kč",
+        "note": "měsíční paušál",
+        "text": "Pro děti, které jezdí celý školní rok. Součástí je příprava na jezdecké hry a postupně i na zkoušky ZZVJ."
+      }
+    ],
+    "note": "Možnost individuálních lekcí a startů na jezdeckých akcích. Bližší informace při osobní konzultaci."
+  },
+  "bezpecnostText": "Bezpečnostní třmeny, vesty a tříbodové helmy jsou samozřejmostí. Výcvik je vždy veden pod odborným dohledem a podle možností jezdce. Na začátku ochranné pomůcky půjčujeme. Pokud je předpoklad, že se dítě bude ježdění věnovat dál, doporučujeme vlastní tříbodovou helmu, chapsy a bezpečnostní vestu.",
+  "bezpecnostSeznam": [
+    "Tříbodová jezdecká helma",
+    "Bezpečnostní vesta",
+    "Sedla s bezpečnostními třmeny",
+    "Vybraní školní koně, zkušení, klidní a dobře jezditelní"
+  ],
+  "odkazy": [
+    {
+      "title": "Prázdninové kurzy",
+      "text": "Týdenní prázdninové turnusy pro děti od 8 let",
+      "href": "/kurzy"
+    },
+    {
+      "title": "Pobyty s výukou",
+      "text": "Velikonoce a podzimní prázdniny, příprava na ZZVJ",
+      "href": "/pobyty"
+    },
+    {
+      "title": "Kalendář akcí",
+      "text": "Jezdecké hry, závody a soustředění",
+      "href": "/akce"
+    }
+  ]
 }

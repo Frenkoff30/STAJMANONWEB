@@ -7,6 +7,7 @@ import Icon from '@/components/Icon.astro';
 import { site } from '@/data/site';
 import {
   turnusy,
+  turnusLabel,
   turnusStatusLabels,
   kurzCena,
   kurzProgram,
@@ -32,6 +33,10 @@ const statusStyle: Record<string, string> = {
 
 const bookable = (s: string) => s === 'volno' || s === 'posledni';
 const freeCount = turnusy.filter((t) => bookable(t.status)).length;
+const volnoLead =
+  freeCount === turnusy.length
+    ? 'Přihlásit se jde rovnou přes formulář, potvrzení i platební údaje přijdou e-mailem.'
+    : `Volná místa má ${freeCount} z ${turnusy.length} vypsaných termínů.`;
 ---
 
 <PageLayout
@@ -54,8 +59,8 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
   <!-- Turnusy -->
   <Section tone="paper" space="lg" id="turnusy">
     <SectionHead
-      title={page.sekce.terminy2026.title}
-      lead={`Volná místa má ${freeCount} z ${turnusy.length} turnusů. Nástup v neděli do 10.00, ukončení s vyhodnocením v sobotu ve 12.00, odjezd zhruba ve 13.30.`}
+      title={page.sekce.terminy.title}
+      lead={`${volnoLead} U týdenních turnusů je nástup v neděli do 10.00, ukončení s vyhodnocením v sobotu ve 12.00 a odjezd zhruba ve 13.30.`}
       action={{ label: 'Poptat termín', href: `mailto:${site.email}` }}
     />
 
@@ -71,7 +76,7 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
             style={`--reveal-delay:${i * 55}ms`}
           >
             <span class="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-brass-700">
-              Turnus {t.n}
+              {turnusLabel(t)}
             </span>
 
             <div class="min-w-0">
@@ -92,13 +97,17 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
               {turnusStatusLabels[t.status]}
             </span>
 
-            <div class="col-span-2 sm:col-span-1 sm:w-32 sm:text-right">
+            <div class="col-span-2 sm:col-span-1 sm:w-40 sm:text-right">
               {bookable(t.status) ? (
                 <a
-                  href={`mailto:${site.email}?subject=P%C5%99ihl%C3%A1%C5%A1ka%20-%20${t.n}.%20turnus%202026`}
-                  class="link-arrow"
+                  href={
+                    t.prihlaska
+                      ? `/prihlaska/${t.prihlaska}`
+                      : `mailto:${site.email}?subject=${encodeURIComponent(`Přihláška: ${turnusLabel(t)}`)}`
+                  }
+                  class="link-arrow sm:justify-end"
                 >
-                  Přihlásit
+                  {t.prihlaska ? 'Vyplnit přihlášku' : 'Poptat místo'}
                   <Icon name="arrow-right" class="h-3.5 w-3.5" />
                 </a>
               ) : (
@@ -133,7 +142,7 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
           <Image
             src={programImg}
             alt={page.images.programAlt}
-            widths={[400, 800]}
+            widths={[400, 800, 1200, 1600]}
             sizes="(min-width: 1024px) 36vw, 100vw"
             class="aspect-[4/3] w-full object-cover"
           />
@@ -254,7 +263,7 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
           <Image
             src={pokojImg}
             alt={page.images.pokojAlt}
-            widths={[400, 800]}
+            widths={[400, 800, 1200, 1600]}
             sizes="(min-width: 1024px) 36vw, 100vw"
             class="aspect-[3/2] w-full object-cover"
           />
@@ -307,7 +316,7 @@ const freeCount = turnusy.filter((t) => bookable(t.status)).length;
       </div>
       <div class="flex flex-wrap gap-3 lg:col-span-5 lg:justify-end">
         <a
-          href={`mailto:${site.email}?subject=P%C5%99ihl%C3%A1%C5%A1ka%20na%20jezdeck%C3%BD%20kurz%202026`}
+          href={`mailto:${site.email}?subject=${encodeURIComponent('Dotaz k prázdninovým kurzům')}`}
           class="btn btn-brass"
         >
           <Icon name="mail" class="h-4 w-4" />

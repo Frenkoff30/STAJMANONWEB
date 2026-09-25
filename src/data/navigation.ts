@@ -22,7 +22,7 @@ export const mainNav: NavGroup[] = [
         desc: 'Krytá hala, kolbiště, jízdárna, boxy',
       },
       {
-        label: 'Penzion & restaurace',
+        label: 'Penzion & občerstvení',
         href: '/penzion',
         desc: '24 lůžek, snídaně, terasa nad kolbištěm',
       },
@@ -39,7 +39,7 @@ export const mainNav: NavGroup[] = [
     ],
     feature: {
       title: 'Ubytování přímo u kolbiště',
-      text: 'Dvoulůžkový pokoj od 940 Kč za osobu a noc včetně vlastní koupelny. Restaurace, terasa, psi vítáni.',
+      text: 'Dvoulůžkový pokoj od 940 Kč za osobu a noc včetně vlastní koupelny. Terasa nad kolbištěm, psi vítáni.',
       href: '/penzion',
       cta: 'Rezervovat pobyt',
     },
@@ -55,7 +55,7 @@ export const mainNav: NavGroup[] = [
       {
         label: 'Prázdninové kurzy',
         href: '/kurzy',
-        desc: '8 týdenních turnusů, léto 2026',
+        desc: 'Týdenní turnusy pro děti od 8 let, online přihláška',
       },
       {
         label: 'Pobyty s výukou',
@@ -74,7 +74,7 @@ export const mainNav: NavGroup[] = [
       },
     ],
     feature: {
-      title: 'Léto 2026, poslední místa',
+      title: 'Letní turnusy s online přihláškou',
       text: 'Týdenní jezdecké kurzy pro děti od 8 let. Šest lekcí, teorie, celodenní program a plná penze.',
       href: '/kurzy',
       cta: 'Zobrazit turnusy',
@@ -84,7 +84,7 @@ export const mainNav: NavGroup[] = [
     label: 'Sport',
     links: [
       {
-        label: 'Kalendář akcí 2026',
+        label: 'Kalendář akcí',
         href: '/akce',
         desc: 'Závody, hry pro děti, soustředění',
       },
@@ -101,7 +101,7 @@ export const mainNav: NavGroup[] = [
     ],
     feature: {
       title: 'Velká cena Litomyšle',
-      text: 'Vrchol sezóny a 22 let součást extraligy Českého skokového poháru. 3.–6. září 2026.',
+      text: 'Vrchol sezóny a 22 let součást extraligy Českého skokového poháru.',
       href: '/akce',
       cta: 'Program sezóny',
     },
@@ -121,7 +121,7 @@ export const footerNav = [
     title: 'Areál',
     links: [
       { label: 'Jízdárna Suchá', href: '/areal' },
-      { label: 'Penzion & restaurace', href: '/penzion' },
+      { label: 'Penzion & občerstvení', href: '/penzion' },
       { label: 'Služby a ceník', href: '/sluzby' },
       { label: 'Rezervace jízdáren', href: '/rezervace' },
       { label: 'Fotogalerie', href: '/galerie' },

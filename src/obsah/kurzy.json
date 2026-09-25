@@ -2,65 +2,26 @@
   "turnusy": [
     {
       "n": 1,
-      "start": "2026-06-28",
-      "end": "2026-07-04",
-      "status": "uzavreno",
-      "note": ""
+      "nazev": "Jezdecké hry pro děti",
+      "start": "2027-03-28",
+      "status": "volno",
+      "note": "jízdy zručnosti, křížkový parkur a parkury 40–60 cm, prezentace od 8.00",
+      "prihlaska": "jezdecke-hry-2027-jaro"
     },
     {
       "n": 2,
-      "start": "2026-07-05",
-      "end": "2026-07-11",
-      "status": "posledni",
-      "note": "2 místa + 2 místa s vlastním koněm"
-    },
-    {
-      "n": 3,
-      "start": "2026-07-12",
-      "end": "2026-07-18",
-      "status": "obsazeno",
-      "note": ""
-    },
-    {
-      "n": 4,
-      "start": "2026-07-19",
-      "end": "2026-07-25",
+      "nazev": "Letní jezdecký tábor",
+      "start": "2027-07-04",
+      "end": "2027-07-10",
       "status": "volno",
-      "note": ""
-    },
-    {
-      "n": 5,
-      "start": "2026-08-02",
-      "end": "2026-08-08",
-      "status": "posledni",
-      "note": "2 místa + 1 místo s vlastním koněm"
-    },
-    {
-      "n": 6,
-      "start": "2026-08-09",
-      "end": "2026-08-15",
-      "status": "posledni",
-      "note": "2 místa + 2 místa s vlastním koněm + 1 místo na lonž"
-    },
-    {
-      "n": 7,
-      "start": "2026-08-16",
-      "end": "2026-08-22",
-      "status": "posledni",
-      "note": "2 místa na lonž"
-    },
-    {
-      "n": 8,
-      "start": "2026-08-23",
-      "end": "2026-08-29",
-      "status": "uzavreno",
-      "note": ""
+      "note": "pro děti od 8 let, 6 lekcí jízdy, plná penze",
+      "prihlaska": "letni-tabor-2027"
     }
   ],
   "cena": {
     "main": "11 400 Kč",
     "discounted": "10 900 Kč",
-    "discountNote": "pokoj s palandami, děti do 10 let včetně, úplní začátečníci a členové JKHS",
+    "discountNote": "děti do 10 let včetně, úplní začátečníci a členové JKHS",
     "ownHorse": "+ 1 000 Kč",
     "account": "86-5310227/0100"
   },
@@ -75,7 +36,7 @@
     },
     {
       "title": "Ubytování a strava",
-      "text": "Třílůžkové pokoje s vlastním sociálním zařízením, jeden čtyřlůžkový s palandami. Strava 5× denně v restauraci s letní terasou, pitný režim po celý den."
+      "text": "Dvou- až čtyřlůžkové pokoje s vlastním sociálním zařízením, všechny s běžnými postelemi. Strava 5× denně, pitný režim po celý den."
     },
     {
       "title": "Volný čas",

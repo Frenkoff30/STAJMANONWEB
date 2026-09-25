@@ -4,8 +4,10 @@ Redesign webu [stajmanon.cz](http://stajmanon.cz) — sportovní stáj, jezdeck�
 a penzion v areálu Jízdárna Suchá u Litomyšle.
 
 Původní web běžel na PHP se zastaralým rozvržením, Flashovou galerií a obsahem
-rozházeným do čtrnácti plochých položek menu. Nový web je **statický** (žádná
-databáze, žádný CMS), obsah žije v typovaných datových souborech.
+rozházeným do čtrnácti plochých položek menu. Nový web je **staticky
+předgenerovaný**: texty a fotky spravuje redakční systém a ukládá je jako
+typovaná data do repozitáře. Databázi potřebují jen rezervace jízdáren
+a přihlášky na akce.
 
 ---
 
@@ -161,6 +163,12 @@ filtry na stránce se doplní samy.
 
 *Prázdninové kurzy → Turnusy*, u konkrétního turnusu přepsat **Obsazenost**
 a případně **Poznámku k volným místům**.
+
+Pole **Online přihláška** připojí k turnusu formulář: vyplní se do něj kód akce
+ze správy přihlášek a tlačítko u termínu se změní z e-mailu na *Vyplnit
+přihlášku*. Prázdné pole nechá původní chování, tedy odkaz na e-mail. Totéž
+pole má i každý záznam v *Pobyty s výukou*. Pole **Název** je pro pojmenované
+akce (*Jezdecké hry pro děti*), prázdné znamená „3. turnus".
 
 ### Koně na prodej
 
@@ -451,41 +459,65 @@ src/pages/rezervace/
 
 ---
 
-## Přihlášky na tábory
+## Přihlášky na akce
 
-Online přihláška na tábor na `/prihlaska/<kód tábora>`. Rodič nic neregistruje,
-jen vyplní formulář. Stáj pak přihlášky vyřizuje ve vlastní správě
-`/prihlasky/sprava`. S rezervacemi jízdáren nesdílí tabulky, správce ani
-přihlášení (správa má vlastní cookie `prihlasky-auth`).
+Online přihláška na `/prihlaska/<kód akce>`. Nikdo se neregistruje, jen vyplní
+formulář. Stáj pak přihlášky vyřizuje ve vlastní správě `/prihlasky/sprava`.
+S rezervacemi jízdáren nesdílí tabulky, správce ani přihlášení (správa má
+vlastní cookie `prihlasky-auth`).
 
-Na přihlášku vede tlačítko **Přihlásit se** u akce v kalendáři. Stačí akci
-v redakčním systému vyplnit pole *Online přihláška* kódem tábora. Zatím je
-tak napojená jediná, smyšlená akce „Letní jezdecký tábor“
-(`/prihlaska/letni-tabor-2027`). Stránka s přihláškou není v mapě webu
+Na přihlášku vede tlačítko u akce v kalendáři, u turnusu na `/kurzy` a u pobytu
+na `/pobyty`. Stačí na všech třech místech vyplnit v redakčním systému pole
+*Online přihláška* kódem akce z databáze. Stránka s přihláškou není v mapě webu
 a vyhledávače ji neindexují.
+
+### Jeden formulář, pět podob
+
+Formulář se řídí **typem akce** (sloupec `typ`). Rozdíly jsou popsané na jednom
+místě v `src/lib/prihlasky/typy.ts`:
+
+| Typ | Na koho se ptá | Účastníků | Ceník | Platba |
+|---|---|---|---|---|
+| `tabor` | dítě: narození, zkušenosti, pojišťovna, zdraví | 1 | jedna varianta | až po potvrzení místa |
+| `pobyt` | totéž co tábor | 1 | jedna varianta | až po potvrzení místa |
+| `hry` | jezdec a kůň, klub ve zvláštním poli | až 20 | víc soutěží naráz | hned po odeslání |
+| `soustredeni` | jezdec, kůň, dosavadní výkonnost | až 4 | jedna varianta | hned po odeslání |
+| `zavody` | jezdec, kůň, licence ČJF | až 6 | víc parkurů naráz | hned po odeslání |
+
+**Hromadné přihlášky**: u akcí, kde `max_ucastniku > 1`, se přidávají další
+řádky tlačítkem — klub tak pošle celou skupinu dvojic najednou a každá dvojice
+má vlastní výběr soutěží a vlastní cenu. Bez JavaScriptu jsou všechny řádky
+vidět rovnou a prázdné se prostě nepočítají.
 
 ### Jak přihláška probíhá
 
-1. Rodič vybere variantu ceny a příplatky (cena se dopočítá sama), vyplní dítě,
-   sebe a kdo platí. **Platí firma**: po zadání IČO se název, sídlo a DIČ
-   doplní z ARES.
-2. Přihláška se uloží, rodiči přijde shrnutí a stáji upozornění s odkazem.
-3. Ve správě stáj místo **potvrdí**, dá mezi **náhradníky**, **odmítne** nebo
-   **zruší**. Rodiči odejde e-mail. Po potvrzení dostane u platby převodem
-   částku, variabilní symbol, splatnost a QR Platbu. U firmy dostane informaci,
-   že faktura půjde na e-mail firmy.
-4. Když platí firma, správa ukáže všechny údaje pro fakturu. Fakturu stáj
+1. Přihlašující vyplní účastníky, u každého vybere z ceníku (cena se dopočítá
+   sama), pak sebe jako kontakt a kdo platí. **Platí firma nebo klub**: po zadání
+   IČO se název, sídlo a DIČ doplní z ARES.
+2. Přihláška se uloží, přihlášenému přijde shrnutí a stáji upozornění s odkazem.
+3. U akcí se startovným (`platba_hned`) se **platební údaje a QR Platba ukážou
+   rovnou na stránce** hned po odeslání. U táborů a pobytů přijdou až
+   s potvrzením místa.
+4. Ve správě stáj místo **potvrdí**, dá mezi **náhradníky**, **odmítne** nebo
+   **zruší**. Přihlášenému odejde e-mail.
+5. Když platí firma, správa ukáže všechny údaje pro fakturu. Fakturu stáj
    vystaví ve svém účetním programu a zapíše si její číslo.
-5. Až peníze dorazí, stáj klikne **Peníze dorazily** a rodiči odejde potvrzení.
+6. Až peníze dorazí, stáj klikne **Peníze dorazily** a odejde potvrzení.
 
-Místa se potvrzují ručně, ne automaticky. Kapacita turnusů není jedno číslo
-(místa s vlastním koněm, na lonži), a o tom, kdo se vejde, rozhoduje stáj.
+Místa se potvrzují ručně, ne automaticky. Kapacita není jedno číslo (místa
+s vlastním koněm, na lonži) a o tom, kdo se vejde, rozhoduje stáj.
+
+**Platba kartou** zatím není: znamenala by smlouvu s platební bránou (Comgate,
+GoPay, Stripe) a její klíče v prostředí. Až bude, přibude tlačítko do
+`src/components/prihlasky/PlatebniUdaje.astro`, zbytek zůstane.
 
 ### Jak to spustit (jednorázově)
 
 1. V Supabase *SQL Editor → New query* vložit celý `supabase/prihlasky.sql`
-   a spustit. Založí tabulky a tábor `letni-tabor-2027`. Skript jde pustit
-   i podruhé.
+   a spustit. Založí tabulky a pět ukázkových akcí, od každého typu jednu.
+   Skript jde pustit i podruhé a umí převést starší schéma (tabulka `tabory`,
+   jedno dítě na přihlášku) na nové. Ukázkové akce pak jdou ve správě smazat,
+   dokud na ně nikdo není přihlášený.
 2. Založit účet správce: Supabase → *Authentication → Users → Add user*
    (e-mail, heslo, *Auto Confirm User*) a zapsat ho do `prihlasky_spravci`,
    SQL je na konci `supabase/prihlasky.sql`.
@@ -497,15 +529,43 @@ Místa se potvrzují ručně, ne automaticky. Kapacita turnusů není jedno čí
 Bez kroku 3 všechno funguje, jen se e-maily neposílají a web místo nich ukáže,
 jak by vypadaly. Na vyzkoušení to stačí.
 
-Další tábor se zatím zakládá v databázi (tabulka `tabory`, vzor je
-`letni-tabor-2027` v `supabase/prihlasky.sql`) a jeho kód se pak napíše
-k akci do pole *Online přihláška*. Až se přihlášky osvědčí, můžou sem vést
-i tlačítka „Přihlásit“ na `/kurzy` a `/pobyty`.
+### Založení akce
+
+Celé se to dělá ve správě, do databáze sahat netřeba: `/prihlasky/sprava` →
+**Nová akce**. Formulář má čtyři části:
+
+| Část | Co se vyplňuje |
+| --- | --- |
+| **Co to je za akci** | typ (podle něj se mění podoba přihlášky), název, podtitul, popis |
+| **Termín** | začátek, konec (u jednodenní akce prázdný), nástup a odjezd slovy |
+| **Ceník** | varianty ceny a příplatky, z nich databáze počítá částku |
+| **Přihlášky a platba** | účastníků na jedné přihlášce, kapacita, věk, splatnost |
+
+**Adresa přihlášky** se doplní sama z názvu a roku: *Letní jezdecký tábor* +
+2027 → `/prihlaska/letni-jezdecky-tabor-2027`. Jde přepsat, ale jen do prvního
+uložení. Pak už ne, protože se na ni odkazují odeslané přihlášky i web.
+
+**Typ akce** je to hlavní rozhodnutí, mění celý formulář (tábor se ptá na dítě
+a zákonného zástupce, hry na klub a jeho dvojice). Po založení ho neměňte,
+starší přihlášky by se pak zobrazovaly podle nových pravidel.
+
+**Ceník**: z *variant* si přihlašující vybírá povinně, *příplatky* jsou
+dobrovolné. Kód položky se doplní z názvu sám. Změna ceníku platí jen pro
+nové přihlášky, ty odeslané si drží ceny, které platily v okamžiku odeslání.
+
+Zaškrtávátko **Přihlášky otevřené** akci zavírá, až je plno: stránka zůstane,
+jen na ní nebude formulář. Smazat jde akce jen do první přihlášky, potom už
+se jen zavírá.
+
+Kód akce se nakonec napíše v redakčním systému do pole *Online přihláška*
+u akce v kalendáři, u turnusu v prázdninových kurzech nebo u pobytu.
 
 ### Proč se tomu dá věřit
 
-- **Cenu počítá databáze** z ceníku tábora (`odeslat_prihlasku()`). Cenu
-  poslanou z formuláře ignoruje.
+- **Cenu počítá databáze** z ceníku akce (`odeslat_prihlasku()`), a to zvlášť
+  za každého účastníka. Cenu poslanou z formuláře ignoruje.
+- **Počet účastníků hlídá databáze** (`max_ucastniku`), stejně jako to, jestli
+  smí být vybraná jedna položka ceníku, nebo několik (`vyber`).
 - **Přihlášky vidí jen správce přihlášek.** Anonymní klíč do tabulky
   nezapíše ani ji nepřečte, přihláška vzniká jen přes funkci výše.
 - **Dvojklik ani obnovení stránky nezaloží druhou přihlášku** (jednorázový
@@ -513,27 +573,33 @@ i tlačítka „Přihlásit“ na `/kurzy` a `/pobyty`.
 - **Zápisy ve správě jsou POST s přesměrováním**, obnovení stránky nic
   nezopakuje.
 - **Honeypot a strop 40 přihlášek za 10 minut** proti robotům.
-- **Údaje od rodičů se v e-mailech escapují** a ukázka e-mailu běží
+- **Údaje od přihlášených se v e-mailech escapují** a ukázka e-mailu běží
   v izolovaném `iframe`.
 - **QR Platba obsahuje jen účet stáje, částku, VS a splatnost.** Obrázek pro
-  e-mail se generuje z těchhle tří údajů, nic osobního není v adrese.
+  e-mail se generuje z týchž údajů, nic osobního není v adrese.
 
 ### Kde co leží
 
 ```
-supabase/prihlasky.sql              tabulky, funkce odeslat_prihlasku(), RLS, první tábor
+supabase/prihlasky.sql              tabulky, odeslat_prihlasku(), RLS, ukázkové akce
 src/lib/prihlasky/
+├── typy.ts                         čím se liší formuláře jednotlivých typů akcí
+├── akce.ts                         načtení a kontrola formuláře akce, ceník
 ├── db.ts                           připojení, typy, překlad chyb
 ├── formular.ts                     načtení a kontrola formuláře, IČO
-├── platba.ts                       ceny, splatnost, IBAN, QR Platba
+├── platba.ts                       ceny za účastníky, splatnost, IBAN, QR Platba
 ├── email.ts                        šablony e-mailů, odeslání přes Resend
 └── spravce.ts                      kdo je přihlášený ve správě
 src/layouts/PrihlaskyLayout.astro
-src/components/prihlasky/           pole formuláře, štítky stavů
+src/components/prihlasky/
+├── Pole.astro                      jedno pole formuláře
+├── Stitek.astro                    štítky stavů
+└── PlatebniUdaje.astro             částka, účet, VS, splatnost a QR kód
 src/pages/prihlaska/[kod].astro     veřejná přihláška
 src/pages/prihlasky/
-├── sprava/index.astro              přehled táborů a přihlášek
+├── sprava/index.astro              přehled akcí a přihlášek
 ├── sprava/[id].astro               detail: potvrzení, platba, faktura, poznámka
+├── sprava/akce/[kod].astro         založení a úprava akce („nova" zakládá)
 ├── prihlaseni.astro, odhlaseni.ts
 ├── ares.ts                         údaje o firmě podle IČO
 └── qr.ts                           QR Platba jako obrázek do e-mailu
@@ -586,8 +652,13 @@ adres a bezpečnostní hlavičky, zbytek zajistí adaptér `@astrojs/vercel`.
 | `PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` | název GitHub App |
 | `PUBLIC_FORM_ENDPOINT` | kam odesílat kontaktní formulář |
 | `PUBLIC_FORM_ACCESS_KEY` | klíč formulářové služby |
-| `SUPABASE_URL` | databáze rezervací |
+| `SUPABASE_URL` | databáze rezervací i přihlášek |
 | `SUPABASE_ANON_KEY` | tamtéž, veřejný klíč |
+| `PRIHLASKY_SUPABASE_URL` | jen když mají přihlášky vlastní projekt Supabase |
+| `PRIHLASKY_SUPABASE_ANON_KEY` | tamtéž. Nevyplněno = použije se `SUPABASE_URL` |
+| `RESEND_API_KEY` | odesílání e-mailů z přihlášek |
+| `PRIHLASKY_EMAIL_OD` | odesílatel, například `Stáj Manon <prihlasky@stajmanon.cz>` |
+| `PRIHLASKY_EMAIL_STAJ` | kam chodí upozornění na novou přihlášku |
 
 ### Zprovoznění administrace (jednorázově)
 
@@ -612,9 +683,13 @@ tam fungovat nebudou (obojí potřebuje serverovou část). Web samotný ano: st
 
 ## Co ještě stojí za doladění
 
-- **Fotky.** Část snímků z původního webu má nízké rozlišení (`pastvina-01`,
-  `skola-03`, `boxy-01` mají pod 700 px). Na hero pozicích jsou proto měkčí.
-  Novější fotky ve vysokém rozlišení by web viditelně posunuly.
+- **Fotky ve fotogalerii.** Stránky samotné už mají všude snímek nad 1 100 px,
+  ale 43 ze 74 fotek v galerii jsou náhledy z původního webu, typicky 480 px
+  (`gal-01` až `gal-30`, `boxy-01`, `kolbiste-01`, `uspechy-01`, `uspechy-03`,
+  `zavody-oxer`, `skola-02`, `pastvina-01`, `portret-kun`, `penzion-exterier`).
+  V mřížce obstojí, ve zvětšenině ne, proto se v ní zásadně nenafukují nad
+  svoje rozlišení. Dodat originály ve vysokém rozlišení je jediná oprava, kterou
+  nejde udělat v kódu. Nahrávají se ve *Fotogalerii* pod stejným názvem.
 - **Aktuality.** Původní web měl sekci aktualit, která byla dlouhodobě prázdná —
   proto tu není. Kdyby ji stáj chtěla používat, přidá se jako další kolekce
   v `keystatic.config.ts` se stejným vzorem jako kalendář akcí.

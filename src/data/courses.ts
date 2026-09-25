@@ -10,11 +10,16 @@ export type TurnusStatus = 'volno' | 'posledni' | 'obsazeno' | 'uzavreno';
 
 export interface Turnus {
   n: number;
+  /** Název akce. Prázdné = vypíše se „Turnus 3“. */
+  nazev?: string;
   start: string;
-  end: string;
+  /** Konec u vícedenních turnusů. Jednodenní akce ho nemají. */
+  end?: string;
   status: TurnusStatus;
   /** Doplňující text k volným místům */
   note?: string;
+  /** Kód akce v přihláškách. Vyplněný = tlačítko vede na online formulář. */
+  prihlaska?: string;
 }
 
 export const turnusStatusLabels: Record<TurnusStatus, string> = {
@@ -24,15 +29,33 @@ export const turnusStatusLabels: Record<TurnusStatus, string> = {
   uzavreno: 'Uzavřeno',
 };
 
-export const turnusy: Turnus[] = data.turnusy
+/** Turnus tak, jak ho ukládá redakční systém. Prázdné datum klíč vynechá. */
+interface RawTurnus {
+  n: number;
+  nazev?: string;
+  start: string;
+  end?: string;
+  status: string;
+  note?: string;
+  prihlaska?: string;
+}
+
+export const turnusy: Turnus[] = (data.turnusy as RawTurnus[])
   .map((t) => ({
     n: t.n,
+    nazev: opt(t.nazev),
     start: t.start,
-    end: t.end,
+    end: opt(t.end),
     status: t.status as TurnusStatus,
     note: opt(t.note),
+    prihlaska: opt(t.prihlaska),
   }))
   .sort((a, b) => a.start.localeCompare(b.start));
+
+/** Jak se turnus jmenuje ve výpisu. */
+export function turnusLabel(t: Turnus): string {
+  return t.nazev ?? `Turnus ${t.n}`;
+}
 
 export const kurzCena = data.cena;
 

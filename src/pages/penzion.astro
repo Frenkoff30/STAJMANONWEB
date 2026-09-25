@@ -23,7 +23,7 @@ const restauraceImg = photo(page.images.restaurace)!;
 const terasaImg = photo(page.images.terasa)!;
 const okoliImg = photo(page.images.okoli)!;
 
-/** Pokoje napřed, pak restaurace, terasa a exteriér. */
+/** Pokoje napřed, pak klubovna, terasa a exteriér. */
 const penzionPhotos = photosByTag('penzion').slice(0, 6);
 
 const jsonLd = {
@@ -31,7 +31,7 @@ const jsonLd = {
   '@type': 'LodgingBusiness',
   name: 'Penzion Jízdárna Suchá',
   description:
-    'Penzion v jezdeckém areálu 3 km od Litomyšle. 2–4lůžkové pokoje s vlastní koupelnou, kapacita 24 lůžek, restaurace s terasou nad kolbištěm.',
+    'Penzion v jezdeckém areálu 3 km od Litomyšle. 2–4lůžkové pokoje s vlastní koupelnou, kapacita 24 lůžek, občerstvení a terasa nad kolbištěm.',
   url: `${site.url}/penzion`,
   telephone: '+420 739 057 775',
   email: site.emailPenzion,
@@ -52,7 +52,7 @@ const jsonLd = {
   priceRange: '740–940 Kč / osoba / noc',
   amenityFeature: [
     'Vlastní koupelna a WC',
-    'Restaurace',
+    'Občerstvení',
     'Venkovní terasa',
     'Snídaně na objednávku',
     'Parkování',
@@ -67,9 +67,9 @@ const jsonLd = {
   lead={page.hero.lead}
   image={heroImg}
   imageAlt={page.hero.imageAlt}
-  crumbs={[{ label: 'Areál', href: '/areal' }, { label: 'Penzion & restaurace' }]}
+  crumbs={[{ label: 'Areál', href: '/areal' }, { label: 'Penzion & občerstvení' }]}
   nav={[
-    { id: 'prehled', label: 'Přehled' },
+    { id: 'ubytovani', label: 'Ubytování' },
     { id: 'cenik', label: 'Ceník' },
     { id: 'pokoje', label: 'Fotky pokojů' },
     { id: 'okoli', label: 'Okolí' },
@@ -79,23 +79,8 @@ const jsonLd = {
   heroSize="tall"
   jsonLd={jsonLd}
 >
-  <!-- Rychlé shrnutí -->
-  <Section tone="paper" space="md" id="prehled">
-    <div class="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
-      {
-        page.prehled.map((s, i) => (
-          <div class="border-t border-ink/12 pt-5" data-reveal style={`--reveal-delay:${i * 70}ms`}>
-            <Icon name={s.icon as 'bed'} class="h-6 w-6 text-brass-600" />
-            <p class="mt-4 font-display text-[1.5rem] leading-none">{s.value}</p>
-            <p class="mt-2 text-[0.875rem] text-ink-3">{s.note}</p>
-          </div>
-        ))
-      }
-    </div>
-  </Section>
-
   <!-- Co u nás najdete -->
-  <Section tone="paper" space="md">
+  <Section tone="paper" space="lg" id="ubytovani">
     <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
       <div class="lg:col-span-5">
         <SectionHead
@@ -120,7 +105,7 @@ const jsonLd = {
           <Image
             src={pokojImg}
             alt={page.images.pokojAlt}
-            widths={[640, 1024, 1400]}
+            widths={[640, 1024, 1600, 2000]}
             sizes="(min-width: 1024px) 55vw, 100vw"
             class="aspect-[3/2] w-full object-cover"
           />
@@ -130,7 +115,7 @@ const jsonLd = {
             <Image
               src={restauraceImg}
               alt={page.images.restauraceAlt}
-              widths={[400, 800]}
+              widths={[300, 600, 900, 1200]}
               sizes="(min-width: 1024px) 27vw, 45vw"
               class="aspect-[4/3] w-full object-cover"
             />
@@ -139,7 +124,7 @@ const jsonLd = {
             <Image
               src={terasaImg}
               alt={page.images.terasaAlt}
-              widths={[400, 800]}
+              widths={[300, 600, 900, 1200]}
               sizes="(min-width: 1024px) 27vw, 45vw"
               class="aspect-[4/3] w-full object-cover"
             />
@@ -259,7 +244,7 @@ const jsonLd = {
           <Image
             src={okoliImg}
             alt={page.images.okoliAlt}
-            widths={[400, 800]}
+            widths={[400, 800, 1200]}
             sizes="(min-width: 1024px) 30vw, 100vw"
             class="aspect-[4/3] w-full object-cover"
           />

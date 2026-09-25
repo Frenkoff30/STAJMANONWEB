@@ -6,8 +6,8 @@
   "hero": {
     "heading": "Jiří Skřivan",
     "lead": "Parkurový jezdec, trenér a člověk, který v roce 2002 přišel s myšlenkou Českého skokového poháru.",
-    "image": "skrivan-02",
-    "imageAlt": "Jiří Skřivan v sedle"
+    "image": "skok-bily-kun",
+    "imageAlt": "Jezdec Stáje Manon na bílém koni nad překážkou"
   },
   "sekce": {
     "jezdeckaRodinaSkrivanova": {
@@ -73,9 +73,10 @@
     "V roce 2002 přichází Jiří Skřivan do jezdeckého sportu s novou myšlenkou celorepublikového seriálu Velkých cen, ze které následně vzniká nový fenomén posledních let, **Český skokový pohár**. Byl zvolen prezidentem Asociace Český skokový pohár a v letech 2004, 2006 a 2011 se stal i jeho celkovým vítězem."
   ],
   "images": {
-    "portrait": "skrivan-01",
-    "sport": "uspechy-03",
-    "sportAlt": "Jezdec Stáje Manon po vítězné jízdě"
+    "portrait": "skrivan-parkur",
+    "portraitAlt": "Jiří Skřivan v červeném saku nad překážkou",
+    "sport": "skrivan-vitezstvi",
+    "sportAlt": "Jiří Skřivan s vítěznou dekou ve finále Českého skokového poháru"
   },
   "milnikyLinkLabel": "Kompletní přehled úspěchů"
 }

@@ -1,0 +1,796 @@
+---
+/**
+ * Založení a úprava akce, na kterou se lidé hlásí online.
+ *
+ * Adresa `/prihlasky/sprava/akce/nova` zakládá, jakýkoli jiný kód upravuje.
+ * Zápis je POST a po něm přesměrování, takže obnovení stránky nic nezopakuje.
+ *
+ * Kód akce se po založení nemění: odkazují se na něj už odeslané přihlášky
+ * (cizí klíč) i pole „Online přihláška" v redakčním systému.
+ */
+
+export const prerender = false;
+
+import PrihlaskyLayout from '@/layouts/PrihlaskyLayout.astro';
+import Zprava from '@/components/rezervace/Zprava.astro';
+import Pole from '@/components/prihlasky/Pole.astro';
+import Icon from '@/components/Icon.astro';
+import { citelnaChyba, type Akce } from '@/lib/prihlasky/db';
+import {
+  RADKU_CENIKU,
+  jsouChyby,
+  nactiAkci,
+  prazdnaAkce,
+  proDatabazi,
+  radkyCeniku,
+  zkontrolujAkci,
+  type ChybyAkce,
+  type ChybyCeniku,
+  type VyplnenaAkce,
+} from '@/lib/prihlasky/akce';
+import { typyAkci, type TypAkce } from '@/lib/prihlasky/typy';
+import { bezCache, nactiSpravce } from '@/lib/prihlasky/spravce';
+
+bezCache(Astro.response.headers);
+
+const kod = Astro.params.kod ?? '';
+const novaAkce = kod === 'nova';
+const adresa = `/prihlasky/sprava/akce/${kod}`;
+
+const spravce = await nactiSpravce(Astro);
+if (!spravce) {
+  return Astro.redirect(`/prihlasky/prihlaseni?dal=${encodeURIComponent(adresa)}`);
+}
+
+if (!novaAkce && !/^[a-z0-9-]{3,60}$/.test(kod)) {
+  return Astro.redirect('/prihlasky/sprava');
+}
+
+/** Načte akci z databáze. U nové vrátí `null`. */
+const nacist = async (): Promise<Akce | null> => {
+  if (novaAkce) return null;
+  const { data } = await spravce.supabase
+    .from('akce')
+    .select('*')
+    .eq('kod', kod)
+    .maybeSingle<Akce>();
+  return data;
+};
+
+const ulozena = await nacist();
+if (!novaAkce && !ulozena) return Astro.redirect('/prihlasky/sprava');
+
+/** Kolik přihlášek na akci už je. Rozhoduje o tom, jestli jde smazat. */
+let pocetPrihlasek = 0;
+if (ulozena) {
+  const { count } = await spravce.supabase
+    .from('prihlasky')
+    .select('id', { count: 'exact', head: true })
+    .eq('akce', ulozena.kod);
+  pocetPrihlasek = count ?? 0;
+}
+
+/* ------------------------------------------------------------------ zápis */
+
+let chyba = '';
+let chyby: ChybyAkce = {};
+let cenikChyby: ChybyCeniku = { varianty: {}, priplatky: {} };
+
+/** Co se vykreslí do formuláře: uložený stav, nebo to, co přišlo z POSTu. */
+let akce: VyplnenaAkce = ulozena
+  ? { ...ulozena, varianty: ulozena.varianty ?? [], priplatky: ulozena.priplatky ?? [] }
+  : prazdnaAkce((Astro.url.searchParams.get('typ') as TypAkce) ?? 'tabor');
+
+if (Astro.request.method === 'POST') {
+  const formular = await Astro.request.formData();
+  const co = String(formular.get('co') ?? '');
+
+  if (co === 'smazat' && ulozena) {
+    if (pocetPrihlasek > 0) {
+      chyba = 'Na akci už jsou přihlášky, proto ji nejde smazat. Zavřete ji místo toho.';
+    } else {
+      const { error } = await spravce.supabase.from('akce').delete().eq('kod', ulozena.kod);
+      if (error) chyba = citelnaChyba(error);
+      else return Astro.redirect('/prihlasky/sprava?hotovo=akce-smazana');
+    }
+  } else if (co === 'ulozit') {
+    akce = nactiAkci(formular);
+    // Kód je primární klíč a odkazují se na něj přihlášky, u úpravy
+    // se proto bere ten uložený, ne ten z formuláře.
+    if (ulozena) akce.kod = ulozena.kod;
+
+    const vysledek = zkontrolujAkci(akce);
+    chyby = vysledek.chyby;
+    cenikChyby = vysledek.cenik;
+
+    if (!jsouChyby(vysledek)) {
+      if (novaAkce) {
+        const { error } = await spravce.supabase.from('akce').insert(proDatabazi(akce));
+        if (error) {
+          chyba = /duplicate key|already exists/i.test(error.message ?? '')
+            ? `Akce s adresou „${akce.kod}" už existuje. Zvolte jinou.`
+            : citelnaChyba(error);
+        } else {
+          return Astro.redirect(`/prihlasky/sprava/akce/${akce.kod}?hotovo=zalozena`);
+        }
+      } else {
+        const { error } = await spravce.supabase
+          .from('akce')
+          .update(proDatabazi(akce))
+          .eq('kod', akce.kod);
+        if (error) chyba = citelnaChyba(error);
+        else return Astro.redirect(`${adresa}?hotovo=ulozena`);
+      }
+    }
+  }
+}
+
+/* ---------------------------------------------------------------- render */
+
+const hotovo = Astro.url.searchParams.get('hotovo') ?? '';
+const hlasky: Record<string, string> = {
+  zalozena: 'Akce je založená, přihlášky jsou otevřené.',
+  ulozena: 'Změny jsou uložené.',
+};
+
+const popis = typyAkci[akce.typ];
+const typySeznam = Object.entries(typyAkci) as [TypAkce, (typeof typyAkci)[TypAkce]][];
+
+const varianty = radkyCeniku(akce.varianty);
+const priplatky = radkyCeniku(akce.priplatky);
+
+/** Kolik řádků ceníku ukázat rovnou: vyplněné plus jeden prázdný navrch. */
+const viditelnychVariant = Math.min(Math.max(akce.varianty.length + 1, 2), RADKU_CENIKU);
+const viditelnychPriplatku = Math.min(Math.max(akce.priplatky.length + 1, 1), RADKU_CENIKU);
+
+const nadpis = novaAkce ? 'Nová akce' : akce.nazev;
+---
+
+<PrihlaskyLayout
+  title={novaAkce ? 'Nová akce' : `Úprava akce: ${akce.nazev}`}
+  heading={nadpis}
+  lead={novaAkce
+    ? 'Vyplňte termín a ceník. Jakmile akci uložíte, půjde se na ni přihlásit přes vlastní adresu.'
+    : 'Změna ceníku se projeví jen u nových přihlášek. Ty už odeslané si drží ceny, které platily v okamžiku odeslání.'}
+  spravce={spravce}
+  crumbs={[{ label: novaAkce ? 'Nová akce' : akce.nazev }]}
+>
+  {hotovo && hlasky[hotovo] && <Zprava typ="ok" class="mb-8">{hlasky[hotovo]}</Zprava>}
+  {chyba && <Zprava typ="chyba" class="mb-8">{chyba}</Zprava>}
+  {
+    jsouChyby({ chyby, cenik: cenikChyby }) && (
+      <Zprava typ="chyba" class="mb-8">
+        Formulář se neuložil, projděte prosím označená pole.
+      </Zprava>
+    )
+  }
+
+  {
+    !novaAkce && (
+      <div class="mb-8 flex flex-wrap items-center justify-between gap-4 border border-ink/12 bg-paper-2 p-5">
+        <div>
+          <p class="eyebrow">Adresa přihlášky</p>
+          <a
+            href={`/prihlaska/${akce.kod}`}
+            class="link-underline font-display text-[1.125rem] text-brass-700"
+          >
+            /prihlaska/{akce.kod}
+          </a>
+        </div>
+        <p class="text-[0.875rem] text-ink-3">
+          {pocetPrihlasek === 0
+            ? 'Zatím bez přihlášek'
+            : `${pocetPrihlasek} ${pocetPrihlasek === 1 ? 'přihláška' : pocetPrihlasek < 5 ? 'přihlášky' : 'přihlášek'}`}
+        </p>
+      </div>
+    )
+  }
+
+  <form method="post" data-akce data-nova={novaAkce ? 'ano' : undefined} class="space-y-14">
+    <input type="hidden" name="co" value="ulozit" />
+
+    <!-- ------------------------------------------------------------ základ -->
+    <section>
+      <h2 class="t-3">Co to je za akci</h2>
+
+      <div class="mt-6 grid gap-6 sm:grid-cols-2">
+        <Pole
+          pole="typ"
+          label="Typ akce"
+          povinne
+          napoveda={`Formulář se ptá na: ${popis.pola.length ? popis.ucastnici.toLowerCase() : 'účastníky'}. Typ mění podobu přihlášky, po založení už ho neměňte.`}
+        >
+          <select id="typ" name="typ" data-typ class="form-control" aria-describedby="typ-info">
+            {
+              typySeznam.map(([hodnota, t]) => (
+                <option value={hodnota} selected={akce.typ === hodnota}>
+                  {t.nazev}
+                </option>
+              ))
+            }
+          </select>
+        </Pole>
+
+        <Pole
+          pole="kod"
+          label="Adresa přihlášky"
+          povinne={novaAkce}
+          chyba={chyby.kod}
+          napoveda={novaAkce
+            ? 'Doplní se sama z názvu. Přihláška pak poběží na /prihlaska/tahle-adresa.'
+            : 'Adresu už nejde změnit, odkazují se na ni odeslané přihlášky i web.'}
+        >
+          <input
+            type="text"
+            id="kod"
+            name="kod"
+            value={akce.kod}
+            readonly={!novaAkce}
+            maxlength="60"
+            data-kod
+            class:list={['form-control', !novaAkce && 'bg-sand-200 text-ink-3']}
+            aria-describedby="kod-info"
+            aria-invalid={chyby.kod ? 'true' : undefined}
+          />
+        </Pole>
+
+        <Pole pole="nazev" label="Název" povinne chyba={chyby.nazev} class="sm:col-span-2">
+          <input
+            type="text"
+            id="nazev"
+            name="nazev"
+            value={akce.nazev}
+            maxlength="120"
+            required
+            data-nazev
+            class="form-control"
+            aria-describedby={chyby.nazev ? 'nazev-info' : undefined}
+            aria-invalid={chyby.nazev ? 'true' : undefined}
+          />
+        </Pole>
+
+        <Pole
+          pole="podtitul"
+          label="Podtitul"
+          napoveda="Jedna věta pod nadpisem, například: Týden v sedle pro děti od 8 let."
+          class="sm:col-span-2"
+        >
+          <input
+            type="text"
+            id="podtitul"
+            name="podtitul"
+            value={akce.podtitul}
+            maxlength="160"
+            class="form-control"
+            aria-describedby="podtitul-info"
+          />
+        </Pole>
+
+        <Pole
+          pole="popis"
+          label="Popis"
+          napoveda="Co se na akci děje. Ukáže se nad formulářem."
+          class="sm:col-span-2"
+        >
+          <textarea
+            id="popis"
+            name="popis"
+            rows="4"
+            maxlength="2000"
+            class="form-control"
+            aria-describedby="popis-info">{akce.popis}</textarea>
+        </Pole>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------ termín -->
+    <section>
+      <h2 class="t-3">Termín</h2>
+
+      <div class="mt-6 grid gap-6 sm:grid-cols-2">
+        <Pole pole="zacatek" label="Začátek" povinne chyba={chyby.zacatek}>
+          <input
+            type="date"
+            id="zacatek"
+            name="zacatek"
+            value={akce.zacatek}
+            required
+            data-zacatek
+            class="form-control"
+            aria-describedby={chyby.zacatek ? 'zacatek-info' : undefined}
+            aria-invalid={chyby.zacatek ? 'true' : undefined}
+          />
+        </Pole>
+
+        <Pole
+          pole="konec"
+          label="Konec"
+          chyba={chyby.konec}
+          napoveda="U jednodenní akce nechte prázdné."
+        >
+          <input
+            type="date"
+            id="konec"
+            name="konec"
+            value={akce.konec && akce.konec !== akce.zacatek ? akce.konec : ''}
+            class="form-control"
+            aria-describedby="konec-info"
+            aria-invalid={chyby.konec ? 'true' : undefined}
+          />
+        </Pole>
+
+        <Pole
+          pole="nastup"
+          label="Nástup"
+          napoveda="Slovy, například: neděle do 10.00 nebo prezentace 8.00–9.00."
+        >
+          <input
+            type="text"
+            id="nastup"
+            name="nastup"
+            value={akce.nastup}
+            maxlength="120"
+            class="form-control"
+            aria-describedby="nastup-info"
+          />
+        </Pole>
+
+        <Pole pole="odjezd" label="Odjezd nebo začátek soutěží">
+          <input
+            type="text"
+            id="odjezd"
+            name="odjezd"
+            value={akce.odjezd}
+            maxlength="120"
+            class="form-control"
+          />
+        </Pole>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------- ceník -->
+    <section>
+      <h2 class="t-3">Ceník</h2>
+      <p class="mt-3 max-w-2xl text-[0.9375rem] text-ink-3">
+        Z ceníku počítá cenu databáze, ne formulář. Z <strong class="text-ink">variant</strong> si
+        přihlašující vybírá povinně, <strong class="text-ink">příplatky</strong> jsou dobrovolné
+        a dají se zaškrtnout všechny. Kód si doplníme sami, měnit ho není potřeba.
+      </p>
+      {chyby.varianty && <p class="form-error mt-3">{chyby.varianty}</p>}
+
+      <div class="mt-8 grid gap-6 sm:grid-cols-2">
+        <Pole
+          pole="vyber"
+          label="Z variant se vybírá"
+          napoveda="Tábor má jednu cenu za pobyt, na závodech jezdec startuje v několika soutěžích naráz."
+        >
+          <select
+            id="vyber"
+            name="vyber"
+            data-vychozi="vyber"
+            class="form-control"
+            aria-describedby="vyber-info"
+          >
+            <option value="jedna" selected={akce.vyber === 'jedna'}>Právě jedna položka</option>
+            <option value="vice" selected={akce.vyber === 'vice'}>Klidně několik položek</option>
+          </select>
+        </Pole>
+      </div>
+
+      {
+        (['varianty', 'priplatky'] as const).map((seznam) => {
+          const radky = seznam === 'varianty' ? varianty : priplatky;
+          const viditelnych =
+            seznam === 'varianty' ? viditelnychVariant : viditelnychPriplatku;
+          const chybySeznamu = cenikChyby[seznam];
+
+          return (
+            <div class="mt-10" data-cenik={seznam} data-viditelnych={String(viditelnych)}>
+              <h3 class="text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-ink-3">
+                {seznam === 'varianty' ? 'Varianty ceny' : 'Příplatky'}
+              </h3>
+
+              <ul class="mt-4 space-y-px">
+                {radky.map((p, i) => (
+                  <li
+                    class="border-t border-ink/12 py-5 last:border-b"
+                    data-radek
+                    hidden={i >= viditelnych}
+                  >
+                    <div class="grid gap-4 sm:grid-cols-[1fr_9rem]">
+                      <Pole
+                        pole={`${seznam}-${i}-nazev`}
+                        label={`${i + 1}. položka`}
+                        chyba={chybySeznamu[i]}
+                      >
+                        <input
+                          type="text"
+                          id={`${seznam}-${i}-nazev`}
+                          name={`${seznam}[${i}].nazev`}
+                          value={p?.nazev ?? ''}
+                          maxlength="120"
+                          placeholder={
+                            i === 0
+                              ? seznam === 'varianty'
+                                ? 'Základní cena'
+                                : 'Ustájení vlastního koně'
+                              : ''
+                          }
+                          class="form-control"
+                          aria-describedby={chybySeznamu[i] ? `${seznam}-${i}-nazev-info` : undefined}
+                          aria-invalid={chybySeznamu[i] ? 'true' : undefined}
+                        />
+                      </Pole>
+
+                      <Pole pole={`${seznam}-${i}-cena`} label="Cena v Kč">
+                        <input
+                          type="number"
+                          inputmode="numeric"
+                          id={`${seznam}-${i}-cena`}
+                          name={`${seznam}[${i}].cena`}
+                          value={p ? String(p.cena) : ''}
+                          min="0"
+                          max="999999"
+                          step="1"
+                          class="form-control"
+                        />
+                      </Pole>
+                    </div>
+
+                    <div class="mt-4 grid gap-4 sm:grid-cols-[1fr_14rem]">
+                      <Pole pole={`${seznam}-${i}-popis`} label="Upřesnění">
+                        <input
+                          type="text"
+                          id={`${seznam}-${i}-popis`}
+                          name={`${seznam}[${i}].popis`}
+                          value={p?.popis ?? ''}
+                          maxlength="300"
+                          placeholder="Nepovinné, ukáže se drobným pod názvem"
+                          class="form-control"
+                        />
+                      </Pole>
+
+                      <Pole pole={`${seznam}-${i}-kod`} label="Kód">
+                        <input
+                          type="text"
+                          id={`${seznam}-${i}-kod`}
+                          name={`${seznam}[${i}].kod`}
+                          value={p?.kod ?? ''}
+                          maxlength="40"
+                          placeholder="doplní se samo"
+                          class="form-control text-[0.875rem]"
+                        />
+                      </Pole>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+
+              <button type="button" class="btn btn-outline mt-5" data-pridat hidden>
+                <Icon name="plus" class="h-4 w-4" />
+                Přidat položku
+              </button>
+            </div>
+          );
+        })
+      }
+    </section>
+
+    <!-- ---------------------------------------------------------- přihlášky -->
+    <section>
+      <h2 class="t-3">Přihlášky a platba</h2>
+
+      <div class="mt-6 grid gap-6 sm:grid-cols-2">
+        <Pole
+          pole="max_ucastniku"
+          label="Účastníků na jedné přihlášce"
+          chyba={chyby.max_ucastniku}
+          napoveda="1 = jeden formulář na jedno dítě. Víc = klub pošle celou skupinu najednou."
+        >
+          <input
+            type="number"
+            inputmode="numeric"
+            id="max_ucastniku"
+            name="max_ucastniku"
+            data-vychozi="max_ucastniku"
+            value={String(akce.max_ucastniku)}
+            min="1"
+            max="40"
+            step="1"
+            class="form-control"
+            aria-describedby="max_ucastniku-info"
+            aria-invalid={chyby.max_ucastniku ? 'true' : undefined}
+          />
+        </Pole>
+
+        <Pole
+          pole="kapacita"
+          label="Kapacita akce"
+          chyba={chyby.kapacita}
+          napoveda="Jen pro vaši orientaci ve výpisu. 0 = neukazovat. Místa potvrzujete ručně."
+        >
+          <input
+            type="number"
+            inputmode="numeric"
+            id="kapacita"
+            name="kapacita"
+            value={String(akce.kapacita)}
+            min="0"
+            max="999"
+            step="1"
+            class="form-control"
+            aria-describedby="kapacita-info"
+            aria-invalid={chyby.kapacita ? 'true' : undefined}
+          />
+        </Pole>
+
+        <Pole
+          pole="vek_od"
+          label="Věk od"
+          chyba={chyby.vek_od}
+          napoveda="Nechte prázdné, když akce nemá věkový strop."
+        >
+          <input
+            type="number"
+            inputmode="numeric"
+            id="vek_od"
+            name="vek_od"
+            value={akce.vek_od === null ? '' : String(akce.vek_od)}
+            min="0"
+            max="99"
+            step="1"
+            class="form-control"
+            aria-describedby="vek_od-info"
+            aria-invalid={chyby.vek_od ? 'true' : undefined}
+          />
+        </Pole>
+
+        <Pole
+          pole="splatnost_dni"
+          label="Splatnost ve dnech před začátkem"
+          chyba={chyby.splatnost_dni}
+          napoveda="0 = splatnost se počítá ode dne přihlášení."
+        >
+          <input
+            type="number"
+            inputmode="numeric"
+            id="splatnost_dni"
+            name="splatnost_dni"
+            data-vychozi="splatnost_dni"
+            value={String(akce.splatnost_dni)}
+            min="0"
+            max="365"
+            step="1"
+            class="form-control"
+            aria-describedby="splatnost_dni-info"
+            aria-invalid={chyby.splatnost_dni ? 'true' : undefined}
+          />
+        </Pole>
+      </div>
+
+      <div class="mt-8 space-y-5 border-t border-ink/12 pt-8">
+        <label class="flex cursor-pointer items-start gap-3">
+          <input
+            type="checkbox"
+            name="platba_hned"
+            value="ano"
+            data-vychozi="platba_hned"
+            checked={akce.platba_hned}
+            class="mt-1 h-5 w-5 shrink-0 accent-[var(--color-brass-600)]"
+          />
+          <span class="text-[0.9375rem]">
+            <strong class="block">Platební údaje ukázat hned po odeslání</strong>
+            <span class="text-ink-3">
+              Pro startovné: přihlašující rovnou dostane částku, účet, VS a QR Platbu. Bez
+              zaškrtnutí přijdou platební údaje až s potvrzením místa, jak je zvykem u táborů
+              a pobytů.
+            </span>
+          </span>
+        </label>
+
+        <label class="flex cursor-pointer items-start gap-3">
+          <input
+            type="checkbox"
+            name="otevreno"
+            value="ano"
+            checked={akce.otevreno}
+            class="mt-1 h-5 w-5 shrink-0 accent-[var(--color-brass-600)]"
+          />
+          <span class="text-[0.9375rem]">
+            <strong class="block">Přihlášky otevřené</strong>
+            <span class="text-ink-3">
+              Bez zaškrtnutí se stránka s přihláškou pořád ukáže, ale formulář na ní nebude.
+              Takhle se akce zavírá, až je plno.
+            </span>
+          </span>
+        </label>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------ uložit -->
+    <div
+      class="flex flex-wrap items-center gap-4 border-t border-ink/12 pt-8"
+      data-shrnuti-obal
+    >
+      <button type="submit" class="btn btn-primary" data-odeslat>
+        {novaAkce ? 'Založit akci' : 'Uložit změny'}
+      </button>
+      <a href="/prihlasky/sprava" class="btn btn-outline">Zpět na přehled</a>
+      <p class="text-[0.875rem] text-ink-3" data-shrnuti></p>
+    </div>
+  </form>
+
+  {
+    !novaAkce && (
+      <section class="mt-16 border-t border-ink/12 pt-8">
+        <h2 class="text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-ink-3">
+          Smazání akce
+        </h2>
+        {pocetPrihlasek > 0 ? (
+          <p class="mt-3 max-w-2xl text-[0.9375rem] text-ink-3">
+            Akci nejde smazat, protože na ni už přišly přihlášky. Když se nekoná, odškrtněte
+            výš „Přihlášky otevřené" — akce zůstane i s přihláškami, jen se na ni nepůjde hlásit.
+          </p>
+        ) : (
+          <form method="post" class="mt-3 flex flex-wrap items-center gap-4">
+            <input type="hidden" name="co" value="smazat" />
+            <button
+              type="submit"
+              class="btn btn-outline"
+              data-potvrdit={`Opravdu smazat akci „${akce.nazev}"? Tohle se nedá vzít zpět.`}
+            >
+              Smazat akci
+            </button>
+            <span class="text-[0.875rem] text-ink-3">Zatím na ni nikdo není přihlášený.</span>
+          </form>
+        )}
+      </section>
+    )
+  }
+</PrihlaskyLayout>
+
+<script>
+  import { vychoziProTyp } from '@/lib/prihlasky/akce';
+
+  const form = document.querySelector<HTMLFormElement>('[data-akce]');
+
+  if (form) {
+    /* ---- výchozí hodnoty podle typu ------------------------------------ */
+    const typ = form.querySelector<HTMLSelectElement>('[data-typ]');
+
+    // Jen u nové akce: u rozdělané by přepsání hodnot bylo překvapení.
+    if (typ && form.dataset.nova === 'ano') {
+      let predchozi = typ.value as keyof typeof vychoziProTyp;
+
+      typ.addEventListener('change', () => {
+        const nove = vychoziProTyp[typ.value as keyof typeof vychoziProTyp];
+        const stare = vychoziProTyp[predchozi];
+        if (!nove || !stare) return;
+
+        form.querySelectorAll<HTMLElement>('[data-vychozi]').forEach((pole) => {
+          const klic = pole.dataset.vychozi as keyof typeof stare;
+          const puvodni = String(stare[klic]);
+          const cilova = String(nove[klic]);
+
+          if (pole instanceof HTMLInputElement && pole.type === 'checkbox') {
+            // Hodnotu měníme jen tam, kam nikdo nesáhl.
+            if (String(pole.checked) === puvodni) pole.checked = cilova === 'true';
+          } else if (
+            pole instanceof HTMLInputElement ||
+            pole instanceof HTMLSelectElement
+          ) {
+            if (pole.value === puvodni) pole.value = cilova;
+          }
+        });
+
+        predchozi = typ.value as keyof typeof vychoziProTyp;
+      });
+    }
+
+    /* ---- adresa se doplní z názvu ------------------------------------- */
+    const nazev = form.querySelector<HTMLInputElement>('[data-nazev]');
+    const zacatek = form.querySelector<HTMLInputElement>('[data-zacatek]');
+    const kod = form.querySelector<HTMLInputElement>('[data-kod]');
+
+    /** Stejný převod jako na serveru v kodZNazvu(). */
+    const slug = (text: string) =>
+      text
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 50)
+        .replace(/-+$/, '');
+
+    if (nazev && kod && !kod.readOnly) {
+      // Jakmile do adresy někdo sáhne ručně, přestaneme ji přepisovat.
+      let vlastni = kod.value.trim() !== '';
+
+      const doplnit = () => {
+        if (vlastni) return;
+        const rok = (zacatek?.value ?? '').slice(0, 4);
+        kod.value = [slug(nazev.value), rok].filter(Boolean).join('-').slice(0, 60);
+      };
+
+      kod.addEventListener('input', () => {
+        vlastni = kod.value.trim() !== '';
+      });
+      nazev.addEventListener('input', doplnit);
+      zacatek?.addEventListener('change', doplnit);
+    }
+
+    /* ---- řádky ceníku -------------------------------------------------- */
+    form.querySelectorAll<HTMLElement>('[data-cenik]').forEach((blok) => {
+      const radky = [...blok.querySelectorAll<HTMLElement>('[data-radek]')];
+      const pridat = blok.querySelector<HTMLButtonElement>('[data-pridat]');
+      let viditelnych = Number(blok.dataset.viditelnych ?? 1);
+
+      const prekreslit = () => {
+        radky.forEach((r, i) => {
+          r.hidden = i >= viditelnych;
+        });
+        if (pridat) pridat.hidden = viditelnych >= radky.length;
+      };
+
+      if (radky.length > 1) {
+        prekreslit();
+        pridat?.addEventListener('click', () => {
+          if (viditelnych >= radky.length) return;
+          viditelnych += 1;
+          prekreslit();
+          radky[viditelnych - 1]?.querySelector<HTMLInputElement>('input')?.focus();
+        });
+      }
+    });
+
+    /* ---- shrnutí u tlačítka -------------------------------------------- */
+    const shrnuti = form.querySelector<HTMLElement>('[data-shrnuti]');
+
+    const prepocitat = () => {
+      if (!shrnuti) return;
+      const data = new FormData(form);
+      const pocetRadku =
+        form.querySelectorAll('[data-cenik="varianty"] [data-radek]').length;
+      const ceny: number[] = [];
+
+      for (let i = 0; i < pocetRadku; i++) {
+        const nazevPolozky = String(data.get(`varianty[${i}].nazev`) ?? '').trim();
+        const cena = Number(data.get(`varianty[${i}].cena`));
+        if (nazevPolozky && Number.isFinite(cena)) ceny.push(cena);
+      }
+
+      if (ceny.length === 0) {
+        shrnuti.textContent = 'Ceník je zatím prázdný.';
+        return;
+      }
+
+      const min = Math.min(...ceny);
+      const max = Math.max(...ceny);
+      const kcFmt = (n: number) => `${n.toLocaleString('cs-CZ')} Kč`;
+      // Čeština má tři tvary, Intl.PluralRules je zná.
+      const tvar = new Intl.PluralRules('cs-CZ').select(ceny.length);
+      const slovo = tvar === 'one' ? 'varianta' : tvar === 'few' ? 'varianty' : 'variant';
+      shrnuti.textContent =
+        min === max
+          ? `${ceny.length} ${slovo} za ${kcFmt(min)}.`
+          : `${ceny.length} ${slovo}, ${kcFmt(min)} až ${kcFmt(max)}.`;
+    };
+
+    form.addEventListener('input', prepocitat);
+    prepocitat();
+
+    /* ---- dvojklik ------------------------------------------------------ */
+    form.addEventListener('submit', () => {
+      const odeslat = form.querySelector<HTMLButtonElement>('[data-odeslat]');
+      if (odeslat) odeslat.disabled = true;
+    });
+  }
+
+  /* ---- potvrzení u nevratných akcí ------------------------------------- */
+  document.querySelectorAll<HTMLButtonElement>('[data-potvrdit]').forEach((tlacitko) => {
+    tlacitko.addEventListener('click', (e) => {
+      if (!confirm(tlacitko.dataset.potvrdit ?? 'Opravdu?')) e.preventDefault();
+    });
+  });
+</script>

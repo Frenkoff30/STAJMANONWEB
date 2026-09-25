@@ -205,28 +205,11 @@ export const strankaPenzion = stranka(
       },
       { label: 'Nadpisy sekcí' },
     ),
-    prehled: fields.array(
-      fields.object({
-        icon: fields.select({
-          label: 'Ikona',
-          options: [
-            { label: 'Postel', value: 'bed' },
-            { label: 'Příbor', value: 'utensils' },
-            { label: 'Dům', value: 'home' },
-            { label: 'Špendlík', value: 'pin' },
-          ],
-          defaultValue: 'bed',
-        }),
-        value: fields.text({ label: 'Údaj' }),
-        note: fields.text({ label: 'Doplněk' }),
-      }),
-      { label: 'Čtyři údaje nahoře', itemLabel: (props) => props.fields.value.value },
-    ),
     images: fields.object(
       {
         pokoj: foto('Fotka pokoje', true),
         pokojAlt: popisFotky(),
-        restaurace: foto('Fotka restaurace', true),
+        restaurace: foto('Fotka klubovny s občerstvením', true),
         restauraceAlt: popisFotky(),
         terasa: foto('Fotka terasy', true),
         terasaAlt: popisFotky(),
@@ -272,6 +255,7 @@ export const strankaJezdeckaSkola = stranka(
       {
         krokZaKrokemK: sekce('Sekce: jak výuka probíhá'),
         naTomhleNesetrime: sekce('Sekce: bezpečnost', { lead: false }),
+        cenik: sekce('Sekce: ceník'),
         klubZaTimVsim: sekce('Sekce: jezdecký klub'),
       },
       { label: 'Nadpisy sekcí' },
@@ -279,6 +263,26 @@ export const strankaJezdeckaSkola = stranka(
     steps: karty('Kroky výuky', {
       description: 'Číslování 01, 02… doplní web sám podle pořadí.',
     }),
+    cenik: fields.object(
+      {
+        items: fields.array(
+          fields.object({
+            title: fields.text({ label: 'Název položky' }),
+            price: fields.text({ label: 'Cena', description: 'Například 650 Kč' }),
+            note: fields.text({ label: 'Za co', description: 'Například: za lekci' }),
+            text: odstavec('Popis'),
+          }),
+          {
+            label: 'Položky ceníku',
+            description: 'Pořadí se mění přetažením položky.',
+            itemLabel: (props) =>
+              `${props.fields.title.value} — ${props.fields.price.value}`,
+          },
+        ),
+        note: odstavec('Poznámka pod ceníkem'),
+      },
+      { label: 'Ceník jezdecké školy' },
+    ),
     klubActivities: seznam('Co klub nabízí', 'Činnost'),
     images: fields.object(
       {
@@ -289,8 +293,14 @@ export const strankaJezdeckaSkola = stranka(
       },
       { label: 'Fotky na stránce' },
     ),
+    bezpecnostText: odstavec('Úvodní text u bezpečnosti'),
+    bezpecnostSeznam: seznam('Výčet u bezpečnosti', 'Položka'),
     bezpecnostNote: odstavec('Poznámka u bezpečnosti'),
     klubText: text('Text o jezdeckém klubu'),
+    odkazy: karty('Odkazy na navazující nabídku', {
+      href: true,
+      description: 'Tři dlaždice pod jezdeckým klubem. Pořadí se mění přetažením.',
+    }),
     cta: vyzva(),
   },
   'jezdecka-skola',
@@ -303,7 +313,7 @@ export const strankaKurzy = stranka(
     hero: hero(),
     sekce: fields.object(
       {
-        terminy2026: sekce('Sekce: termíny', { lead: false }),
+        terminy: sekce('Sekce: termíny', { lead: false }),
         tydenZeKterehoSi: sekce('Sekce: program'),
         coSiZabalit: sekce('Sekce: co s sebou'),
         kolikToStoji: sekce('Sekce: cena', { lead: false }),
@@ -506,7 +516,10 @@ export const strankaUspechy = stranka(
       { label: 'Souhrn v číslech' },
     ),
     images: fields.object(
-      { portrait: foto('Fotka u milníků', true) },
+      {
+        portrait: foto('Fotka u milníků', true),
+        portraitAlt: popisFotky(),
+      },
       { label: 'Fotky na stránce' },
     ),
     cta: vyzva({ buttonLabel: 'Text tlačítka' }),
@@ -581,6 +594,7 @@ export const strankaJiriSkrivan = stranka(
     images: fields.object(
       {
         portrait: foto('Portrét', true),
+        portraitAlt: popisFotky(),
         sport: foto('Fotka u milníků', true),
         sportAlt: popisFotky(),
       },

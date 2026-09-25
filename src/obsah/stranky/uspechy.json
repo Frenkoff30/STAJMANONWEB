@@ -6,8 +6,8 @@
   "hero": {
     "heading": "Úspěchy",
     "lead": "Třicet let výsledků na domácích i zahraničních kolbištích, od prvního mistrovského titulu v roce 1993 po Český skokový pohár.",
-    "image": "vc-areal",
-    "imageAlt": "Velká cena Litomyšle v areálu Jízdárna Suchá"
+    "image": "skrivan-mezinarodni",
+    "imageAlt": "Jiří Skřivan na mezinárodním parkuru"
   },
   "sekce": {
     "rokPoRoce": {
@@ -26,7 +26,8 @@
     "note": "Přehled zahrnuje výsledky Jiřího Skřivana a jezdců Stáje Manon."
   },
   "images": {
-    "portrait": "uspechy-02"
+    "portrait": "skrivan-vitezstvi",
+    "portraitAlt": "Jiří Skřivan s vítěznou dekou ve finále Českého skokového poháru"
   },
   "cta": {
     "heading": "Výsledky z domácích akcí",

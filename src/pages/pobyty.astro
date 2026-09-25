@@ -12,6 +12,10 @@ import page from '@/obsah/stranky/pobyty.json';
 
 const heroImg = photo(page.hero.image)!;
 
+/** Do lepicí lišty se dlouhý název nevejde: „Velikonoční pobyt s výukou jízdy
+    na koni" zkrátíme na „Velikonoční pobyt". */
+const kratkyNazev = (t: string) => t.split(/\s+s[e]?\s+/)[0]!;
+
 const images = page.images
   .map((name) => photo(name))
   .filter((img): img is NonNullable<typeof img> => Boolean(img));
@@ -26,8 +30,7 @@ const images = page.images
   imageAlt={page.hero.imageAlt}
   crumbs={[{ label: 'Jezdectví' }, { label: 'Pobyty s výukou' }]}
   nav={[
-    { id: 'velikonocni-pobyt', label: 'Velikonoční pobyt' },
-    { id: 'podzimni-pobyt', label: 'Podzimní pobyt' },
+    ...stays.map((s) => ({ id: s.slug, label: kratkyNazev(s.title) })),
     { id: 'prihlaseni', label: 'Jak se přihlásit' },
   ]}
 >
@@ -50,9 +53,9 @@ const images = page.images
                 <Image
                   src={images[i % images.length]!}
                   alt={`Ilustrační foto k pobytu ${s.title}`}
-                  widths={[400, 800]}
+                  widths={[400, 800, 1200, 1600]}
                   sizes="(min-width: 1024px) 38vw, 100vw"
-                  class="aspect-[4/5] w-full object-cover"
+                  class="aspect-[3/2] w-full object-cover"
                 />
               </div>
             </div>
@@ -99,10 +102,14 @@ const images = page.images
                 </div>
 
                 <a
-                  href={`mailto:${site.email}?subject=${encodeURIComponent(s.title)}`}
+                  href={
+                    s.prihlaska
+                      ? `/prihlaska/${s.prihlaska}`
+                      : `mailto:${site.email}?subject=${encodeURIComponent(s.title)}`
+                  }
                   class="btn btn-primary shrink-0"
                 >
-                  Poptat pobyt
+                  {s.prihlaska ? 'Vyplnit přihlášku' : 'Poptat pobyt'}
                 </a>
               </div>
             </div>

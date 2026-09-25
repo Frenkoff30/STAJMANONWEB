@@ -1,37 +1,69 @@
 ---
+/**
+ * Značka stáje a značka jezdeckého klubu.
+ *
+ * Obě loga jsou dodaná grafika (public/loga/). Kreslí se přes CSS masku,
+ * ne jako obrázek: díky tomu dědí barvu z rodiče, takže stejný soubor
+ * funguje tmavý na papíru i bílý nad hero fotkou a v patičce.
+ *
+ * Poměry stran jsou napevno podle rozměrů souborů — bez nich by se logo
+ * při načítání „lámalo“ a posouvalo obsah.
+ */
+
 interface Props {
-  /** Vodorovná varianta s textem, nebo jen značka */
-  variant?: 'full' | 'mark';
+  /**
+   * U klubu: `radek` = znak a text vedle sebe (hlavička),
+   * `full` = znak nad textem (patička), `mark` = jen kruhový znak.
+   * U stáje je logo vždycky vodorovné.
+   */
+  variant?: 'full' | 'mark' | 'radek';
+  /** Vykreslí jezdecký klub místo stáje. */
+  klub?: boolean;
   class?: string;
 }
 
-const { variant = 'full', class: className = '' } = Astro.props;
+const { variant = 'full', klub = false, class: className = '' } = Astro.props;
+
+const KLUB = 'Jezdecký klub Hřebčín Suchá';
+
+const loga = {
+  staj: { src: '/loga/staj-manon.png', pomer: 810 / 248, popis: 'Stáj Manon — Jiří Skřivan' },
+  klub: { src: '/loga/jezdecky-klub.png', pomer: 690 / 655, popis: KLUB },
+  klubRadek: { src: '/loga/jezdecky-klub-radek.png', pomer: 953 / 230, popis: KLUB },
+  klubZnak: { src: '/loga/jezdecky-klub-znak.png', pomer: 452 / 439, popis: KLUB },
+} as const;
+
+const logo = klub
+  ? variant === 'mark'
+    ? loga.klubZnak
+    : variant === 'radek'
+      ? loga.klubRadek
+      : loga.klub
+  : loga.staj;
 ---
 
-{/* Monochrom — dědí barvu z rodiče, takže funguje na fotce i na papíru. */}
-<span class={`inline-flex items-center gap-3 ${className}`}>
-  {/* Značka: podkova — jediný symbol, který se v 32px nedá splést s ničím jiným. */}
-  <svg
-    viewBox="0 0 32 32"
-    fill="none"
-    stroke="currentColor"
-    stroke-linecap="round"
-    aria-hidden="true"
-    class="h-8 w-8 shrink-0 lg:h-9 lg:w-9"
-  >
-    <path d="M5.8 24.6V16.4a10.2 10.2 0 0 1 20.4 0v8.2" stroke-width="3"></path>
-  </svg>
+<span
+  class={`logo-mask ${className}`}
+  role="img"
+  aria-label={logo.popis}
+  style={`--logo:url('${logo.src}');--logo-pomer:${logo.pomer};`}
+></span>
 
-  {
-    variant === 'full' && (
-      <span class="flex flex-col leading-none">
-        <span class="font-display text-[1.3rem] font-semibold tracking-[0.01em] lg:text-[1.5rem]">
-          Stáj Manon
-        </span>
-        <span class="mt-[0.3rem] text-[0.5rem] font-semibold uppercase tracking-[0.3em] opacity-65 lg:text-[0.5625rem]">
-          Jízdárna Suchá
-        </span>
-      </span>
-    )
+<style>
+  /* Maska místo <img>: logo se obarví currentColor, takže si hlavička
+     i patička berou svou barvu samy. */
+  /* Display schválně nenastavujeme — scoped styl by přebil utility
+     `hidden`/`block` a responzivní přepínání variant by nefungovalo. */
+  .logo-mask {
+    aspect-ratio: var(--logo-pomer);
+    background-color: currentColor;
+    -webkit-mask-image: var(--logo);
+    mask-image: var(--logo);
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
   }
-</span>
+</style>

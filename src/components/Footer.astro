@@ -5,6 +5,9 @@ import { site, partners, usefulLinks } from '@/data/site';
 import { footerNav } from '@/data/navigation';
 
 const year = new Date().getFullYear();
+
+/** Klub má vlastní web, nebo aspoň Facebook. Když ani to ne, značka neodkazuje nikam. */
+const klubWeb = site.social.webKlub || site.social.facebookKlub || '';
 ---
 
 <footer class="relative overflow-hidden bg-loden-950 text-white grain">
@@ -12,7 +15,7 @@ const year = new Date().getFullYear();
     <!-- Značka, navigace, adresa -->
     <div class="grid gap-12 lg:grid-cols-12 lg:gap-8">
       <div class="lg:col-span-4">
-        <Logo />
+        <Logo class="block h-11" />
         <address class="mt-6 not-italic text-[0.9375rem] leading-relaxed text-white/65">
           {site.address.street}, {site.address.zip}&nbsp;{site.address.city}<br />
           <a href={`tel:${site.phoneHref}`} class="link-underline text-white">
@@ -49,6 +52,28 @@ const year = new Date().getFullYear();
           >
             Kontakt
           </a>
+        </div>
+
+        {/* Pořadatel závodů, her a soustředění. Odkaz vede na stránky klubu,
+            pokud nějaké má — jinak stojí značka samostatně. */}
+        <div class="mt-10 border-t border-white/12 pt-7">
+          <p class="eyebrow eyebrow--on-dark">Pořadatel akcí</p>
+          {
+            klubWeb ? (
+              <a
+                href={klubWeb}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="mt-4 inline-block text-white/70 transition-colors hover:text-white"
+              >
+                <Logo klub class="block h-24" />
+              </a>
+            ) : (
+              <span class="mt-4 inline-block text-white/70">
+                <Logo klub class="block h-24" />
+              </span>
+            )
+          }
         </div>
       </div>
 

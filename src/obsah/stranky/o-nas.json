@@ -6,8 +6,8 @@
   "hero": {
     "heading": "Stáj Manon",
     "lead": "Od roku 1992. Sportovní stáj, která vyrostla z přestavěného statku v areál, kde se ročně koná přes čtyřicet jezdeckých akcí.",
-    "image": "kolbiste-02",
-    "imageAlt": "Venkovní kolbiště areálu Jízdárna Suchá"
+    "image": "vc-areal",
+    "imageAlt": "Areál Jízdárna Suchá v den závodů"
   },
   "sekce": {
     "ctyriVeciKtereTu": {
@@ -30,10 +30,10 @@
   "images": {
     "areal": "areal-letecky",
     "arealAlt": "Letecký pohled na areál Jízdárna Suchá",
-    "staj": "boxy-01",
-    "stajAlt": "Stájová chodba s boxy pro koně",
-    "klub": "zavody-skok-01",
-    "klubAlt": "Parkurový skok na kolbišti v Suché"
+    "staj": "hala-01",
+    "stajAlt": "Krytá jízdárna 23 × 66 m",
+    "klub": "deti-skupina",
+    "klubAlt": "Děti z jezdeckého klubu na kolbišti"
   },
   "cinnosti": [
     {
@@ -52,8 +52,8 @@
       "href": "/akce"
     },
     {
-      "title": "Penzion a restaurace",
-      "text": "24 lůžek, restaurace se snídaněmi a terasa nad kolbištěm pro jezdce, rodiny i firemní akce.",
+      "title": "Penzion a občerstvení",
+      "text": "24 lůžek, terasa nad kolbištěm a klubovna s občerstvením.",
       "href": "/penzion"
     }
   ],

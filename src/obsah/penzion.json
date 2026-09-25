@@ -16,7 +16,7 @@
       "perNote": "osoba / noc"
     },
     {
-      "type": "Pokoj s patrovými postelemi",
+      "type": "Čtyřlůžkový pokoj",
       "price": "740 Kč",
       "perNote": "osoba / noc"
     }
@@ -37,8 +37,8 @@
       "text": "2–4lůžkové pokoje s vlastní koupelnou a WC, celkem 24 lůžek."
     },
     {
-      "title": "Restaurace",
-      "text": "Klubové zařízení s obsluhou a rychlým občerstvením, snídaně na objednávku. Kapacita 40 míst."
+      "title": "Občerstvení",
+      "text": "Klubovna s občerstvením a nápoji, snídaně na objednávku. Kapacita 40 míst."
     },
     {
       "title": "Venkovní terasa",
@@ -46,7 +46,7 @@
     },
     {
       "title": "Firemní a společenské akce",
-      "text": "Areál i restauraci lze využít pro firemní akce, oslavy a setkání mimo běžný ruch města."
+      "text": "Areál i klubovnu lze využít pro firemní akce, oslavy a setkání mimo běžný ruch města."
     }
   ],
   "nearby": [

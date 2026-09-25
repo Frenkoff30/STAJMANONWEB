@@ -3,7 +3,7 @@
  * Detail přihlášky: rozhodnutí o místě, platba, faktura, poznámka.
  *
  * Každý zápis je POST a po něm přesměrování zpátky (POST → redirect → GET).
- * Obnovení stránky tak nepošle rodiči stejný e-mail podruhé.
+ * Obnovení stránky tak nepošle přihlášenému stejný e-mail podruhé.
  */
 
 export const prerender = false;
@@ -12,7 +12,14 @@ import PrihlaskyLayout from '@/layouts/PrihlaskyLayout.astro';
 import Zprava from '@/components/rezervace/Zprava.astro';
 import Stitek from '@/components/prihlasky/Stitek.astro';
 import { dlouheDatum, dnesCz } from '@/lib/rezervace';
-import { citelnaChyba, stavy, type Prihlaska, type StavPrihlasky, type Tabor } from '@/lib/prihlasky/db';
+import {
+  citelnaChyba,
+  jmenaUcastniku,
+  stavy,
+  type Akce,
+  type Prihlaska,
+  type StavPrihlasky,
+} from '@/lib/prihlasky/db';
 import {
   emailKeStavu,
   emailNastaven,
@@ -21,7 +28,8 @@ import {
   sestavEmail,
   type DruhEmailu,
 } from '@/lib/prihlasky/email';
-import { kc, qrSvg, spayd, splatnost, terminTaboru, ucetStaje, vek } from '@/lib/prihlasky/platba';
+import { kc, qrSvg, spayd, splatnost, terminAkce, ucetStaje, vek } from '@/lib/prihlasky/platba';
+import { popisTypu } from '@/lib/prihlasky/typy';
 import { bezCache, datumCas, nactiSpravce } from '@/lib/prihlasky/spravce';
 
 bezCache(Astro.response.headers);
@@ -43,12 +51,12 @@ const nacist = async () => {
     .eq('id', id)
     .maybeSingle<Prihlaska>();
   if (!p) return null;
-  const { data: t } = await spravce.supabase
-    .from('tabory')
+  const { data: a } = await spravce.supabase
+    .from('akce')
     .select('*')
-    .eq('kod', p.tabor)
-    .maybeSingle<Tabor>();
-  return t ? { p, t } : null;
+    .eq('kod', p.akce)
+    .maybeSingle<Akce>();
+  return a ? { p, a } : null;
 };
 
 /* ------------------------------------------------------------------ zápis */
@@ -57,7 +65,7 @@ let chyba = '';
 
 if (Astro.request.method === 'POST') {
   const formular = await Astro.request.formData();
-  const akce = String(formular.get('akce') ?? '');
+  const co = String(formular.get('co') ?? '');
   const poslat = formular.get('poslat') === 'ano';
 
   const ulozit = async (zmena: Partial<Prihlaska>) => {
@@ -71,12 +79,12 @@ if (Astro.request.method === 'POST') {
     if (!druh || !poslat) return '';
     const data = await nacist();
     if (!data) return '';
-    const email = sestavEmail(druh, data.t, data.p, Astro.url.origin);
+    const email = sestavEmail(druh, data.a, data.p, Astro.url.origin);
     if (!emailNastaven) return `&email=nenastaveno&nahled=${druh}`;
     return (await odeslatEmail(email)) ? '&email=odeslan' : `&email=chyba`;
   };
 
-  switch (akce) {
+  switch (co) {
     case 'stav': {
       const stav = String(formular.get('stav') ?? '') as StavPrihlasky;
       if (!(stav in stavy)) break;
@@ -117,9 +125,11 @@ if (Astro.request.method === 'POST') {
 const data = await nacist();
 if (!data) return Astro.redirect('/prihlasky/sprava');
 
-const { p, t: tabor } = data;
-const termin = terminTaboru(tabor);
-const doKdy = splatnost(tabor);
+const { p, a: akce } = data;
+const typ = popisTypu(akce.typ);
+const termin = terminAkce(akce);
+const doKdy = splatnost(akce);
+const ucastnici = p.ucastnici ?? [];
 
 const parametry = Astro.url.searchParams;
 const hotovo = parametry.get('hotovo') ?? '';
@@ -140,13 +150,13 @@ const hlasky: Record<string, string> = {
 
 const nahled =
   stavEmailu === 'nenastaveno' && [...Object.values(emailKeStavu), 'zaplaceno'].includes(nahledDruh)
-    ? sestavEmail(nahledDruh as DruhEmailu, tabor, p, Astro.url.origin)
+    ? sestavEmail(nahledDruh as DruhEmailu, akce, p, Astro.url.origin)
     : null;
 
 const qrText = p.platce === 'osoba' ? spayd({ castka: p.cena, vs: p.vs, splatnost: doKdy }) : null;
 const qrKod = qrText ? await qrSvg(qrText) : null;
 
-const textPolozky = `${tabor.nazev} (${termin}), ${p.dite_jmeno}`;
+const textPolozky = `${akce.nazev} (${termin}), ${jmenaUcastniku(p)}`;
 
 const fakturace: [string, string][] = [
   ['Odběratel', p.firma_nazev],
@@ -160,6 +170,15 @@ const fakturace: [string, string][] = [
   ['Variabilní symbol', p.vs],
   ['Splatnost', dlouheDatum(doKdy)],
 ];
+
+/** Startovní listina k přenesení do rozpisu — jeden řádek na dvojici. */
+const startovni = ucastnici
+  .map((u) =>
+    [u.jmeno, u.kun, p.subjekt, u.polozky.map((x) => x.nazev).join(' + ')]
+      .filter(Boolean)
+      .join('\t'),
+  )
+  .join('\n');
 
 const tlacitkaStavu: { stav: StavPrihlasky; label: string; trida: string }[] = [
   { stav: 'prijata', label: 'Potvrdit místo', trida: 'btn btn-primary' },
@@ -175,11 +194,11 @@ const klic = 'text-[0.8125rem] text-ink-3';
 
 <PrihlaskyLayout
   title={`Přihláška ${p.vs}`}
-  heading={p.dite_jmeno}
-  lead={`${tabor.nazev}, ${termin}`}
+  heading={p.subjekt || jmenaUcastniku(p)}
+  lead={`${akce.nazev}, ${termin}`}
   spravce={spravce}
   crumbs={[
-    { label: tabor.nazev, href: `/prihlasky/sprava?tabor=${tabor.kod}` },
+    { label: akce.nazev, href: `/prihlasky/sprava?akce=${akce.kod}` },
     { label: `č. ${p.vs}` },
   ]}
 >
@@ -189,11 +208,11 @@ const klic = 'text-[0.8125rem] text-ink-3';
     hotovo && hlasky[hotovo] && (
       <Zprava typ="ok" class="mb-6">
         {hlasky[hotovo]}{' '}
-        {stavEmailu === 'odeslan' && `Rodiči odešel e-mail na ${p.zastupce_email}.`}
+        {stavEmailu === 'odeslan' && `Přihlášenému odešel e-mail na ${p.kontakt_email}.`}
         {stavEmailu === 'chyba' &&
-          'E-mail se ale nepodařilo odeslat, dejte prosím rodiči vědět sami.'}
+          'E-mail se ale nepodařilo odeslat, dejte prosím vědět sami.'}
         {stavEmailu === 'nenastaveno' &&
-          'E-maily se zatím neodesílají, níže je ukázka toho, co by rodiči přišlo.'}
+          'E-maily se zatím neodesílají, níže je ukázka toho, co by přišlo.'}
       </Zprava>
     )
   }
@@ -207,7 +226,7 @@ const klic = 'text-[0.8125rem] text-ink-3';
         <iframe
           srcdoc={nahled.html}
           sandbox=""
-          title="Ukázka e-mailu rodiči"
+          title="Ukázka e-mailu přihlášenému"
           class="h-[600px] w-full border-t border-ink/12 bg-white"
         />
       </details>
@@ -218,67 +237,138 @@ const klic = 'text-[0.8125rem] text-ink-3';
     <!-- -------------------------------------------------------- údaje -->
     <div class="space-y-14 lg:col-span-7">
       <section>
-        <h2 class="t-3">Dítě</h2>
-        <dl class="mt-5">
-          <div class={radek}>
-            <dt class={klic}>Narozeno</dt>
-            <dd>
-              {dlouheDatum(p.dite_narozeni)}
-              <span class="text-ink-3"> · na táboře {vek(p.dite_narozeni, tabor.zacatek)} let</span>
-            </dd>
-          </div>
-          <div class={radek}>
-            <dt class={klic}>Zkušenosti</dt>
-            <dd>{p.dite_zkusenosti || 'neuvedeno'}</dd>
-          </div>
-          <div class={radek}>
-            <dt class={klic}>Pojišťovna</dt>
-            <dd>{p.dite_pojistovna || 'neuvedeno'}</dd>
-          </div>
-          <div class={radek}>
-            <dt class={klic}>Zdraví</dt>
-            <dd class="whitespace-pre-line">{p.dite_zdravi || 'bez omezení'}</dd>
-          </div>
-          <div class={`${radek} border-b`}>
-            <dt class={klic}>Fotky na web</dt>
-            <dd>{p.souhlas_foto ? 'souhlasí' : 'nesouhlasí'}</dd>
-          </div>
-        </dl>
+        <div class="flex flex-wrap items-baseline justify-between gap-3">
+          <h2 class="t-3">
+            {typ.ucastnici}
+            {ucastnici.length > 1 && <span class="text-ink-3"> · {ucastnici.length}</span>}
+          </h2>
+          {
+            ucastnici.length > 1 && (
+              <button
+                type="button"
+                class="text-[0.75rem] font-semibold uppercase tracking-[0.1em] text-brass-700 hover:text-brass-800"
+                data-kopirovat={startovni}
+                hidden
+              >
+                Zkopírovat do startovní listiny
+              </button>
+            )
+          }
+        </div>
+
+        <div class="mt-5 space-y-6">
+          {
+            ucastnici.map((u, i) => (
+              <div class="border-t-2 border-ink/15 pt-4">
+                <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                  <p class="font-display text-[1.25rem]">
+                    {ucastnici.length > 1 && <span class="text-ink-3">{i + 1}. </span>}
+                    {u.jmeno}
+                    {u.kun && <span class="text-ink-3"> — {u.kun}</span>}
+                  </p>
+                  <p class="font-display text-[1.125rem] text-brass-700">{kc(u.cena)}</p>
+                </div>
+
+                <dl class="mt-2">
+                  <div class={radek}>
+                    <dt class={klic}>{typ.cenik}</dt>
+                    <dd>
+                      {u.polozky.length > 0
+                        ? u.polozky.map((x) => `${x.nazev} (${kc(x.cena)})`).join(', ')
+                        : 'nic nevybráno'}
+                    </dd>
+                  </div>
+                  {u.narozeni && (
+                    <div class={radek}>
+                      <dt class={klic}>Narozen</dt>
+                      <dd>
+                        {dlouheDatum(u.narozeni)}
+                        <span class="text-ink-3"> · na akci {vek(u.narozeni, akce.zacatek)} let</span>
+                      </dd>
+                    </div>
+                  )}
+                  {u.zkusenosti && (
+                    <div class={radek}>
+                      <dt class={klic}>Zkušenosti</dt>
+                      <dd>{u.zkusenosti}</dd>
+                    </div>
+                  )}
+                  {u.uroven && (
+                    <div class={radek}>
+                      <dt class={klic}>Výkonnost</dt>
+                      <dd>{u.uroven}</dd>
+                    </div>
+                  )}
+                  {u.licence && (
+                    <div class={radek}>
+                      <dt class={klic}>Licence ČJF</dt>
+                      <dd>{u.licence}</dd>
+                    </div>
+                  )}
+                  {u.pojistovna && (
+                    <div class={radek}>
+                      <dt class={klic}>Pojišťovna</dt>
+                      <dd>{u.pojistovna}</dd>
+                    </div>
+                  )}
+                  {u.zdravi && (
+                    <div class={radek}>
+                      <dt class={klic}>Zdraví</dt>
+                      <dd class="whitespace-pre-line">{u.zdravi}</dd>
+                    </div>
+                  )}
+                </dl>
+              </div>
+            ))
+          }
+        </div>
+
+        <p class="mt-6 text-[0.875rem] text-ink-3">
+          Fotky na web: {p.souhlas_foto ? 'souhlasí' : 'nesouhlasí'}
+        </p>
       </section>
 
       <section>
-        <h2 class="t-3">Zákonný zástupce</h2>
+        <h2 class="t-3">{typ.kontakt}</h2>
         <dl class="mt-5">
+          {
+            p.subjekt && (
+              <div class={radek}>
+                <dt class={klic}>{typ.subjekt || 'Klub'}</dt>
+                <dd class="font-semibold">{p.subjekt}</dd>
+              </div>
+            )
+          }
           <div class={radek}>
             <dt class={klic}>Jméno</dt>
-            <dd>{p.zastupce_jmeno}</dd>
+            <dd>{p.kontakt_jmeno}</dd>
           </div>
           <div class={radek}>
             <dt class={klic}>Telefon</dt>
             <dd>
-              <a href={`tel:${p.zastupce_telefon.replace(/[^\d+]/g, '')}`} class="link-underline text-brass-700">
-                {p.zastupce_telefon}
+              <a href={`tel:${p.kontakt_telefon.replace(/[^\d+]/g, '')}`} class="link-underline text-brass-700">
+                {p.kontakt_telefon}
               </a>
             </dd>
           </div>
           <div class={radek}>
             <dt class={klic}>E-mail</dt>
             <dd>
-              <a href={`mailto:${p.zastupce_email}`} class="link-underline break-all text-brass-700">
-                {p.zastupce_email}
+              <a href={`mailto:${p.kontakt_email}`} class="link-underline break-all text-brass-700">
+                {p.kontakt_email}
               </a>
             </dd>
           </div>
           <div class={`${radek} border-b`}>
             <dt class={klic}>Adresa</dt>
-            <dd>{p.zastupce_adresa || 'neuvedena'}</dd>
+            <dd>{p.kontakt_adresa || 'neuvedena'}</dd>
           </div>
         </dl>
 
         {
           p.poznamka && (
             <div class="mt-6 border-l-2 border-brass-500 pl-5">
-              <p class="form-label">Poznámka od rodiče</p>
+              <p class="form-label">Poznámka od přihlášeného</p>
               <p class="whitespace-pre-line text-[0.9375rem]">{p.poznamka}</p>
             </div>
           )
@@ -288,15 +378,11 @@ const klic = 'text-[0.8125rem] text-ink-3';
       <section>
         <h2 class="t-3">Cena a platba</h2>
         <dl class="mt-5">
-          <div class={radek}>
-            <dt class={klic}>{p.varianta.nazev}</dt>
-            <dd>{kc(p.varianta.cena)}</dd>
-          </div>
           {
-            p.priplatky.map((x) => (
+            ucastnici.map((u) => (
               <div class={radek}>
-                <dt class={klic}>{x.nazev}</dt>
-                <dd>+ {kc(x.cena)}</dd>
+                <dt class={klic}>{u.jmeno}</dt>
+                <dd>{kc(u.cena)}</dd>
               </div>
             ))
           }
@@ -311,7 +397,7 @@ const klic = 'text-[0.8125rem] text-ink-3';
           <div class={`${radek} border-b`}>
             <dt class={klic}>Platí</dt>
             <dd>
-              {p.platce === 'firma' ? 'firma, fakturou' : `zákonný zástupce převodem na ${ucetStaje}`}
+              {p.platce === 'firma' ? 'firma nebo klub, fakturou' : `kontaktní osoba převodem na ${ucetStaje}`}
             </dd>
           </div>
         </dl>
@@ -321,7 +407,9 @@ const klic = 'text-[0.8125rem] text-ink-3';
             <div class="mt-6 flex flex-wrap items-center gap-6">
               <div class="w-36 border border-ink/12 bg-white p-3" set:html={qrKod} />
               <p class="max-w-xs text-[0.875rem] text-ink-3">
-                QR Platba, kterou rodič dostane e-mailem po potvrzení místa.
+                {akce.platba_hned
+                  ? 'Stejná QR Platba, jakou přihlášený dostal hned po odeslání.'
+                  : 'QR Platba, kterou přihlášený dostane e-mailem po potvrzení místa.'}{' '}
                 Splatnost {dlouheDatum(doKdy)}.
               </p>
             </div>
@@ -343,7 +431,7 @@ const klic = 'text-[0.8125rem] text-ink-3';
                 </button>
               </div>
               <p class="mt-2 text-[0.875rem] text-ink-3">
-                Fakturu vystavte ve svém účetním programu a pošlete na e-mail firmy.
+                Fakturu vystavte ve svém účetním programu a pošlete na e-mail odběratele.
                 Číslo faktury si pak zapište vpravo.
               </p>
               <dl class="mt-5">
@@ -365,12 +453,12 @@ const klic = 'text-[0.8125rem] text-ink-3';
       <div class="space-y-4 lg:sticky lg:top-32">
         <div class="card p-6 lg:p-7">
           <div class="flex items-center justify-between gap-3">
-            <h2 class="font-display text-[1.25rem]">Místo na táboře</h2>
+            <h2 class="font-display text-[1.25rem]">Místo na akci</h2>
             <Stitek stav={p.stav} />
           </div>
 
           <form method="post" class="mt-5">
-            <input type="hidden" name="akce" value="stav" />
+            <input type="hidden" name="co" value="stav" />
 
             <div class="flex flex-wrap gap-2">
               {
@@ -391,7 +479,7 @@ const klic = 'text-[0.8125rem] text-ink-3';
 
             <label class="mt-5 flex cursor-pointer items-start gap-3 text-[0.875rem] text-ink-3">
               <input type="checkbox" name="poslat" value="ano" checked class="mt-0.5 h-4 w-4 accent-brass-600" />
-              Poslat rodiči e-mail o změně
+              Poslat přihlášenému e-mail o změně
             </label>
           </form>
         </div>
@@ -403,7 +491,9 @@ const klic = 'text-[0.8125rem] text-ink-3';
               p.zaplaceno ? (
                 <Stitek barva="loden">Zaplaceno</Stitek>
               ) : (
-                <Stitek barva={p.stav === 'prijata' ? 'brass' : 'seda'}>Nezaplaceno</Stitek>
+                <Stitek barva={p.stav === 'prijata' || akce.platba_hned ? 'brass' : 'seda'}>
+                  Nezaplaceno
+                </Stitek>
               )
             }
           </div>
@@ -411,7 +501,7 @@ const klic = 'text-[0.8125rem] text-ink-3';
           {
             p.zaplaceno ? (
               <form method="post" class="mt-4">
-                <input type="hidden" name="akce" value="nezaplaceno" />
+                <input type="hidden" name="co" value="nezaplaceno" />
                 <p class="text-[0.9375rem]">Zaplaceno {dlouheDatum(p.zaplaceno)}.</p>
                 <button
                   type="submit"
@@ -422,7 +512,7 @@ const klic = 'text-[0.8125rem] text-ink-3';
               </form>
             ) : (
               <form method="post" class="mt-4">
-                <input type="hidden" name="akce" value="zaplaceno" />
+                <input type="hidden" name="co" value="zaplaceno" />
                 <p class="text-[0.9375rem] text-ink-3">
                   {kc(p.cena)}, VS {p.vs}, splatnost {dlouheDatum(doKdy)}.
                 </p>
@@ -431,7 +521,7 @@ const klic = 'text-[0.8125rem] text-ink-3';
                 </button>
                 <label class="mt-4 flex cursor-pointer items-start gap-3 text-[0.875rem] text-ink-3">
                   <input type="checkbox" name="poslat" value="ano" checked class="mt-0.5 h-4 w-4 accent-brass-600" />
-                  Poslat rodiči potvrzení platby
+                  Poslat potvrzení platby
                 </label>
               </form>
             )
@@ -441,7 +531,7 @@ const klic = 'text-[0.8125rem] text-ink-3';
         {
           p.platce === 'firma' && (
             <form method="post" class="card p-6 lg:p-7">
-              <input type="hidden" name="akce" value="faktura" />
+              <input type="hidden" name="co" value="faktura" />
               <div class="flex items-center justify-between gap-3">
                 <h2 class="font-display text-[1.25rem]">Faktura</h2>
                 {p.faktura_cislo ? (
@@ -469,9 +559,9 @@ const klic = 'text-[0.8125rem] text-ink-3';
         }
 
         <form method="post" class="card p-6 lg:p-7">
-          <input type="hidden" name="akce" value="poznamka" />
+          <input type="hidden" name="co" value="poznamka" />
           <label for="poznamka_staje" class="font-display text-[1.25rem]">Poznámka stáje</label>
-          <p class="mt-1 text-[0.8125rem] text-ink-3">Jen pro vás, rodič ji neuvidí.</p>
+          <p class="mt-1 text-[0.8125rem] text-ink-3">Jen pro vás, přihlášený ji neuvidí.</p>
           <textarea
             id="poznamka_staje"
             name="poznamka_staje"
@@ -487,7 +577,7 @@ const klic = 'text-[0.8125rem] text-ink-3';
         <p class="px-1 text-[0.8125rem] text-ink-3">
           Odesláno {datumCas(p.vytvoreno)}. Naposledy změněno {datumCas(p.zmeneno)}.
           <br />
-          Odpovědi rodičů na e-maily chodí na {emailStaje}.
+          Odpovědi na e-maily chodí na {emailStaje}.
         </p>
       </div>
     </aside>

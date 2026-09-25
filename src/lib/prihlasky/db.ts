@@ -1,7 +1,7 @@
 /**
- * Připojení přihlášek na tábory k databázi.
+ * Připojení přihlášek na akce k databázi.
  *
- * Přihlášky jsou samostatný systém, s rezervacemi jízdáren nesdílí nic
+ * Přihlášky na akce jsou samostatný systém, s rezervacemi jízdáren nesdílí nic
  * kromě knihovny. Můžou běžet v jiném projektu Supabase (proměnné
  * `PRIHLASKY_SUPABASE_*`), a když nejsou vyplněné, použijí ten společný.
  * Přihlášení do správy má vlastní cookie, takže se nemíchá s účty jezdců.
@@ -10,6 +10,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { createServerClient, parseCookieHeader } from '@supabase/ssr';
 import type { AstroCookies } from 'astro';
+import type { TypAkce } from './typy';
 
 // Každá proměnná vypsaná zvlášť: Vite dosazuje `import.meta.env.X` při
 // buildu jen tam, kde je název napsaný celý.
@@ -30,7 +31,7 @@ export const prihlaskyNastaveny = Boolean(url && anonKey);
 
 /**
  * Klient pro veřejnou stránku s přihláškou. Nikoho nepřihlašuje a nic si
- * nepamatuje, jen čte tábory a volá `odeslat_prihlasku()`.
+ * nepamatuje, jen čte akce a volá `odeslat_prihlasku()`.
  */
 export function verejnyKlient(): SupabaseClient {
   return createClient(url, anonKey, {
@@ -75,8 +76,13 @@ export interface Polozka {
   cena: number;
 }
 
-export interface Tabor {
+/**
+ * Akce, na kterou se jde přihlásit. Typ určuje podobu formuláře
+ * (viz typy.ts), `vyber` a `max_ucastniku` jeho rozsah.
+ */
+export interface Akce {
   kod: string;
+  typ: TypAkce;
   nazev: string;
   podtitul: string;
   popis: string;
@@ -86,10 +92,31 @@ export interface Tabor {
   odjezd: string;
   vek_od: number | null;
   kapacita: number;
+  /** Kolik účastníků smí být na jedné přihlášce. */
+  max_ucastniku: number;
+  /** `jedna` = z ceníku se vybírá jedna položka, `vice` = klidně několik. */
+  vyber: 'jedna' | 'vice';
   splatnost_dni: number;
+  /** Platební údaje se ukážou hned po odeslání, bez čekání na potvrzení. */
+  platba_hned: boolean;
   varianty: Polozka[];
   priplatky: Polozka[];
   otevreno: boolean;
+}
+
+/** Jeden přihlášený. Která pole jsou vyplněná, závisí na typu akce. */
+export interface Ucastnik {
+  jmeno: string;
+  narozeni?: string;
+  kun?: string;
+  zkusenosti?: string;
+  uroven?: string;
+  licence?: string;
+  pojistovna?: string;
+  zdravi?: string;
+  /** Ceníkové položky tak, jak platily v okamžiku odeslání. */
+  polozky: Polozka[];
+  cena: number;
 }
 
 export type StavPrihlasky = 'nova' | 'prijata' | 'nahradnik' | 'odmitnuta' | 'zrusena';
@@ -105,19 +132,14 @@ export const stavy: Record<StavPrihlasky, string> = {
 export interface Prihlaska {
   id: string;
   vs: string;
-  tabor: string;
-  varianta: Polozka;
-  priplatky: Polozka[];
+  akce: string;
+  ucastnici: Ucastnik[];
   cena: number;
-  dite_jmeno: string;
-  dite_narozeni: string;
-  dite_zkusenosti: string;
-  dite_zdravi: string;
-  dite_pojistovna: string;
-  zastupce_jmeno: string;
-  zastupce_email: string;
-  zastupce_telefon: string;
-  zastupce_adresa: string;
+  subjekt: string;
+  kontakt_jmeno: string;
+  kontakt_email: string;
+  kontakt_telefon: string;
+  kontakt_adresa: string;
   platce: 'osoba' | 'firma';
   firma_ico: string;
   firma_nazev: string;
@@ -133,6 +155,14 @@ export interface Prihlaska {
   poznamka_staje: string;
   vytvoreno: string;
   zmeneno: string;
+}
+
+/** Souhrn přihlášky do jednoho řádku: „Anna Nováková, Jiskra + 2 další“. */
+export function jmenaUcastniku(p: Pick<Prihlaska, 'ucastnici'>): string {
+  const jmena = p.ucastnici.map((u) => u.jmeno);
+  if (jmena.length === 0) return 'bez účastníka';
+  if (jmena.length <= 2) return jmena.join(' a ');
+  return `${jmena[0]} a ${jmena.length - 1} další`;
 }
 
 /**

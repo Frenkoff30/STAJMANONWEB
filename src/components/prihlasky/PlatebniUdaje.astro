@@ -1,0 +1,112 @@
+---
+/**
+ * Platební údaje k přihlášce: částka, účet, variabilní symbol, splatnost
+ * a QR Platba.
+ *
+ * Zaplatit jde rovnou z téhle stránky — QR kód naskenuje kterákoli česká
+ * mobilní banka a předvyplní si z něj příkaz. Kdo platí z počítače, má
+ * vedle tlačítko, které zkopíruje celý údaj naráz.
+ *
+ * Kartou se tady zatím neplatí: to by znamenalo smlouvu s platební bránou
+ * (Comgate, GoPay, Stripe). Až bude, přibude sem jen tlačítko.
+ */
+
+import Icon from '@/components/Icon.astro';
+import { site } from '@/data/site';
+import { dlouheDatum } from '@/lib/rezervace';
+import type { Akce, Prihlaska } from '@/lib/prihlasky/db';
+import { kc, qrSvg, spayd, splatnost, ucetStaje } from '@/lib/prihlasky/platba';
+
+interface Props {
+  akce: Akce;
+  prihlaska: Prihlaska;
+  class?: string;
+}
+
+const { akce, prihlaska: p, class: className = '' } = Astro.props;
+
+const doKdy = splatnost(akce);
+const qrText = p.platce === 'osoba' ? spayd({ castka: p.cena, vs: p.vs, splatnost: doKdy }) : null;
+const qrKod = qrText ? await qrSvg(qrText) : null;
+
+const udaje: [string, string][] = [
+  ['Částka', kc(p.cena)],
+  ['Číslo účtu', `${ucetStaje} (${site.bankName})`],
+  ['Variabilní symbol', p.vs],
+  ['Zaplatit do', dlouheDatum(doKdy)],
+];
+
+const kProKopirovani = udaje.map(([k, h]) => `${k}: ${h}`).join('\n');
+---
+
+{
+  p.platce === 'firma' ? (
+    <div class={`border border-ink/12 bg-paper-2 p-6 lg:p-7 ${className}`}>
+      <h3 class="font-display text-[1.25rem]">Fakturu vystavíme</h3>
+      <p class="mt-2 text-[0.9375rem] leading-relaxed text-ink-3">
+        Fakturu na {kc(p.cena)} pošleme na <strong class="text-ink">{p.firma_email}</strong>,
+        splatnost {dlouheDatum(doKdy)}. Variabilní symbol {p.vs} bude uvedený na faktuře.
+      </p>
+    </div>
+  ) : (
+    <div class={`border border-ink/12 bg-paper-2 p-6 lg:p-7 ${className}`}>
+      <div class="flex flex-wrap items-baseline justify-between gap-3">
+        <h3 class="font-display text-[1.25rem]">Zaplatit</h3>
+        <button
+          type="button"
+          class="inline-flex items-center gap-1.5 text-[0.75rem] font-semibold uppercase tracking-[0.1em] text-brass-700 transition-colors hover:text-brass-800"
+          data-kopirovat={kProKopirovani}
+          hidden
+        >
+          <Icon name="copy" class="h-3.5 w-3.5" />
+          Zkopírovat údaje
+        </button>
+      </div>
+
+      <div class="mt-5 grid gap-7 sm:grid-cols-[1fr_auto] sm:items-start">
+        <dl class="space-y-px">
+          {udaje.map(([k, h], i) => (
+            <div
+              class:list={[
+                'flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-t border-ink/12 py-3',
+                i === udaje.length - 1 && 'border-b',
+              ]}
+            >
+              <dt class="text-[0.8125rem] text-ink-3">{k}</dt>
+              <dd class:list={[i === 0 ? 'font-display text-[1.375rem] leading-none text-brass-700' : 'font-semibold']}>
+                {h}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        {qrKod && (
+          <figure class="shrink-0">
+            <div class="w-40 border border-ink/12 bg-white p-3" set:html={qrKod} />
+            <figcaption class="mt-2 max-w-40 text-[0.75rem] leading-snug text-ink-3">
+              QR Platba — naskenujte v mobilní bance a příkaz se vyplní sám.
+            </figcaption>
+          </figure>
+        )}
+      </div>
+
+      <p class="mt-5 text-[0.875rem] leading-relaxed text-ink-3">
+        Platbu spárujeme podle variabilního symbolu. Kdo raději platí na místě,
+        může — jen nám to prosím dejte předem vědět.
+      </p>
+    </div>
+  )
+}
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-kopirovat]').forEach((tlacitko) => {
+    if (!navigator.clipboard) return;
+    tlacitko.hidden = false;
+    tlacitko.addEventListener('click', async () => {
+      await navigator.clipboard.writeText(tlacitko.dataset.kopirovat ?? '');
+      const puvodni = tlacitko.textContent;
+      tlacitko.textContent = 'Zkopírováno';
+      setTimeout(() => (tlacitko.textContent = puvodni), 1800);
+    });
+  });
+</script>

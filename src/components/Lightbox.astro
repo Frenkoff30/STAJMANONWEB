@@ -48,7 +48,7 @@ const colClass = {
             <Image
               src={p.src}
               alt={p.alt}
-              widths={[320, 640, 900]}
+              widths={[320, 640, 960, 1280]}
               sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 48vw"
               loading={i < 6 ? 'eager' : 'lazy'}
               class="aspect-[4/3] h-full w-full object-cover"
@@ -101,7 +101,7 @@ const colClass = {
         </svg>
       </button>
 
-      <img data-lb-img alt="" class="max-h-full max-w-full object-contain" />
+      <img data-lb-img alt="" class="max-h-full object-contain" />
 
       <button
         type="button"
@@ -144,6 +144,10 @@ const colClass = {
       img.alt = p.alt;
       img.width = p.w;
       img.height = p.h;
+      // Starší fotky z původního webu mají i jen 480 px. Roztažené přes celou
+      // obrazovku jsou rozmazané, tak je necháme v jejich skutečné velikosti
+      // a kolem zůstane tmavá plocha.
+      img.style.maxWidth = `min(100%, ${p.w}px)`;
       caption.textContent = p.alt;
       counter.textContent = `${index + 1} / ${photos.length}`;
     }

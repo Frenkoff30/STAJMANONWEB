@@ -102,13 +102,15 @@ const monthShort = [
         </a>
       )
     }
+    {/* Schválně ne „Přihlásit se“ — to si lidi pletou s přihlášením do účtu.
+        Na akce se hlásí kdokoli, účet je jen na rezervace jízdáren. */}
     {
       event.prihlaska && isUpcoming(event) && (
         <a
           href={`/prihlaska/${event.prihlaska}`}
           class:list={['link-arrow mt-3 flex w-fit', onDark && 'text-brass-300 hover:text-white']}
         >
-          Přihlásit se
+          Vyplnit přihlášku
           <Icon name="arrow-right" class="h-3.5 w-3.5" />
         </a>
       )

@@ -6,18 +6,19 @@
  * ukládají tak jako tak, e-mail je jen upozornění.
  *
  * Každý e-mail se skládá z bloků, ze kterých vzniká HTML i čistý text.
- * Údaje od rodičů se do HTML vždy escapují.
+ * Údaje od přihlašujících se do HTML vždy escapují.
  */
 
 import { site } from '@/data/site';
 import { dlouheDatum } from '@/lib/rezervace';
-import type { Prihlaska, Tabor } from './db';
-import { kc, qrOdkaz, splatnost, terminTaboru, ucetStaje } from './platba';
+import { jmenaUcastniku, type Akce, type Prihlaska, type Ucastnik } from './db';
+import { kc, qrOdkaz, splatnost, terminAkce, ucetStaje } from './platba';
+import { popisTypu } from './typy';
 
 const apiKlic = import.meta.env.RESEND_API_KEY || process.env.RESEND_API_KEY || '';
 const od = import.meta.env.PRIHLASKY_EMAIL_OD || process.env.PRIHLASKY_EMAIL_OD || '';
 
-/** Kam chodí upozornění na nové přihlášky a kam rodiče odpovídají. */
+/** Kam chodí upozornění na nové přihlášky a kam přihlášení odpovídají. */
 export const emailStaje =
   import.meta.env.PRIHLASKY_EMAIL_STAJ || process.env.PRIHLASKY_EMAIL_STAJ || site.email;
 
@@ -39,7 +40,7 @@ export type DruhEmailu =
   | 'zrusena'
   | 'zaplaceno';
 
-/** Které změny stavu se rodičům oznamují e-mailem. */
+/** Které změny stavu se přihlášeným oznamují e-mailem. */
 export const emailKeStavu: Partial<Record<Prihlaska['stav'], DruhEmailu>> = {
   prijata: 'prijata',
   nahradnik: 'nahradnik',
@@ -151,74 +152,148 @@ function podpis(): string {
   return `S pozdravem\n${kontakt.name}, ${site.fullName}\n${kontakt.phone}, ${emailStaje}`;
 }
 
-/** Tábor, termín a dítě. Jména se nedají skloňovat, proto do tabulky. */
-function kdoKam(tabor: Tabor, p: Prihlaska): [string, string][] {
+/* ------------------------------------------------------------------ díly */
+
+/** Akce, termín a kdo je přihlášený. */
+function kdoKam(akce: Akce, p: Prihlaska): [string, string][] {
+  const typ = popisTypu(akce.typ);
   return [
-    ['Tábor', tabor.nazev],
-    ['Termín', terminTaboru(tabor)],
-    ['Dítě', p.dite_jmeno],
+    ['Akce', akce.nazev],
+    ['Termín', terminAkce(akce)],
+    ...(p.subjekt ? ([['Za', p.subjekt]] as [string, string][]) : []),
+    [p.ucastnici.length === 1 ? typ.ucastnik : typ.ucastnici, jmenaUcastniku(p)],
   ];
 }
 
-function shrnuti(tabor: Tabor, p: Prihlaska): [string, string][] {
+/** Jeden řádek na účastníka: co má vybráno a za kolik. */
+function ucastnikRadek(u: Ucastnik): [string, string] {
+  const popis = [
+    u.kun && `kůň ${u.kun}`,
+    ...u.polozky.map((x) => x.nazev),
+  ]
+    .filter(Boolean)
+    .join(', ');
+  return [u.jmeno, `${popis}\n${kc(u.cena)}`];
+}
+
+function shrnuti(akce: Akce, p: Prihlaska): [string, string][] {
   return [
-    ...kdoKam(tabor, p),
-    ['Varianta', `${p.varianta.nazev} (${kc(p.varianta.cena)})`],
-    ...p.priplatky.map((x): [string, string] => ['Příplatek', `${x.nazev} (${kc(x.cena)})`]),
+    ...kdoKam(akce, p),
+    ...p.ucastnici.map(ucastnikRadek),
     ['Celkem', kc(p.cena)],
     [
       'Platí',
       p.platce === 'firma'
-        ? `${p.firma_nazev}, IČO ${p.firma_ico}
-faktura na ${p.firma_email}`
-        : 'zákonný zástupce převodem',
+        ? `${p.firma_nazev}, IČO ${p.firma_ico}\nfaktura na ${p.firma_email}`
+        : 'kontaktní osoba převodem',
     ],
     ['Číslo přihlášky', p.vs],
   ];
 }
 
+/** Částka, účet, VS, splatnost a QR kód — nebo fakturační údaje firmy. */
+function platebniBloky(akce: Akce, p: Prihlaska, zaklad: string): Blok[] {
+  const doKdy = splatnost(akce);
+
+  if (p.platce === 'firma') {
+    return [
+      { typ: 'odstavec', text: `Fakturu vystavíme na firmu a pošleme ji na ${p.firma_email}.` },
+      {
+        typ: 'tabulka',
+        radky: [
+          ['Odběratel', `${p.firma_nazev}, IČO ${p.firma_ico}`],
+          ['Částka', kc(p.cena)],
+          ['Splatnost', dlouheDatum(doKdy)],
+        ],
+      },
+    ];
+  }
+
+  return [
+    {
+      typ: 'tabulka',
+      radky: [
+        ['Částka', kc(p.cena)],
+        ['Účet', `${ucetStaje} (${site.bankName})`],
+        ['Variabilní symbol', p.vs],
+        ['Splatnost', dlouheDatum(doKdy)],
+      ],
+    },
+    {
+      typ: 'qr',
+      src: qrOdkaz(zaklad, { castka: p.cena, vs: p.vs, splatnost: doKdy }),
+      popis: 'QR Platba: naskenujte v mobilní bance a údaje se vyplní samy.',
+    },
+  ];
+}
+
+/* ------------------------------------------------------------------ e-maily */
+
 /**
  * Sestaví e-mail daného druhu. `zaklad` je adresa webu (kvůli QR kódu
  * a odkazu do správy).
  *
- * Jména dětí a táborů stojí vždy v 1. pádě (v tabulce nebo za dvojtečkou),
+ * Jména lidí a akcí stojí vždy v 1. pádě (v tabulce nebo za dvojtečkou),
  * věty kolem nich je nepotřebují skloňovat.
  */
 export function sestavEmail(
   druh: DruhEmailu,
-  tabor: Tabor,
+  akce: Akce,
   p: Prihlaska,
   zaklad: string,
 ): Email {
+  const typ = popisTypu(akce.typ);
   const pozdrav: Blok = { typ: 'odstavec', text: 'Dobrý den,' };
   const konec: Blok = { typ: 'odstavec', text: podpis() };
 
   switch (druh) {
-    case 'odeslana':
-      return slozit(p.zastupce_email, `Přihláška dorazila: ${tabor.nazev}`, [
+    case 'odeslana': {
+      // U akcí se startovným se platí rovnou, u táborů až po potvrzení místa.
+      const platba: Blok[] = akce.platba_hned
+        ? [{ typ: 'nadpis', text: 'Platba' }, ...platebniBloky(akce, p, zaklad)]
+        : [
+            {
+              typ: 'odstavec',
+              text: 'Zatím nic neplaťte. Platební údaje pošleme spolu s potvrzením.',
+            },
+          ];
+
+      return slozit(p.kontakt_email, `Přihláška dorazila: ${akce.nazev}`, [
         pozdrav,
-        {
-          typ: 'odstavec',
-          text: 'děkujeme, přihláška na tábor dorazila. Teď ji projdeme a do několika dnů vám potvrdíme místo.',
-        },
-        {
-          typ: 'odstavec',
-          text: 'Zatím nic neplaťte. Platební údaje pošleme spolu s potvrzením.',
-        },
+        { typ: 'odstavec', text: `děkujeme, přihláška dorazila. ${typ.potvrzeni}` },
         { typ: 'nadpis', text: 'Shrnutí přihlášky' },
-        { typ: 'tabulka', radky: shrnuti(tabor, p) },
+        { typ: 'tabulka', radky: shrnuti(akce, p) },
+        ...platba,
         {
           typ: 'odstavec',
           text: 'Kdyby bylo potřeba cokoli změnit, stačí odpovědět na tenhle e-mail.',
         },
         konec,
       ]);
+    }
 
-    case 'staji':
-      return slozit(emailStaje, `Nová přihláška: ${p.dite_jmeno}, ${tabor.nazev}`, [
+    case 'staji': {
+      const detaily: [string, string][] = p.ucastnici.flatMap((u): [string, string][] => [
+        [
+          u.jmeno,
+          [
+            u.narozeni && `nar. ${dlouheDatum(u.narozeni)}`,
+            u.kun && `kůň ${u.kun}`,
+            u.zkusenosti,
+            u.uroven,
+            u.licence && `licence ${u.licence}`,
+            u.pojistovna,
+            u.zdravi && `zdraví: ${u.zdravi}`,
+          ]
+            .filter(Boolean)
+            .join('\n') || 'bez dalších údajů',
+        ],
+      ]);
+
+      return slozit(emailStaje, `Nová přihláška: ${jmenaUcastniku(p)}, ${akce.nazev}`, [
         {
           typ: 'odstavec',
-          text: 'Přišla nová přihláška na tábor. Místo potvrdíte nebo odmítnete ve správě přihlášek.',
+          text: 'Přišla nová přihláška. Vyřídíte ji ve správě přihlášek.',
         },
         {
           typ: 'odkaz',
@@ -226,119 +301,85 @@ export function sestavEmail(
           href: new URL(`/prihlasky/sprava/${p.id}`, zaklad).toString(),
         },
         { typ: 'nadpis', text: 'Přihláška' },
-        { typ: 'tabulka', radky: shrnuti(tabor, p) },
-        { typ: 'nadpis', text: 'Dítě a zástupce' },
+        { typ: 'tabulka', radky: shrnuti(akce, p) },
+        { typ: 'nadpis', text: typ.ucastnici },
+        { typ: 'tabulka', radky: detaily },
+        { typ: 'nadpis', text: 'Kontakt' },
         {
           typ: 'tabulka',
           radky: [
-            ['Narozeno', dlouheDatum(p.dite_narozeni)],
-            ['Zkušenosti', p.dite_zkusenosti || 'neuvedeno'],
-            ['Zdraví', p.dite_zdravi || 'bez omezení'],
-            ['Zástupce', p.zastupce_jmeno],
-            ['Telefon', p.zastupce_telefon],
-            ['E-mail', p.zastupce_email],
-            ...(p.poznamka ? [['Poznámka', p.poznamka] as [string, string]] : []),
+            ['Jméno', p.kontakt_jmeno],
+            ['Telefon', p.kontakt_telefon],
+            ['E-mail', p.kontakt_email],
+            ...(p.poznamka ? ([['Poznámka', p.poznamka]] as [string, string][]) : []),
           ],
         },
-      ]);
-
-    case 'prijata': {
-      const do_ = splatnost(tabor);
-      const platba: Blok[] =
-        p.platce === 'firma'
-          ? [
-              {
-                typ: 'odstavec',
-                text: `Fakturu vystavíme na firmu a pošleme ji na ${p.firma_email}.`,
-              },
-              {
-                typ: 'tabulka',
-                radky: [
-                  ['Odběratel', `${p.firma_nazev}, IČO ${p.firma_ico}`],
-                  ['Částka', kc(p.cena)],
-                  ['Splatnost', dlouheDatum(do_)],
-                ],
-              },
-            ]
-          : [
-              {
-                typ: 'tabulka',
-                radky: [
-                  ['Částka', kc(p.cena)],
-                  ['Účet', `${ucetStaje} (${site.bankName})`],
-                  ['Variabilní symbol', p.vs],
-                  ['Splatnost', dlouheDatum(do_)],
-                ],
-              },
-              {
-                typ: 'qr',
-                src: qrOdkaz(zaklad, { castka: p.cena, vs: p.vs, splatnost: do_ }),
-                popis: 'QR Platba: naskenujte v mobilní bance a údaje se vyplní samy.',
-              },
-              {
-                typ: 'odstavec',
-                text: 'Bez včasné platby se místo uvolní dalším zájemcům.',
-              },
-            ];
-
-      return slozit(p.zastupce_email, `Místo potvrzeno: ${tabor.nazev}`, [
-        pozdrav,
-        { typ: 'odstavec', text: 's radostí potvrzujeme místo na táboře.' },
-        {
-          typ: 'tabulka',
-          radky: [
-            ...kdoKam(tabor, p),
-            ...(tabor.nastup ? [['Nástup', tabor.nastup] as [string, string]] : []),
-            ...(tabor.odjezd ? [['Odjezd', tabor.odjezd] as [string, string]] : []),
-          ],
-        },
-        { typ: 'nadpis', text: 'Platba' },
-        ...platba,
-        konec,
       ]);
     }
 
+    case 'prijata':
+      return slozit(p.kontakt_email, `Místo potvrzeno: ${akce.nazev}`, [
+        pozdrav,
+        { typ: 'odstavec', text: 's radostí potvrzujeme místo.' },
+        {
+          typ: 'tabulka',
+          radky: [
+            ...kdoKam(akce, p),
+            ...(akce.nastup ? ([['Nástup', akce.nastup]] as [string, string][]) : []),
+            ...(akce.odjezd ? ([['Odjezd', akce.odjezd]] as [string, string][]) : []),
+          ],
+        },
+        { typ: 'nadpis', text: 'Platba' },
+        ...platebniBloky(akce, p, zaklad),
+        ...(p.platce === 'osoba'
+          ? ([
+              { typ: 'odstavec', text: 'Bez včasné platby se místo uvolní dalším zájemcům.' },
+            ] as Blok[])
+          : []),
+        konec,
+      ]);
+
     case 'nahradnik':
-      return slozit(p.zastupce_email, `Jste mezi náhradníky: ${tabor.nazev}`, [
+      return slozit(p.kontakt_email, `Jste mezi náhradníky: ${akce.nazev}`, [
         pozdrav,
         {
           typ: 'odstavec',
-          text: 'tábor je teď plně obsazený, přihlášku jsme proto zařadili mezi náhradníky. Jakmile se místo uvolní, hned se ozveme. Zatím prosím nic neplaťte.',
+          text: 'akce je teď plně obsazená, přihlášku jsme proto zařadili mezi náhradníky. Jakmile se místo uvolní, hned se ozveme. Zatím prosím nic neplaťte.',
         },
-        { typ: 'tabulka', radky: kdoKam(tabor, p) },
+        { typ: 'tabulka', radky: kdoKam(akce, p) },
         konec,
       ]);
 
     case 'odmitnuta':
-      return slozit(p.zastupce_email, `Přihláška na tábor: ${tabor.nazev}`, [
+      return slozit(p.kontakt_email, `Přihláška na akci: ${akce.nazev}`, [
         pozdrav,
         {
           typ: 'odstavec',
           text: 'je nám líto, ale na tenhle termín už nemáme volné místo. Budeme rádi, když si vyberete jiný.',
         },
-        { typ: 'tabulka', radky: kdoKam(tabor, p) },
+        { typ: 'tabulka', radky: kdoKam(akce, p) },
         konec,
       ]);
 
     case 'zrusena':
-      return slozit(p.zastupce_email, `Přihláška zrušena: ${tabor.nazev}`, [
+      return slozit(p.kontakt_email, `Přihláška zrušena: ${akce.nazev}`, [
         pozdrav,
         {
           typ: 'odstavec',
-          text: 'přihlášku na tábor jsme zrušili. Pokud jde o omyl, ozvěte se nám prosím.',
+          text: 'přihlášku jsme zrušili. Pokud jde o omyl, ozvěte se nám prosím.',
         },
-        { typ: 'tabulka', radky: kdoKam(tabor, p) },
+        { typ: 'tabulka', radky: kdoKam(akce, p) },
         konec,
       ]);
 
     case 'zaplaceno':
-      return slozit(p.zastupce_email, `Platba dorazila: ${tabor.nazev}`, [
+      return slozit(p.kontakt_email, `Platba dorazila: ${akce.nazev}`, [
         pozdrav,
         {
           typ: 'odstavec',
-          text: `platba ${kc(p.cena)} dorazila, děkujeme. Místo na táboře je tím definitivně vaše a těšíme se na vás.`,
+          text: `platba ${kc(p.cena)} dorazila, děkujeme. Místo je tím definitivně vaše a těšíme se na vás.`,
         },
-        { typ: 'tabulka', radky: kdoKam(tabor, p) },
+        { typ: 'tabulka', radky: kdoKam(akce, p) },
         konec,
       ]);
   }

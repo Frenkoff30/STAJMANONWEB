@@ -3,7 +3,7 @@
   "fullName": "Stáj Manon & Areál Jízdárna Suchá",
   "tagline": "Jezdecký areál u Litomyšle",
   "founded": 1992,
-  "description": "Sportovní stáj, jezdecká škola a penzion s restaurací v moderním jezdeckém areálu Jízdárna Suchá, 3 km od Litomyšle. Přes 40 jezdeckých akcí ročně, krytá hala 23 × 66 m, ustájení a výcvik od roku 1992.",
+  "description": "Sportovní stáj, jezdecká škola a penzion s občerstvením v moderním jezdeckém areálu Jízdárna Suchá, 3 km od Litomyšle. Přes 40 jezdeckých akcí ročně, krytá hala 23 × 66 m, ustájení a výcvik od roku 1992.",
   "address": {
     "street": "Suchá 1",
     "city": "Suchá u Litomyšle",
@@ -32,7 +32,7 @@
     },
     {
       "name": "Penzion Jízdárna Suchá",
-      "role": "Rezervace ubytování a restaurace",
+      "role": "Rezervace ubytování",
       "phone": "+420 739 057 775",
       "phoneHref": "+420739057775",
       "email": "penzionsucha@email.cz"
@@ -47,6 +47,7 @@
   "social": {
     "facebook": "https://www.facebook.com/stajmanon.jiriskrivan",
     "facebookKlub": "https://www.facebook.com/pages/Jezdecký-klub-hřebčín-Suchá/516704915049527",
+    "webKlub": "",
     "youtube": "http://www.youtube.com/user/stajmanon"
   },
   "keyFacts": [

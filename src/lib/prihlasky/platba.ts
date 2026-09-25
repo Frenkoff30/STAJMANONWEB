@@ -10,16 +10,22 @@ import QRCode from 'qrcode';
 import { site } from '@/data/site';
 import { formatRange } from '@/data/events';
 import { dnesCz, posunDnu } from '@/lib/rezervace';
-import type { Polozka, Tabor } from './db';
+import type { Akce, Polozka } from './db';
+import type { VyplnenyUcastnik } from './formular';
 
 /** `11400` → `11 400 Kč` (s nezlomitelnou mezerou). */
 export function kc(castka: number): string {
   return `${castka.toLocaleString('cs-CZ')} Kč`;
 }
 
-/** `4.–10. července 2027` */
-export function terminTaboru(tabor: Pick<Tabor, 'zacatek' | 'konec'>): string {
-  return formatRange({ start: tabor.zacatek, end: tabor.konec, title: '', kind: 'pobyt' });
+/** `4.–10. července 2027`, u jednodenní akce jen `28. března 2027`. */
+export function terminAkce(akce: Pick<Akce, 'zacatek' | 'konec'>): string {
+  return formatRange({
+    start: akce.zacatek,
+    end: akce.konec === akce.zacatek ? undefined : akce.konec,
+    title: '',
+    kind: 'pobyt',
+  });
 }
 
 /** Věk v celých letech k danému dni. */
@@ -29,27 +35,41 @@ export function vek(narozeni: string, k: string): number {
   return r2! - r1! - (m2! < m1! || (m2 === m1 && d2! < d1!) ? 1 : 0);
 }
 
-/** Cena z ceníku tábora. Neznámé kódy se tiše vynechají. */
+/** Položky z ceníku akce podle vybraných kódů. Neznámé kódy se tiše vynechají. */
+export function polozkyUcastnika(
+  akce: Pick<Akce, 'varianty' | 'priplatky'>,
+  u: Pick<VyplnenyUcastnik, 'varianty' | 'priplatky'>,
+): Polozka[] {
+  return [
+    ...akce.varianty.filter((v) => u.varianty.includes(v.kod)),
+    ...akce.priplatky.filter((p) => u.priplatky.includes(p.kod)),
+  ];
+}
+
+export function cenaUcastnika(
+  akce: Pick<Akce, 'varianty' | 'priplatky'>,
+  u: Pick<VyplnenyUcastnik, 'varianty' | 'priplatky'>,
+): number {
+  return polozkyUcastnika(akce, u).reduce((s, p) => s + p.cena, 0);
+}
+
+/** Cena celé přihlášky. Počítá se stejně jako v databázi, jen pro náhled. */
 export function spoctiCenu(
-  tabor: Pick<Tabor, 'varianty' | 'priplatky'>,
-  variantaKod: string,
-  priplatkyKody: string[],
-): { varianta: Polozka | null; priplatky: Polozka[]; cena: number } {
-  const varianta = tabor.varianty.find((v) => v.kod === variantaKod) ?? null;
-  const priplatky = tabor.priplatky.filter((p) => priplatkyKody.includes(p.kod));
-  const cena = (varianta?.cena ?? 0) + priplatky.reduce((s, p) => s + p.cena, 0);
-  return { varianta, priplatky, cena };
+  akce: Pick<Akce, 'varianty' | 'priplatky'>,
+  ucastnici: Pick<VyplnenyUcastnik, 'varianty' | 'priplatky'>[],
+): number {
+  return ucastnici.reduce((s, u) => s + cenaUcastnika(akce, u), 0);
 }
 
 /**
  * Do kdy zaplatit. Běžně X dní před nástupem. Když se místo potvrdí
  * pozdě, dostane rodič aspoň týden, nejdéle ale do dne nástupu.
  */
-export function splatnost(tabor: Pick<Tabor, 'zacatek' | 'splatnost_dni'>): string {
-  const radna = posunDnu(tabor.zacatek, -tabor.splatnost_dni);
+export function splatnost(akce: Pick<Akce, 'zacatek' | 'splatnost_dni'>): string {
+  const radna = posunDnu(akce.zacatek, -akce.splatnost_dni);
   const zaTyden = posunDnu(dnesCz(), 7);
   if (radna >= zaTyden) return radna;
-  return zaTyden < tabor.zacatek ? zaTyden : tabor.zacatek;
+  return zaTyden < akce.zacatek ? zaTyden : akce.zacatek;
 }
 
 /* ------------------------------------------------------------------ QR Platba */

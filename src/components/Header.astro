@@ -14,6 +14,10 @@ const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 
 const isActive = (href: string) => path === href || path.startsWith(href + '/');
 const groupActive = (links: readonly { href: string }[]) => links.some((l) => isActive(l.href));
+
+/** Klub má vlastní web, nebo aspoň Facebook. Když ani to ne, značka neodkazuje nikam. */
+const klubWeb = site.social.webKlub || site.social.facebookKlub || '';
+const klubNazev = 'Jezdecký klub Hřebčín Suchá';
 ---
 
 <header data-site-header data-overlay={String(overlay)} class="site-header">
@@ -58,12 +62,38 @@ const groupActive = (links: readonly { href: string }[]) => links.some((l) => is
   </div>
 
   <!-- Hlavní lišta -->
-  <div class="container-x flex h-18 items-center justify-between lg:h-20">
-    <a href="/" class="shrink-0 transition-opacity hover:opacity-80" aria-label="Stáj Manon, přejít na úvodní stránku">
-      <Logo />
-    </a>
+  <div class="header-bar container-x flex items-center justify-between">
+    <div class="flex min-w-0 shrink items-center gap-4 lg:gap-6">
+      <a href="/" class="shrink-0 transition-opacity hover:opacity-80" aria-label="Stáj Manon, přejít na úvodní stránku">
+        <Logo class="logo-staj block" />
+      </a>
 
-    <nav class="hidden items-center lg:flex" aria-label="Hlavní navigace">
+      {/* Klub pořádá závody a hry, stáj trénuje — v hlavičce stojí vedle sebe.
+          Odkaz vede na stránky klubu; když žádné nemá, zůstane jen značka.
+          Na úzkém displeji zbude z klubu jen kruhový znak. */}
+      <span class="hidden h-9 w-px shrink-0 bg-current opacity-20 sm:block"></span>
+      {
+        klubWeb ? (
+          <a
+            href={klubWeb}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hidden shrink-0 transition-opacity hover:opacity-80 sm:block"
+            title={`${klubNazev} — přejít na stránky klubu`}
+          >
+            <Logo klub variant="radek" class="logo-klub hidden xl:block" />
+            <Logo klub variant="mark" class="logo-klub block xl:hidden" />
+          </a>
+        ) : (
+          <span class="hidden shrink-0 sm:block" title={klubNazev}>
+            <Logo klub variant="radek" class="logo-klub hidden xl:block" />
+            <Logo klub variant="mark" class="logo-klub block xl:hidden" />
+          </span>
+        )
+      }
+    </div>
+
+    <nav class="hidden shrink-0 items-center lg:flex" aria-label="Hlavní navigace">
       {
         mainNav.map((group) => (
           <div class="nav-group relative">
@@ -224,8 +254,76 @@ const groupActive = (links: readonly { href: string }[]) => links.some((l) => is
     );
   }
 
+  /* Odrolovaná hlavička se stáhne: kontaktní lišta se složí a hlavní
+     lišta i loga se zmenší. Díky tomu zůstane víc místa na obsah,
+     ale značka nezmizí. */
   .header-topbar {
     border-bottom: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+    height: 2.5rem;
+    overflow: hidden;
+    transition: height 320ms var(--ease-out-natural),
+      opacity 220ms var(--ease-out-natural);
+  }
+  .site-header.is-solid .header-topbar {
+    height: 0;
+    opacity: 0;
+    border-bottom-color: transparent;
+  }
+  .header-bar {
+    height: 4.5rem;
+    transition: height 320ms var(--ease-out-natural);
+  }
+  .site-header.is-solid .header-bar {
+    height: 3.75rem;
+  }
+
+  /* Loga vykresluje komponenta Logo, takže na ně scoped styl nedosáhne —
+     proto :global(). Obě třídy žijí jen tady v hlavičce. */
+  :global(.logo-staj),
+  :global(.logo-klub) {
+    transition: height 320ms var(--ease-out-natural);
+  }
+  :global(.logo-staj) {
+    height: 2.5rem;
+  }
+  :global(.logo-klub) {
+    height: 2rem;
+  }
+  .site-header.is-solid :global(.logo-staj) {
+    height: 2rem;
+  }
+  .site-header.is-solid :global(.logo-klub) {
+    height: 1.625rem;
+  }
+
+  @media (min-width: 1024px) {
+    .header-bar {
+      height: 5.5rem;
+    }
+    .site-header.is-solid .header-bar {
+      height: 4.25rem;
+    }
+    :global(.logo-staj) {
+      height: 3.75rem;
+    }
+    :global(.logo-klub) {
+      height: 2.625rem;
+    }
+    .site-header.is-solid :global(.logo-staj) {
+      height: 2.75rem;
+    }
+    .site-header.is-solid :global(.logo-klub) {
+      height: 2rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .header-topbar,
+    .header-bar,
+    :global(.logo-staj),
+    :global(.logo-klub) {
+      transition: none;
+    }
   }
 
   /* CTA v liště se přepíná spolu s podkladem */
@@ -307,7 +405,9 @@ const groupActive = (links: readonly { href: string }[]) => links.some((l) => is
     }
   }
 
-  if (header?.dataset.overlay === 'true') {
+  /* Stažení lišty platí na všech stránkách, průhledná hlavička nad hero
+     fotkou se navíc při odrolování obarví. */
+  if (header) {
     const sync = () => header.classList.toggle('is-solid', window.scrollY > 40);
     sync();
     window.addEventListener('scroll', sync, { passive: true });

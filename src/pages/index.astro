@@ -188,7 +188,7 @@ const jsonLd = {
     </div>
 
     <div class="mt-8 flex flex-wrap gap-3">
-      <a href="/akce" class="btn btn-outline">Kalendář akcí 2026</a>
+      <a href="/akce" class="btn btn-outline">Kalendář akcí</a>
       <a href="/vysledky" class="btn btn-outline">Výsledkové listiny</a>
     </div>
   </Section>
@@ -200,7 +200,7 @@ const jsonLd = {
         <Image
           src={restauraceImg}
           alt={page.penzion.imageAlt}
-          widths={[640, 1024, 1600]}
+          widths={[640, 1024, 1600, 2000]}
           sizes="(min-width: 1024px) 50vw, 100vw"
           class="absolute inset-0 h-full w-full object-cover"
         />
@@ -257,7 +257,7 @@ const jsonLd = {
           <Image
             src={kurzyImg}
             alt={page.skola.imageTallAlt}
-            widths={[600, 1200]}
+            widths={[640, 1024, 1600, 2000]}
             sizes="(min-width: 1024px) 55vw, 100vw"
             class="aspect-[4/3] w-full object-cover"
           />
@@ -268,15 +268,15 @@ const jsonLd = {
 
   <!-- ============================================================ ÚSPĚCHY -->
   <Section tone="dark" space="lg">
-    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+    <div class="grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-14">
       <div class="lg:col-span-5">
         <div class="overflow-hidden" data-reveal>
           <Image
             src={skrivanImg}
             alt={page.uspechy.imageAlt}
-            widths={[400, 800, 1200]}
+            widths={[400, 800, 1200, 1600]}
             sizes="(min-width: 1024px) 38vw, 100vw"
-            class="aspect-[4/5] w-full object-cover"
+            class="aspect-[4/3] w-full object-cover"
           />
         </div>
       </div>

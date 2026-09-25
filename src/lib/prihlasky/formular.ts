@@ -1,35 +1,47 @@
 /**
  * Přihláška z formuláře: načtení a kontrola.
  *
+ * Formulář má proměnný počet účastníků — rodič přihlašuje jedno dítě,
+ * klub klidně dvacet dvojic. Řádky se vykreslí všechny najednou (kolik
+ * akce dovolí) a bez JavaScriptu se prostě nechají prázdné; JavaScript
+ * je jen schovává a odkrývá tlačítkem. Pole se jmenují
+ * `ucastnik[0].jmeno` a při načtení se zase složí do seznamu.
+ *
  * Kontrola tady je kvůli srozumitelným chybám u jednotlivých polí.
- * Závazná pravidla (cena, povinné údaje, otevřený tábor) hlídá ještě
+ * Závazná pravidla (cena, povinné údaje, otevřená akce) hlídá ještě
  * jednou databáze ve funkci `odeslat_prihlasku()`.
  */
 
 import { dnesCz, platneDatum, posunDnu } from '@/lib/rezervace';
-import type { Tabor } from './db';
+import type { Akce } from './db';
 import { vek } from './platba';
+import { pocetUcastniku, popisTypu, type PoleUcastnika } from './typy';
 
-export const zkusenosti = [
-  'Úplný začátečník (jízda na lonži)',
-  'Mírně pokročilý (samostatně v kroku a klusu)',
-  'Pokročilý (samostatně ve všech chodech)',
-] as const;
+export { zkusenosti, urovne } from './typy';
+
+export interface VyplnenyUcastnik {
+  jmeno: string;
+  narozeni: string;
+  kun: string;
+  zkusenosti: string;
+  uroven: string;
+  licence: string;
+  pojistovna: string;
+  zdravi: string;
+  /** Kódy vybraných položek ceníku. */
+  varianty: string[];
+  priplatky: string[];
+}
 
 export interface Vyplneno {
   token: string;
-  tabor: string;
-  varianta: string;
-  priplatky: string[];
-  dite_jmeno: string;
-  dite_narozeni: string;
-  dite_zkusenosti: string;
-  dite_zdravi: string;
-  dite_pojistovna: string;
-  zastupce_jmeno: string;
-  zastupce_email: string;
-  zastupce_telefon: string;
-  zastupce_adresa: string;
+  akce: string;
+  subjekt: string;
+  ucastnici: VyplnenyUcastnik[];
+  kontakt_jmeno: string;
+  kontakt_email: string;
+  kontakt_telefon: string;
+  kontakt_adresa: string;
   platce: 'osoba' | 'firma';
   firma_ico: string;
   firma_nazev: string;
@@ -42,26 +54,65 @@ export interface Vyplneno {
   souhlas_foto: boolean;
 }
 
+/** Chyby u polí přihlášky. */
 export type Chyby = Partial<Record<keyof Vyplneno, string>>;
+/** Chyby u jednotlivých účastníků: index řádku → pole → hláška. */
+export type ChybyUcastniku = Record<number, Partial<Record<keyof VyplnenyUcastnik, string>>>;
 
 const text = (fd: FormData, klic: string, max: number) =>
   String(fd.get(klic) ?? '').trim().slice(0, max);
 
-export function prazdnyFormular(tabor: Tabor): Vyplneno {
+/** Úplně prázdný řádek — nic předvybraného. */
+export function prazdnyRadek(): VyplnenyUcastnik {
+  return {
+    jmeno: '',
+    narozeni: '',
+    kun: '',
+    zkusenosti: '',
+    uroven: '',
+    licence: '',
+    pojistovna: '',
+    zdravi: '',
+    varianty: [],
+    priplatky: [],
+  };
+}
+
+export function prazdnyUcastnik(akce: Akce): VyplnenyUcastnik {
+  return {
+    jmeno: '',
+    narozeni: '',
+    kun: '',
+    zkusenosti: '',
+    uroven: '',
+    licence: '',
+    pojistovna: '',
+    zdravi: '',
+    // U jedné povinné položky je první z ceníku předvybraná, u výběru
+    // z více soutěží začínáme prázdní — ať si klub vybere sám.
+    varianty: akce.vyber === 'jedna' && akce.varianty[0] ? [akce.varianty[0].kod] : [],
+    priplatky: [],
+  };
+}
+
+/**
+ * Prázdný formulář: tolik řádků, kolik akce dovolí. První má předvybranou
+ * cenu, ostatní zůstanou prázdné, aby šly poznat jako nevyplněné.
+ */
+export function prazdnyFormular(akce: Akce): Vyplneno {
+  const ucastnici = Array.from({ length: akce.max_ucastniku }, (_, i) =>
+    i === 0 ? prazdnyUcastnik(akce) : prazdnyRadek(),
+  );
+
   return {
     token: crypto.randomUUID(),
-    tabor: tabor.kod,
-    varianta: tabor.varianty[0]?.kod ?? '',
-    priplatky: [],
-    dite_jmeno: '',
-    dite_narozeni: '',
-    dite_zkusenosti: '',
-    dite_zdravi: '',
-    dite_pojistovna: '',
-    zastupce_jmeno: '',
-    zastupce_email: '',
-    zastupce_telefon: '',
-    zastupce_adresa: '',
+    akce: akce.kod,
+    subjekt: '',
+    ucastnici,
+    kontakt_jmeno: '',
+    kontakt_email: '',
+    kontakt_telefon: '',
+    kontakt_adresa: '',
     platce: 'osoba',
     firma_ico: '',
     firma_nazev: '',
@@ -75,22 +126,55 @@ export function prazdnyFormular(tabor: Tabor): Vyplneno {
   };
 }
 
-export function nactiFormular(fd: FormData, tabor: Tabor): Vyplneno {
+/** Řádek, do kterého nikdo nic nenapsal, se do přihlášky nepočítá. */
+export function prazdny(u: VyplnenyUcastnik): boolean {
+  return (
+    !u.jmeno &&
+    !u.narozeni &&
+    !u.kun &&
+    !u.zkusenosti &&
+    !u.uroven &&
+    !u.licence &&
+    !u.pojistovna &&
+    !u.zdravi &&
+    u.varianty.length === 0 &&
+    u.priplatky.length === 0
+  );
+}
+
+export function nactiFormular(fd: FormData, akce: Akce): Vyplneno {
   const platce = fd.get('platce') === 'firma' ? 'firma' : 'osoba';
+
+  const ucastnici: VyplnenyUcastnik[] = [];
+  for (let i = 0; i < akce.max_ucastniku; i++) {
+    const u = (klic: string, max: number) => text(fd, `ucastnik[${i}].${klic}`, max);
+    ucastnici.push({
+      jmeno: u('jmeno', 80),
+      narozeni: u('narozeni', 10),
+      kun: u('kun', 80),
+      zkusenosti: u('zkusenosti', 120),
+      uroven: u('uroven', 120),
+      licence: u('licence', 40),
+      pojistovna: u('pojistovna', 60),
+      zdravi: u('zdravi', 1000),
+      varianty: fd.getAll(`ucastnik[${i}].varianty`).map((x) => String(x).slice(0, 60)),
+      priplatky: fd.getAll(`ucastnik[${i}].priplatky`).map((x) => String(x).slice(0, 60)),
+    });
+  }
+
+  // Prázdné řádky zahodíme, ale aspoň jeden musí zůstat, ať je co
+  // vykreslit a na co navěsit chybu.
+  const vyplnene = ucastnici.filter((u) => !prazdny(u));
+
   return {
     token: text(fd, 'token', 36),
-    tabor: tabor.kod,
-    varianta: text(fd, 'varianta', 60),
-    priplatky: fd.getAll('priplatky').map((p) => String(p).slice(0, 60)),
-    dite_jmeno: text(fd, 'dite_jmeno', 80),
-    dite_narozeni: text(fd, 'dite_narozeni', 10),
-    dite_zkusenosti: text(fd, 'dite_zkusenosti', 120),
-    dite_zdravi: text(fd, 'dite_zdravi', 1000),
-    dite_pojistovna: text(fd, 'dite_pojistovna', 60),
-    zastupce_jmeno: text(fd, 'zastupce_jmeno', 80),
-    zastupce_email: text(fd, 'zastupce_email', 120),
-    zastupce_telefon: text(fd, 'zastupce_telefon', 30),
-    zastupce_adresa: text(fd, 'zastupce_adresa', 200),
+    akce: akce.kod,
+    subjekt: text(fd, 'subjekt', 120),
+    ucastnici: vyplnene.length > 0 ? vyplnene : ucastnici.slice(0, 1),
+    kontakt_jmeno: text(fd, 'kontakt_jmeno', 80),
+    kontakt_email: text(fd, 'kontakt_email', 120),
+    kontakt_telefon: text(fd, 'kontakt_telefon', 30),
+    kontakt_adresa: text(fd, 'kontakt_adresa', 200),
     platce,
     firma_ico: text(fd, 'firma_ico', 12).replace(/\s/g, ''),
     firma_nazev: text(fd, 'firma_nazev', 160),
@@ -113,31 +197,75 @@ export function platneIco(ico: string): boolean {
   return (11 - (soucet % 11)) % 10 === Number(ico[7]);
 }
 
-export function zkontroluj(v: Vyplneno, tabor: Tabor): Chyby {
+/** Kontrola jednoho řádku účastníka podle toho, na co se typ akce ptá. */
+function zkontrolujUcastnika(
+  u: VyplnenyUcastnik,
+  akce: Akce,
+): Partial<Record<keyof VyplnenyUcastnik, string>> {
+  const typ = popisTypu(akce.typ);
+  const chyby: Partial<Record<keyof VyplnenyUcastnik, string>> = {};
+  const povinne = (p: PoleUcastnika) => typ.povinna.includes(p);
+
+  if (u.jmeno.length < 3) chyby.jmeno = 'Vyplňte prosím jméno a příjmení.';
+
+  if (typ.pola.includes('narozeni')) {
+    if (!u.narozeni) {
+      if (povinne('narozeni')) chyby.narozeni = 'Vyplňte prosím datum narození.';
+    } else if (
+      !platneDatum(u.narozeni) ||
+      u.narozeni >= dnesCz() ||
+      u.narozeni < posunDnu(akce.zacatek, -100 * 366)
+    ) {
+      chyby.narozeni = 'Zadejte prosím platné datum narození.';
+    } else if (akce.vek_od && vek(u.narozeni, akce.zacatek) < akce.vek_od) {
+      chyby.narozeni = `Akce je pro děti od ${akce.vek_od} let.`;
+    }
+  }
+
+  if (povinne('kun') && !u.kun) chyby.kun = 'Vyplňte prosím jméno koně.';
+  if (povinne('zkusenosti') && !u.zkusenosti) {
+    chyby.zkusenosti = 'Vyberte prosím jezdecké zkušenosti.';
+  }
+  if (povinne('uroven') && !u.uroven) chyby.uroven = 'Vyberte prosím dosavadní výkonnost.';
+  if (povinne('licence') && !u.licence) chyby.licence = 'Vyplňte prosím číslo licence.';
+
+  const znameVarianty = new Set(akce.varianty.map((v) => v.kod));
+  const vybrane = u.varianty.filter((v) => znameVarianty.has(v));
+
+  if (vybrane.length === 0) {
+    chyby.varianty =
+      akce.vyber === 'jedna'
+        ? 'Vyberte prosím variantu ceny.'
+        : 'Vyberte prosím aspoň jednu soutěž.';
+  } else if (akce.vyber === 'jedna' && vybrane.length > 1) {
+    chyby.varianty = 'Vyberte prosím jen jednu variantu.';
+  }
+
+  return chyby;
+}
+
+export function zkontroluj(
+  v: Vyplneno,
+  akce: Akce,
+): { chyby: Chyby; ucastnici: ChybyUcastniku } {
   const chyby: Chyby = {};
+  const ucastnici: ChybyUcastniku = {};
 
-  if (!tabor.varianty.some((x) => x.kod === v.varianta)) {
-    chyby.varianta = 'Vyberte prosím variantu ceny.';
+  if (v.ucastnici.length === 0) {
+    chyby.ucastnici = 'Přidejte prosím aspoň jednoho účastníka.';
+  } else if (v.ucastnici.length > akce.max_ucastniku) {
+    chyby.ucastnici = `Na jednu přihlášku jde přidat nejvýš ${pocetUcastniku(akce.max_ucastniku)}.`;
   }
 
-  if (v.dite_jmeno.length < 3) chyby.dite_jmeno = 'Vyplňte prosím jméno a příjmení dítěte.';
+  v.ucastnici.forEach((u, i) => {
+    const jeho = zkontrolujUcastnika(u, akce);
+    if (Object.keys(jeho).length > 0) ucastnici[i] = jeho;
+  });
 
-  if (
-    !platneDatum(v.dite_narozeni) ||
-    v.dite_narozeni >= dnesCz() ||
-    v.dite_narozeni < posunDnu(tabor.zacatek, -30 * 366)
-  ) {
-    chyby.dite_narozeni = 'Zadejte prosím platné datum narození.';
-  } else if (tabor.vek_od && vek(v.dite_narozeni, tabor.zacatek) < tabor.vek_od) {
-    chyby.dite_narozeni = `Tábor je pro děti od ${tabor.vek_od} let.`;
-  }
-
-  if (!v.dite_zkusenosti) chyby.dite_zkusenosti = 'Vyberte prosím jezdecké zkušenosti.';
-
-  if (v.zastupce_jmeno.length < 3) chyby.zastupce_jmeno = 'Vyplňte prosím jméno a příjmení.';
-  if (!EMAIL.test(v.zastupce_email)) chyby.zastupce_email = 'Zadejte prosím platný e-mail.';
-  if (v.zastupce_telefon.replace(/\D/g, '').length < 9) {
-    chyby.zastupce_telefon = 'Zadejte prosím telefon.';
+  if (v.kontakt_jmeno.length < 3) chyby.kontakt_jmeno = 'Vyplňte prosím jméno a příjmení.';
+  if (!EMAIL.test(v.kontakt_email)) chyby.kontakt_email = 'Zadejte prosím platný e-mail.';
+  if (v.kontakt_telefon.replace(/\D/g, '').length < 9) {
+    chyby.kontakt_telefon = 'Zadejte prosím telefon.';
   }
 
   if (v.platce === 'firma') {
@@ -151,5 +279,10 @@ export function zkontroluj(v: Vyplneno, tabor: Tabor): Chyby {
     chyby.souhlas_podminky = 'Bez souhlasu s podmínkami přihlášku odeslat nejde.';
   }
 
-  return chyby;
+  return { chyby, ucastnici };
+}
+
+/** Je v přihlášce vůbec nějaká chyba? */
+export function jsouChyby(v: { chyby: Chyby; ucastnici: ChybyUcastniku }): boolean {
+  return Object.keys(v.chyby).length > 0 || Object.keys(v.ucastnici).length > 0;
 }

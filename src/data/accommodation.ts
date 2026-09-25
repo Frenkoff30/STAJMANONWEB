@@ -1,5 +1,5 @@
 /**
- * Penzion Jízdárna Suchá — ubytování, ceny, restaurace, okolí.
+ * Penzion Jízdárna Suchá — ubytování, ceny, občerstvení, okolí.
  * Spravuje redakční systém v `src/obsah/penzion.json`.
  */
 

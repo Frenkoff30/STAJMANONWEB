@@ -95,7 +95,7 @@ const akce = collection({
     ),
     prihlaska: volitelnyText(
       'Online přihláška',
-      'Kód tábora ze správy přihlášek, například letni-tabor-2027. U akce se pak ukáže tlačítko Přihlásit se. Nechte prázdné, pokud se na akci online nepřihlašuje.',
+      'Kód akce ze správy přihlášek, například jezdecke-hry-2027-jaro. U akce se pak ukáže tlačítko Přihlásit se a formulář se přizpůsobí typu akce (tábor se ptá na dítě, hry na klub a jeho dvojice). Nechte prázdné, pokud se na akci online nepřihlašuje.',
     ),
   },
 });
@@ -216,6 +216,10 @@ const pobyty = collection({
       label: 'Slevy a příplatky',
       itemLabel: (props) => props.value,
     }),
+    prihlaska: volitelnyText(
+      'Online přihláška',
+      'Kód akce ze správy přihlášek, například velikonocni-pobyt-2027. Vyplněný kód změní tlačítko u pobytu na odkaz na formulář. Prázdné = tlačítko otevře e-mail.',
+    ),
   },
 });
 
@@ -347,6 +351,11 @@ const nastaveni = singleton({
       {
         facebook: fields.url({ label: 'Facebook stáje' }),
         facebookKlub: fields.url({ label: 'Facebook jezdeckého klubu' }),
+        webKlub: fields.url({
+          label: 'Web jezdeckého klubu',
+          description:
+            'Až bude klub mít vlastní stránky, logo klubu v hlavičce a patičce na ně začne odkazovat. Prázdné = odkazuje se na Facebook klubu.',
+        }),
         youtube: fields.url({ label: 'YouTube' }),
       },
       { label: 'Sociální sítě' },
@@ -388,8 +397,16 @@ const kurzy = singleton({
     turnusy: fields.array(
       fields.object({
         n: fields.number({ label: 'Číslo turnusu' }),
+        nazev: volitelnyText(
+          'Název',
+          'Vyplňte u pojmenovaných akcí, třeba Jezdecké hry pro děti. Prázdné = vypíše se „3. turnus“.',
+        ),
         start: fields.date({ label: 'Začátek' }),
-        end: fields.date({ label: 'Konec' }),
+        end: fields.date({
+          label: 'Konec',
+          description: 'Nechte prázdné u jednodenních akcí.',
+          validation: { isRequired: false },
+        }),
         status: fields.select({
           label: 'Obsazenost',
           options: [
@@ -404,11 +421,16 @@ const kurzy = singleton({
           'Poznámka k volným místům',
           'Například: 2 místa + 1 místo s vlastním koněm',
         ),
+        prihlaska: volitelnyText(
+          'Online přihláška',
+          'Kód akce ze správy přihlášek, například letni-tabor-2027. Vyplněný kód změní tlačítko u turnusu na odkaz na formulář. Prázdné = tlačítko otevře e-mail.',
+        ),
       }),
       {
         label: 'Turnusy',
         description: 'Obsazenost stačí přepsat u konkrétního turnusu.',
-        itemLabel: (props) => `${props.fields.n.value}. turnus`,
+        itemLabel: (props) =>
+          props.fields.nazev.value || `${props.fields.n.value}. turnus`,
       },
     ),
     cena: fields.object(

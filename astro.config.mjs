@@ -41,6 +41,24 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
     optimizeDeps: {
+      /**
+       * Administrace je React aplikace, kterou Astro načítá až v prohlížeči
+       * (`client:only`). Vite proto React při startu nenajde — objeví ho až
+       * s prvním požadavkem na /keystatic, přebalí závislosti za běhu a tím
+       * zneplatní adresy, které si stránka už stáhla. Výsledek je prázdná
+       * bílá stránka a v konzoli „504 Outdated Optimize Dep".
+       *
+       * Vyjmenováním se React předbalí hned při startu serveru, takže se
+       * za běhu nic nepřebaluje a administrace najede napoprvé.
+       */
+      include: [
+        'react',
+        'react-dom',
+        'react-dom/client',
+        'react/jsx-runtime',
+        'react/jsx-dev-runtime',
+      ],
+
       // Virtuální moduly Astra a Keystaticu esbuild při předbalování neumí
       // rozklíčovat — vyřeší se až za běhu přes pluginy.
       exclude: ['virtual:keystatic-config', 'astro:env/server'],

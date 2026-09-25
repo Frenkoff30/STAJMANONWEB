@@ -1,6 +1,6 @@
 ---
 /**
- * Shell pro správu přihlášek na tábory. Stejná řeč jako rezervace
+ * Shell pro správu přihlášek na akce. Stejná řeč jako rezervace
  * (tmavý pruh s nadpisem, lišta pod ním), ale samostatná navigace.
  */
 
@@ -19,7 +19,7 @@ interface Props {
 const { title, heading, lead, spravce, crumbs = [], uzky = false } = Astro.props;
 ---
 
-<BaseLayout {title} description="Správa přihlášek na tábory." noindex>
+<BaseLayout {title} description="Správa přihlášek na akce." noindex>
   <div class="grain relative overflow-hidden bg-loden-950 text-white">
     <div class="container-x py-10 lg:py-14">
       <nav aria-label="Drobečková navigace" class="mb-5">
@@ -28,7 +28,7 @@ const { title, heading, lead, spravce, crumbs = [], uzky = false } = Astro.props
           <li aria-hidden="true">/</li>
           <li>
             <a href="/prihlasky/sprava" class="link-underline hover:text-white">
-              Přihlášky na tábory
+              Přihlášky na akce
             </a>
           </li>
           {

@@ -38,6 +38,7 @@ const klubActivities = page.klubActivities;
   nav={[
     { id: 'vyuka', label: 'Jak výuka probíhá' },
     { id: 'bezpecnost', label: 'Bezpečnost' },
+    { id: 'cenik', label: 'Ceník' },
     { id: 'klub', label: 'Jezdecký klub' },
     { id: 'prihlaseni', label: 'Přihlášení' },
   ]}
@@ -55,7 +56,7 @@ const klubActivities = page.klubActivities;
             <Image
               src={lekceImg}
               alt={page.images.lekceAlt}
-              widths={[400, 800]}
+              widths={[400, 800, 1200, 1600]}
               sizes="(min-width: 1024px) 36vw, 100vw"
               class="aspect-[4/3] w-full object-cover"
             />
@@ -90,7 +91,7 @@ const klubActivities = page.klubActivities;
           <Image
             src={bezpecnostImg}
             alt={page.images.bezpecnostAlt}
-            widths={[400, 800]}
+            widths={[640, 1024, 1600, 2000]}
             sizes="(min-width: 1024px) 45vw, 100vw"
             class="aspect-[4/3] w-full object-cover"
           />
@@ -102,22 +103,11 @@ const klubActivities = page.klubActivities;
           title={page.sekce.naTomhleNesetrime.title}
           tone="light"
         />
-        <p class="lead mt-6 text-white/70">
-          Bezpečnostní třmeny, vesty a tříbodové helmy jsou samozřejmostí. Výcvik je
-          vždy veden pod odborným dohledem a podle možností jezdce. Na začátku
-          ochranné pomůcky půjčujeme. Pokud je předpoklad, že se dítě bude ježdění
-          věnovat dál, doporučujeme vlastní tříbodovou helmu, chapsy a bezpečnostní
-          vestu.
-        </p>
+        <p class="lead mt-6 text-white/70">{page.bezpecnostText}</p>
 
         <ul class="mt-10 space-y-3">
           {
-            [
-              'Tříbodová jezdecká helma',
-              'Bezpečnostní vesta',
-              'Sedla s bezpečnostními třmeny',
-              'Vybraní školní koně, zkušení, klidní a dobře jezditelní',
-            ].map((t) => (
+            page.bezpecnostSeznam.map((t) => (
               <li class="flex gap-3 text-[0.9375rem] text-white/80">
                 <Icon name="shield" class="mt-0.5 h-4 w-4 shrink-0 text-brass-300" />
                 {t}
@@ -133,8 +123,37 @@ const klubActivities = page.klubActivities;
     </div>
   </Section>
 
+  <!-- Ceník -->
+  <Section tone="paper" space="lg" id="cenik">
+    <SectionHead title={page.sekce.cenik.title} lead={page.sekce.cenik.lead} />
+
+    <ul class="mt-10 grid gap-x-10 gap-y-2 sm:grid-cols-3">
+      {
+        page.cenik.items.map((c, i) => (
+          <li
+            class="flex h-full flex-col border-t-2 border-ink/15 pt-5"
+            data-reveal
+            style={`--reveal-delay:${i * 80}ms`}
+          >
+            <h3 class="t-3">{c.title}</h3>
+            <p class="mt-4 flex items-baseline gap-2">
+              <span class="font-display text-[2rem] leading-none text-brass-700">{c.price}</span>
+              <span class="text-[0.8125rem] text-ink-3">{c.note}</span>
+            </p>
+            <p class="mt-4 text-[0.9375rem] leading-relaxed text-ink-3">{c.text}</p>
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="mt-10 flex items-start gap-3 border-l-2 border-brass-500 pl-5 text-[0.9375rem] leading-relaxed text-ink-3">
+      <Icon name="info" class="mt-0.5 h-4 w-4 shrink-0 text-brass-600" />
+      <span>{page.cenik.note}</span>
+    </p>
+  </Section>
+
   <!-- Jezdecký klub -->
-  <Section tone="paper" space="lg" id="klub">
+  <Section tone="paper-2" space="lg" id="klub">
     <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
       <div class="lg:col-span-5">
         <SectionHead
@@ -184,28 +203,12 @@ const klubActivities = page.klubActivities;
   <Section tone="paper-2" space="md">
     <div class="grid gap-4 sm:grid-cols-3">
       {
-        [
-          {
-            t: 'Prázdninové kurzy',
-            d: 'Osm týdenních turnusů pro děti od 8 let, léto 2026',
-            href: '/kurzy',
-          },
-          {
-            t: 'Pobyty s výukou',
-            d: 'Velikonoce a podzimní prázdniny, příprava na ZZVJ',
-            href: '/pobyty',
-          },
-          {
-            t: 'Kalendář akcí',
-            d: 'Jezdecké hry, závody a soustředění',
-            href: '/akce',
-          },
-        ].map((c) => (
+        page.odkazy.map((c) => (
           <a href={c.href} class="group block border-t border-ink/12 pt-5">
             <h3 class="font-display text-[1.375rem] transition-colors group-hover:text-brass-700">
-              {c.t}
+              {c.title}
             </h3>
-            <p class="mt-2 text-[0.875rem] text-ink-3">{c.d}</p>
+            <p class="mt-2 text-[0.875rem] text-ink-3">{c.text}</p>
             <span class="link-arrow mt-6">
               Zobrazit
               <Icon name="arrow-right" class="h-3.5 w-3.5" />

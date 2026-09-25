@@ -1,7 +1,7 @@
 {
   "seo": {
     "title": "Areál Jízdárna Suchá",
-    "description": "Moderní jezdecký areál 3 km od Litomyšle. Krytá hala 23 × 66 m, venkovní kolbiště 60 × 70 m, písková jízdárna, 30 boxů a penzion s restaurací."
+    "description": "Moderní jezdecký areál 3 km od Litomyšle. Krytá hala 23 × 66 m, venkovní kolbiště 60 × 70 m, písková jízdárna, 30 boxů a penzion s občerstvením."
   },
   "hero": {
     "heading": "Areál Jízdárna Suchá",
@@ -59,8 +59,8 @@
   },
   "odkazy": [
     {
-      "title": "Penzion & restaurace",
-      "text": "Ubytování a stravování přímo v areálu",
+      "title": "Penzion & občerstvení",
+      "text": "Ubytování a občerstvení přímo v areálu",
       "href": "/penzion"
     },
     {
@@ -70,7 +70,7 @@
     },
     {
       "title": "Kalendář akcí",
-      "text": "Závody a akce v sezóně 2026",
+      "text": "Závody a akce v sezóně",
       "href": "/akce"
     }
   ]

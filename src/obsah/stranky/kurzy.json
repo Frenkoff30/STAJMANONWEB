@@ -1,17 +1,17 @@
 {
   "seo": {
-    "title": "Prázdninové jezdecké kurzy 2026",
-    "description": "Týdenní jezdecké kurzy pro děti od 8 let v areálu Jízdárna Suchá. Osm turnusů, 6 výukových lekcí, teorie, plná penze a celodenní program. Cena 11 400 Kč."
+    "title": "Prázdninové jezdecké kurzy",
+    "description": "Týdenní jezdecké kurzy pro děti od 8 let v areálu Jízdárna Suchá. Šest výukových lekcí, teorie, plná penze a celodenní program. Cena 11 400 Kč.\n\n"
   },
   "hero": {
     "heading": "Prázdninové jezdecké kurzy",
-    "lead": "Osm týdenních turnusů intenzivní výuky jízdy na koni. Šest lekcí, teorie dvakrát denně, plná penze a program od rána do večera.",
+    "lead": "Týdenní turnusy intenzivní výuky jízdy na koni. Šest lekcí, teorie dvakrát denně, plná penze a program od rána do večera.\n\n",
     "image": "kurzy-pony",
     "imageAlt": "Dvě dívky na ponym během prázdninového kurzu"
   },
   "sekce": {
-    "terminy2026": {
-      "title": "Termíny 2026"
+    "terminy": {
+      "title": "Termíny a přihlášky"
     },
     "tydenZeKterehoSi": {
       "title": "Týden, ze kterého si dítě něco odnese.",
@@ -19,7 +19,7 @@
     },
     "coSiZabalit": {
       "title": "Co si zabalit",
-      "lead": "Ubytování je v nově zařízených třílůžkových pokojích, jeden je čtyřlůžkový s palandami. Povlečení nosit nemusíte."
+      "lead": "Ubytování je v nově zařízených dvou- až čtyřlůžkových pokojích s vlastním sociálním zařízením. Povlečení nosit nemusíte."
     },
     "kolikToStoji": {
       "title": "Kolik to stojí"
@@ -28,12 +28,12 @@
   "images": {
     "program": "deti-kun",
     "programAlt": "Dívka s koněm na prázdninovém kurzu",
-    "pokoj": "pokoj-06",
-    "pokojAlt": "Pokoj s patrovými postelemi pro účastníky kurzů"
+    "pokoj": "pokoj-03",
+    "pokojAlt": "Pokoj pro účastníky prázdninových kurzů"
   },
   "terminyNote": {
-    "before": "V případě zájmu nás kontaktujte na",
-    "after": "Pošleme vám přihlášku a podrobnosti."
+    "before": "Nevešli jste se nebo hledáte jiný termín? Napište nám na",
+    "after": "Ozveme se s volnými místy i podrobnostmi."
   },
   "programNote": "Všechny lekce jsou přizpůsobeny jezdeckým zkušenostem dětí, které jsou rozdělené do tří skupin podle dovedností. Věnujeme se i úplným začátečníkům, u nich výcvik probíhá na lonži.",
   "cenaLabels": {
@@ -62,8 +62,8 @@
     "after": "Trenér s licencí ČJF a třicetiletou praxí."
   },
   "cta": {
-    "heading": "Zbývají poslední místa.",
-    "lead": "Napište nám, o který turnus máte zájem, obratem pošleme přihlášku a všechny podrobnosti.",
+    "heading": "Máte o turnus zájem?",
+    "lead": "Vyplňte přihlášku u vybraného termínu, nebo nám napište a ozveme se se vším, co potřebujete vědět.",
     "primaryLabel": "Napsat e-mail"
   }
 }
