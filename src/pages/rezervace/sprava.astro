@@ -276,13 +276,32 @@ const nazevSlotu = (kod: string | null) => {
                   {p.telefon || 'telefon neuveden'}
                 </p>
               </div>
-              <form method="post">
-                <input type="hidden" name="akce" value="schvalit" />
-                <input type="hidden" name="id" value={p.id} />
-                <button type="submit" class="btn btn-primary min-h-0 px-6 py-2.5 text-[0.75rem]">
-                  Schválit
-                </button>
-              </form>
+              <div class="flex flex-wrap items-center gap-3">
+                {/* Odmítnutí registrace: zdvojené účty, cizí lidé. Smaže účet. */}
+                {mazaniClenuNastaveno && (
+                  <form
+                    method="post"
+                    onsubmit={`return confirm('Opravdu smazat registraci ${(p.jmeno || 'tohoto člověka').replace(/'/g, "\'")}? Účet zmizí a tohle nejde vrátit.')`}
+                  >
+                    <input type="hidden" name="akce" value="smazat" />
+                    <input type="hidden" name="id" value={p.id} />
+                    <button
+                      type="submit"
+                      class="text-[0.8125rem] font-semibold uppercase tracking-[0.1em] text-ink-3 transition-colors hover:text-red-700"
+                    >
+                      Smazat
+                    </button>
+                  </form>
+                )}
+
+                <form method="post">
+                  <input type="hidden" name="akce" value="schvalit" />
+                  <input type="hidden" name="id" value={p.id} />
+                  <button type="submit" class="btn btn-primary min-h-0 px-6 py-2.5 text-[0.75rem]">
+                    Schválit
+                  </button>
+                </form>
+              </div>
             </li>
           ))}
         </ul>
