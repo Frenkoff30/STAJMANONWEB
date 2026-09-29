@@ -11,7 +11,12 @@ export const prerender = false;
 
 import RezervaceLayout from '@/layouts/RezervaceLayout.astro';
 import Zprava from '@/components/rezervace/Zprava.astro';
-import { citelnaChyba, type Profil } from '@/lib/supabase';
+import {
+  citelnaChyba,
+  mazaniClenuNastaveno,
+  vytvorServisnihoKlienta,
+  type Profil,
+} from '@/lib/supabase';
 import {
   cas,
   dlouheDatum,
@@ -65,6 +70,46 @@ if (Astro.request.method === 'POST') {
           .eq('id', String(formular.get('id') ?? '')),
       );
       break;
+
+    /**
+     * Úplné smazání člena. Maže se účet v `auth.users` — profil i všechny
+     * jeho rezervace na něm visí přes cizí klíč s `on delete cascade`, takže
+     * zmizí s ním. Smazat jen profil by nestačilo: rezervace by osiřely a
+     * dotyčný by se pořád přihlásil, jen by neměl kam.
+     *
+     * Na rozdíl od „Pozastavit" je to nevratné, proto se to v administraci
+     * ještě jednou potvrzuje.
+     */
+    case 'smazat': {
+      const id = String(formular.get('id') ?? '');
+
+      if (!mazaniClenuNastaveno) {
+        chyba = 'Mazání členů není nastavené, chybí servisní klíč Supabase.';
+      } else if (id === uzivatel.id) {
+        chyba = 'Sami sebe smazat nemůžete.';
+      } else {
+        // Poslední správce musí zůstat, jinak by administraci nikdo neotevřel.
+        const { data: mazany } = await supabase
+          .from('profily')
+          .select('role')
+          .eq('id', id)
+          .single();
+
+        const { count } = await supabase
+          .from('profily')
+          .select('id', { count: 'exact', head: true })
+          .eq('role', 'spravce');
+
+        if (mazany?.role === 'spravce' && (count ?? 0) <= 1) {
+          chyba = 'Tohle je poslední správce, smazat ho nejde.';
+        } else {
+          const { error } = await vytvorServisnihoKlienta().auth.admin.deleteUser(id);
+          if (error) chyba = citelnaChyba(error);
+          else potvrzeni = 'Člen byl smazán i s jeho rezervacemi.';
+        }
+      }
+      break;
+    }
 
     case 'role': {
       const id = String(formular.get('id') ?? '');
@@ -291,6 +336,24 @@ const nazevSlotu = (kod: string | null) => {
                   Pozastavit
                 </button>
               </form>
+
+              {/* Nevratné — smaže i účet a všechny rezervace. Sám sebe správce
+                  smazat nemůže, tlačítko se mu u vlastního řádku neukáže. */}
+              {mazaniClenuNastaveno && p.id !== uzivatel.id && (
+                <form
+                  method="post"
+                  onsubmit={`return confirm('Opravdu smazat ${(p.jmeno || 'tohoto člena').replace(/'/g, "\'")}? Zmizí i všechny jeho rezervace a přijde o přístup. Tohle nejde vrátit.')`}
+                >
+                  <input type="hidden" name="akce" value="smazat" />
+                  <input type="hidden" name="id" value={p.id} />
+                  <button
+                    type="submit"
+                    class="text-[0.8125rem] font-semibold uppercase tracking-[0.1em] text-ink-3 transition-colors hover:text-red-700"
+                  >
+                    Smazat
+                  </button>
+                </form>
+              )}
             </div>
           </li>
         ))

@@ -10,7 +10,7 @@
  */
 
 import { createServerClient, parseCookieHeader } from '@supabase/ssr';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { AstroCookies } from 'astro';
 
 /**
@@ -52,6 +52,32 @@ export function vytvorKlienta(context: {
         }
       },
     },
+  });
+}
+
+/**
+ * Servisní klíč obchází Row Level Security, proto se smí použít jen na serveru
+ * a jen tam, kde si web sám ověřil, že žádost poslal správce. Do prohlížeče se
+ * nesmí dostat nikdy — proto nemá předponu `PUBLIC_`.
+ *
+ * Slouží k jedinému účelu: úplnému smazání člena. Rušit účty v `auth.users`
+ * běžný klíč neumí, je to výhradně správcovská operace.
+ */
+const servisniKlic =
+  import.meta.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  '';
+
+/** Bez servisního klíče se v administraci mazání členů jen skryje. */
+export const mazaniClenuNastaveno = Boolean(url && servisniKlic);
+
+/**
+ * Klient s právy správce databáze. Session neřeší a cookies nečte — vzniká
+ * pro jednu operaci a hned zaniká.
+ */
+export function vytvorServisnihoKlienta(): SupabaseClient {
+  return createClient(url, servisniKlic, {
+    auth: { autoRefreshToken: false, persistSession: false },
   });
 }
 
