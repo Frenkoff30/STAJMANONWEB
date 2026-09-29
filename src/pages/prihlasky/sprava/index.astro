@@ -248,6 +248,7 @@ const odkaz = (zmeny: { akce?: string; stav?: string }) => {
                         <Stitek barva="sand">{lidi.length} {typ.ucastnici.toLowerCase()}</Stitek>
                       )}
                       {p.platce === 'firma' && <Stitek barva="sand">Faktura</Stitek>}
+                      {p.platce === 'misto' && <Stitek barva="sand">Na místě</Stitek>}
                       {p.stav === 'prijata' &&
                         (p.zaplaceno ? (
                           <Stitek barva="loden">Zaplaceno</Stitek>

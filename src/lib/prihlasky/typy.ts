@@ -40,6 +40,8 @@ export interface PopisTypu {
   subjekt: string;
   /** Nápověda k poli subjektu. */
   subjektPopis: string;
+  /** Bez klubu nebo stáje přihlášku neodešleme (ani jednotlivce). */
+  subjektPovinny?: boolean;
   /** Na co se ptáme u účastníka, v pořadí, v jakém se to vykreslí. */
   pola: PoleUcastnika[];
   /** Podmnožina `pola`, bez které přihlášku neodešleme. */
@@ -109,7 +111,9 @@ export const typyAkci: Record<TypAkce, PopisTypu> = {
     kontakt: 'Kontaktní osoba',
     kontaktPopis: 'Komu volat kvůli startovní listině a případným změnám.',
     subjekt: 'Klub nebo stáj',
-    subjektPopis: 'Jak se má stáj vypsat ve startovní listině. Jednotlivci nechají prázdné.',
+    subjektPopis:
+      'Jak se má vypsat ve startovní listině. Jednotlivci napíšou stáj nebo klub, kde jezdí.',
+    subjektPovinny: true,
     pola: ['kun', 'narozeni'],
     povinna: ['kun'],
     cenik: 'Soutěže a startovné',

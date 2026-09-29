@@ -149,7 +149,8 @@ create table if not exists public.prihlasky (
   kontakt_telefon  text not null,
   kontakt_adresa   text not null default '',
 
-  platce           text not null check (platce in ('osoba', 'firma')),
+  -- osoba = převodem, firma = na fakturu, misto = hotově při akci
+  platce           text not null check (platce in ('osoba', 'firma', 'misto')),
   firma_ico        text not null default '',
   firma_nazev      text not null default '',
   firma_adresa     text not null default '',
@@ -173,6 +174,11 @@ create table if not exists public.prihlasky (
 
 alter table public.prihlasky add column if not exists ucastnici jsonb not null default '[]';
 alter table public.prihlasky add column if not exists subjekt text not null default '';
+
+-- Platba na místě přibyla později, starší databáze znají jen osobu a firmu.
+alter table public.prihlasky drop constraint if exists prihlasky_platce_check;
+alter table public.prihlasky add constraint prihlasky_platce_check
+  check (platce in ('osoba', 'firma', 'misto'));
 
 -- Převod starého tvaru: jedno dítě → jednoprvkový seznam účastníků.
 do $ucastnici$
@@ -558,8 +564,15 @@ begin
   end if;
 
   v_platce := p ->> 'platce';
-  if v_platce is null or v_platce not in ('osoba', 'firma') then
-    raise exception 'Vyberte prosím, kdo akci platí.'
+  if v_platce is null or v_platce not in ('osoba', 'firma', 'misto') then
+    raise exception 'Vyberte prosím, jak akci zaplatíte.'
+      using errcode = 'check_violation';
+  end if;
+
+  -- U jezdeckých her se startovní listina řadí podle klubů, bez klubu
+  -- nebo stáje se jezdec nemá kam zařadit. Platí i pro jednotlivce.
+  if v_akce.typ = 'hry' and length(trim(coalesce(p ->> 'subjekt', ''))) < 2 then
+    raise exception 'Vyplňte prosím klub nebo stáj.'
       using errcode = 'check_violation';
   end if;
 

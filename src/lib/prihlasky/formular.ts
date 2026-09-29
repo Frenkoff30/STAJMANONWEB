@@ -42,7 +42,7 @@ export interface Vyplneno {
   kontakt_email: string;
   kontakt_telefon: string;
   kontakt_adresa: string;
-  platce: 'osoba' | 'firma';
+  platce: 'osoba' | 'firma' | 'misto';
   firma_ico: string;
   firma_nazev: string;
   firma_adresa: string;
@@ -143,7 +143,8 @@ export function prazdny(u: VyplnenyUcastnik): boolean {
 }
 
 export function nactiFormular(fd: FormData, akce: Akce): Vyplneno {
-  const platce = fd.get('platce') === 'firma' ? 'firma' : 'osoba';
+  const volba = fd.get('platce');
+  const platce = volba === 'firma' || volba === 'misto' ? volba : 'osoba';
 
   const ucastnici: VyplnenyUcastnik[] = [];
   for (let i = 0; i < akce.max_ucastniku; i++) {
@@ -250,6 +251,10 @@ export function zkontroluj(
 ): { chyby: Chyby; ucastnici: ChybyUcastniku } {
   const chyby: Chyby = {};
   const ucastnici: ChybyUcastniku = {};
+
+  if (popisTypu(akce.typ).subjektPovinny && v.subjekt.length < 2) {
+    chyby.subjekt = 'Vyplňte prosím klub nebo stáj.';
+  }
 
   if (v.ucastnici.length === 0) {
     chyby.ucastnici = 'Přidejte prosím aspoň jednoho účastníka.';

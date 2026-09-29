@@ -289,8 +289,8 @@ const volba =
                     <dt class="eyebrow">Platba</dt>
                     <dd class="mt-1 text-[0.9375rem] leading-relaxed text-ink-3">
                       {akce.platba_hned
-                        ? 'Převodem nebo QR kódem, platební údaje dostanete hned po odeslání přihlášky. Platit jde i na místě.'
-                        : `Převodem nejpozději ${akce.splatnost_dni} dní před začátkem, nebo na fakturu firmě. Platební údaje pošleme, až místo potvrdíme.`}
+                        ? 'Převodem nebo QR kódem, platební údaje dostanete hned po odeslání přihlášky. Nebo na místě při akci.'
+                        : `Převodem nejpozději ${akce.splatnost_dni} dní před začátkem, na fakturu firmě, nebo na místě při akci.`}
                     </dd>
                   </div>
                 </dl>
@@ -417,6 +417,7 @@ const volba =
                       <Pole
                         pole="subjekt"
                         label={typ.subjekt}
+                        povinne={typ.subjektPovinny}
                         napoveda={typ.subjektPopis}
                         chyba={chyby.subjekt}
                         class="mt-5 sm:max-w-md"
@@ -427,6 +428,7 @@ const volba =
                           value={v.subjekt}
                           maxlength="120"
                           autocomplete="organization"
+                          required={typ.subjektPovinny}
                           class="form-control"
                         />
                       </Pole>
@@ -680,25 +682,34 @@ const volba =
                   <fieldset class="mt-12">
                     <legend class="flex items-baseline gap-3">
                       <span class="eyebrow">{typ.subjekt ? '04' : '03'}</span>
-                      <span class="t-3">Kdo to platí</span>
+                      <span class="t-3">Jak zaplatíte</span>
                     </legend>
 
-                    <div class="mt-5 grid gap-2 sm:grid-cols-2">
+                    <div class="mt-5 grid gap-2 sm:grid-cols-3">
                       <label class={volba}>
                         <input type="radio" name="platce" value="osoba" checked={v.platce === 'osoba'} class="mt-1 h-4 w-4 shrink-0 accent-brass-600" />
                         <span>
-                          <span class="block font-semibold">Platím já</span>
+                          <span class="block font-semibold">Převodem</span>
                           <span class="mt-0.5 block text-[0.875rem] text-ink-3">
-                            Převodem, s QR kódem pro mobilní banku.
+                            S QR kódem pro mobilní banku.
+                          </span>
+                        </span>
+                      </label>
+                      <label class={volba}>
+                        <input type="radio" name="platce" value="misto" checked={v.platce === 'misto'} class="mt-1 h-4 w-4 shrink-0 accent-brass-600" />
+                        <span>
+                          <span class="block font-semibold">Na místě</span>
+                          <span class="mt-0.5 block text-[0.875rem] text-ink-3">
+                            Zaplatíte při akci.
                           </span>
                         </span>
                       </label>
                       <label class={volba}>
                         <input type="radio" name="platce" value="firma" checked={v.platce === 'firma'} class="mt-1 h-4 w-4 shrink-0 accent-brass-600" />
                         <span>
-                          <span class="block font-semibold">Platí firma nebo klub</span>
+                          <span class="block font-semibold">Na fakturu</span>
                           <span class="mt-0.5 block text-[0.875rem] text-ink-3">
-                            Zaměstnavatel, klub nebo vaše firma. Vystavíme fakturu.
+                            Platí firma nebo klub, vystavíme fakturu.
                           </span>
                         </span>
                       </label>
@@ -823,7 +834,8 @@ const volba =
 
 <style is:global>
   /* Firemní údaje jen když platí firma. Bez JavaScriptu, jen CSS. */
-  [data-prihlaska]:has(input[name='platce'][value='osoba']:checked) [data-firma] {
+  [data-prihlaska]:has(input[name='platce'][value='osoba']:checked) [data-firma],
+  [data-prihlaska]:has(input[name='platce'][value='misto']:checked) [data-firma] {
     display: none;
   }
 </style>

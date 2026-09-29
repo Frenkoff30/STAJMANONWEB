@@ -397,7 +397,11 @@ const klic = 'text-[0.8125rem] text-ink-3';
           <div class={`${radek} border-b`}>
             <dt class={klic}>Platí</dt>
             <dd>
-              {p.platce === 'firma' ? 'firma nebo klub, fakturou' : `kontaktní osoba převodem na ${ucetStaje}`}
+              {p.platce === 'firma'
+                ? 'firma nebo klub, fakturou'
+                : p.platce === 'misto'
+                  ? 'na místě při akci'
+                  : `kontaktní osoba převodem na ${ucetStaje}`}
             </dd>
           </div>
         </dl>

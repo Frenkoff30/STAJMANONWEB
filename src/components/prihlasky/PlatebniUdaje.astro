@@ -40,7 +40,14 @@ const kProKopirovani = udaje.map(([k, h]) => `${k}: ${h}`).join('\n');
 ---
 
 {
-  p.platce === 'firma' ? (
+  p.platce === 'misto' ? (
+    <div class={`border border-ink/12 bg-paper-2 p-6 lg:p-7 ${className}`}>
+      <h3 class="font-display text-[1.25rem]">Zaplatíte na místě</h3>
+      <p class="mt-2 text-[0.9375rem] leading-relaxed text-ink-3">
+        Částku {kc(p.cena)} zaplatíte při akci. Stačí nahlásit číslo přihlášky {p.vs}.
+      </p>
+    </div>
+  ) : p.platce === 'firma' ? (
     <div class={`border border-ink/12 bg-paper-2 p-6 lg:p-7 ${className}`}>
       <h3 class="font-display text-[1.25rem]">Fakturu vystavíme</h3>
       <p class="mt-2 text-[0.9375rem] leading-relaxed text-ink-3">

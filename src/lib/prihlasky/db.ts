@@ -140,7 +140,8 @@ export interface Prihlaska {
   kontakt_email: string;
   kontakt_telefon: string;
   kontakt_adresa: string;
-  platce: 'osoba' | 'firma';
+  /** osoba = převodem, firma = na fakturu, misto = hotově při akci */
+  platce: 'osoba' | 'firma' | 'misto';
   firma_ico: string;
   firma_nazev: string;
   firma_adresa: string;

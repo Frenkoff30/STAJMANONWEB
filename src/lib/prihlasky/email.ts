@@ -185,7 +185,9 @@ function shrnuti(akce: Akce, p: Prihlaska): [string, string][] {
       'Platí',
       p.platce === 'firma'
         ? `${p.firma_nazev}, IČO ${p.firma_ico}\nfaktura na ${p.firma_email}`
-        : 'kontaktní osoba převodem',
+        : p.platce === 'misto'
+          ? 'na místě při akci'
+          : 'kontaktní osoba převodem',
     ],
     ['Číslo přihlášky', p.vs],
   ];
@@ -194,6 +196,15 @@ function shrnuti(akce: Akce, p: Prihlaska): [string, string][] {
 /** Částka, účet, VS, splatnost a QR kód — nebo fakturační údaje firmy. */
 function platebniBloky(akce: Akce, p: Prihlaska, zaklad: string): Blok[] {
   const doKdy = splatnost(akce);
+
+  if (p.platce === 'misto') {
+    return [
+      {
+        typ: 'odstavec',
+        text: `Zaplatíte na místě při akci, ${kc(p.cena)}. Číslo přihlášky ${p.vs}.`,
+      },
+    ];
+  }
 
   if (p.platce === 'firma') {
     return [
