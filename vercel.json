@@ -9,12 +9,17 @@
     },
     {
       "source": "/aktuality.php",
-      "destination": "/akce",
+      "destination": "/novinky",
       "permanent": true
     },
     {
       "source": "/penzion-jizdarna-sucha.php",
       "destination": "/penzion",
+      "permanent": true
+    },
+    {
+      "source": "/archiv-aktualit.php",
+      "destination": "/novinky",
       "permanent": true
     },
     {

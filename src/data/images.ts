@@ -23,6 +23,9 @@ for (const [path, mod] of Object.entries(modules)) {
   const parts = path.split('/');
   const name = parts[parts.length - 2]!;
   byPath.set(path, mod.default);
+  // Fotky novinek se hledají jen podle cesty, jejich složka se jmenuje
+  // podle novinky a nesmí zastínit stejně pojmenovanou fotku z galerie.
+  if (path.includes('/photos/novinky/')) continue;
   if (!byName.has(name)) byName.set(name, mod.default);
 }
 

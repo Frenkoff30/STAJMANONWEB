@@ -1,0 +1,91 @@
+---
+/**
+ * Jedna novinka. Vlastní adresa kvůli sdílení na Facebooku: náhled
+ * příspěvku si Facebook vezme z nadpisu, popisu a fotky téhle stránky.
+ */
+
+import { Image, getImage } from 'astro:assets';
+import PageLayout from '@/layouts/PageLayout.astro';
+import Section from '@/components/Section.astro';
+import Icon from '@/components/Icon.astro';
+import Prose from '@/components/Prose.astro';
+import { formatLong } from '@/data/events';
+import { facebookShare, news, type NewsItem } from '@/data/news';
+import { photo } from '@/data/images';
+import { site } from '@/data/site';
+
+export function getStaticPaths() {
+  return news.map((n) => ({ params: { slug: n.slug }, props: { n } }));
+}
+
+const { n } = Astro.props as { n: NewsItem };
+
+const heroImg = n.image ?? photo('areal-letecky')!;
+const ogImage = n.image
+  ? (await getImage({ src: n.image, width: 1200, format: 'jpg' })).src
+  : undefined;
+
+const adresa = new URL(`/novinky/${n.slug}`, site.url).href;
+const popis = (n.paragraphs[0] ?? n.title).slice(0, 160);
+---
+
+<PageLayout
+  title={n.title}
+  description={popis}
+  heading={n.title}
+  lead={formatLong(n.date)}
+  image={heroImg}
+  imageAlt=""
+  ogImage={ogImage}
+  crumbs={[{ label: 'Novinky', href: '/novinky' }, { label: formatLong(n.date) }]}
+>
+  <Section tone="paper" space="lg">
+    <article class="mx-auto max-w-2xl">
+      {n.paragraphs.length > 0 && <Prose paragraphs={n.paragraphs} />}
+
+      {
+        n.image && (
+          <Image
+            src={n.image}
+            alt=""
+            widths={[640, 1024, 1400]}
+            sizes="(min-width: 768px) 42rem, 100vw"
+            class="mt-10 w-full"
+          />
+        )
+      }
+
+      {
+        (n.file || n.link) && (
+          <div class="mt-10 flex flex-wrap gap-3">
+            {n.file && (
+              <a href={n.file.href} class="btn btn-primary" download>
+                <Icon name="download" class="h-4 w-4" />
+                {n.file.label}
+              </a>
+            )}
+            {n.link && (
+              <a href={n.link.href} class="btn btn-outline" target="_blank" rel="noopener">
+                {n.link.label}
+                <Icon name="arrow-right" class="h-4 w-4" />
+              </a>
+            )}
+          </div>
+        )
+      }
+
+      <div class="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-ink/12 pt-6">
+        <a href="/novinky" class="link-arrow">Všechny novinky</a>
+        <a
+          href={facebookShare(adresa)}
+          target="_blank"
+          rel="noopener"
+          class="inline-flex items-center gap-2 text-[0.8125rem] font-semibold uppercase tracking-[0.1em] text-ink-3 transition-colors hover:text-brass-700"
+        >
+          <Icon name="facebook" class="h-4 w-4" />
+          Sdílet na Facebooku
+        </a>
+      </div>
+    </article>
+  </Section>
+</PageLayout>

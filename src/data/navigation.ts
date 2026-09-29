@@ -109,6 +109,7 @@ export const mainNav: NavGroup[] = [
   {
     label: 'O nás',
     links: [
+      { label: 'Novinky', href: '/novinky', desc: 'Pozvánky, změny termínů, startovky' },
       { label: 'Stáj Manon', href: '/o-nas', desc: 'Příběh od roku 1992' },
       { label: 'Jiří Skřivan', href: '/jiri-skrivan', desc: 'Jezdec, trenér, zakladatel ČSP' },
       { label: 'Fotogalerie', href: '/galerie', desc: 'Ze závodů, kurzů i areálu' },

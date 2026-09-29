@@ -7,13 +7,15 @@ import EventRow from '@/components/EventRow.astro';
 import Icon from '@/components/Icon.astro';
 import Lines from '@/components/Lines.astro';
 import { site } from '@/data/site';
-import { upcomingPublicEvents } from '@/data/events';
+import { formatLong, upcomingPublicEvents } from '@/data/events';
+import { news } from '@/data/news';
 import { turnusy } from '@/data/courses';
 import { majorTitles } from '@/data/achievements';
 import { photo } from '@/data/images';
 import page from '@/obsah/stranky/uvod.json';
 
 const nextEvents = upcomingPublicEvents().slice(0, 3);
+const latestNews = news.slice(0, 3);
 const freeTurnusy = turnusy.filter(
   (t) => t.status === 'volno' || t.status === 'posledni',
 ).length;
@@ -137,6 +139,50 @@ const jsonLd = {
       </div>
     </div>
   </section>
+
+  <!-- ============================================================= NOVINKY -->
+  {
+    latestNews.length > 0 && (
+      <Section tone="paper-2" space="lg">
+        <SectionHead
+          title="Novinky"
+          lead="Co se ve stáji a v areálu právě děje."
+          action={{ label: 'Všechny novinky', href: '/novinky' }}
+        />
+
+        <ul class="mt-9 grid gap-px bg-ink/12 md:grid-cols-3">
+          {latestNews.map((n, i) => (
+            <li class="bg-paper-2 md:px-6 md:first:pl-0 md:last:pr-0" data-reveal style={`--reveal-delay:${i * 90}ms`}>
+              <a href={`/novinky/${n.slug}`} class="group flex h-full flex-col py-6">
+                {n.image && (
+                  <div class="mb-5 aspect-[3/2] overflow-hidden bg-ink/5">
+                    <Image
+                      src={n.image}
+                      alt=""
+                      widths={[480, 800]}
+                      sizes="(min-width: 768px) 33vw, 100vw"
+                      class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    />
+                  </div>
+                )}
+                <p class="eyebrow">{formatLong(n.date)}</p>
+                <h3 class="t-3 mt-2 transition-colors group-hover:text-brass-700">{n.title}</h3>
+                {n.paragraphs[0] && (
+                  <p class="mt-3 line-clamp-3 text-[0.9375rem] leading-relaxed text-ink-3">
+                    {n.paragraphs[0]}
+                  </p>
+                )}
+                <span class="link-arrow mt-auto pt-5">
+                  Číst dál
+                  <Icon name="arrow-right" class="h-3.5 w-3.5" />
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </Section>
+    )
+  }
 
   <!-- ============================================================== PILÍŘE -->
   <Section tone="paper" space="lg">

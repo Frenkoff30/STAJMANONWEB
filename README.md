@@ -141,6 +141,14 @@ jako seznam odstavců. Formátování je záměrně minimální:
 Nic jiného se neinterpretuje, HTML se vypíše doslova. Zajišťuje to komponenta
 `src/components/Prose.astro`.
 
+### Přidání novinky
+
+*Novinky → Create*. Stačí nadpis, datum (předvyplní se dnešní) a pár vět,
+fotka, soubor ke stažení a odkaz jsou nepovinné. Nejnovější tři se ukážou na
+úvodní stránce pod záhlavím, všechny na `/novinky`. Každá novinka má vlastní
+adresu a tlačítko *Sdílet na Facebooku*, náhled příspěvku si Facebook vezme
+z nadpisu, textu a fotky.
+
 ### Přidání akce do kalendáře
 
 V administraci *Kalendář akcí → New*. Vyplní se název, datum, typ akce a
@@ -690,9 +698,6 @@ tam fungovat nebudou (obojí potřebuje serverovou část). Web samotný ano: st
   V mřížce obstojí, ve zvětšenině ne, proto se v ní zásadně nenafukují nad
   svoje rozlišení. Dodat originály ve vysokém rozlišení je jediná oprava, kterou
   nejde udělat v kódu. Nahrávají se ve *Fotogalerii* pod stejným názvem.
-- **Aktuality.** Původní web měl sekci aktualit, která byla dlouhodobě prázdná —
-  proto tu není. Kdyby ji stáj chtěla používat, přidá se jako další kolekce
-  v `keystatic.config.ts` se stejným vzorem jako kalendář akcí.
 - **Formulář na Vercelu.** Teď míří na externí službu. Až bude jistá cílová
   doména, dá se nahradit vlastní serverovou funkcí a odesílat e-maily přímo.
 - **Cizojazyčné verze.** Staré `/en/` a `/de/` na původním webu nefungovaly.
