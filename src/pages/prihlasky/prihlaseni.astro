@@ -1,9 +1,9 @@
 ---
 /**
- * Přihlášení do správy přihlášek.
+ * Přihlášení do správy webu (novinky, akce, přihlášky).
  *
- * Účty zakládá vývojář v Supabase a zapisuje je do `prihlasky_spravci`
- * (viz konec `supabase/prihlasky.sql`). Registrace tu schválně není.
+ * Stejný účet jako u rezervací jízdárny: pustí dovnitř správce rezervací
+ * a lidi zapsané v `prihlasky_spravci`. Registrace tu schválně není.
  */
 
 export const prerender = false;
@@ -47,7 +47,7 @@ if (Astro.request.method === 'POST' && prihlaskyNastaveny) {
       // Heslo sedí, ale účet do správy přihlášek nepatří (třeba jezdec
       // z rezervací). Session hned zase zavřeme.
       await supabase.auth.signOut();
-      chyba = 'Tenhle účet nemá přístup ke správě přihlášek.';
+      chyba = 'Tenhle účet nemá přístup ke správě webu. Je to účet jezdce, ne správce.';
     }
   }
 }
@@ -56,9 +56,9 @@ const odhlasen = Astro.url.searchParams.has('odhlasen');
 ---
 
 <PrihlaskyLayout
-  title="Přihlášení do správy přihlášek"
-  heading="Správa přihlášek"
-  lead="Přihlášky na tábory vyřizuje stáj. Přihlaste se účtem, který vám založil správce webu."
+  title="Přihlášení do správy webu"
+  heading="Správa webu"
+  lead="Novinky, akce a přihlášky. Přihlaste se stejným e-mailem a heslem jako do správy rezervací jízdárny."
   spravce={null}
   uzky
 >

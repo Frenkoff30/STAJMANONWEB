@@ -1,0 +1,348 @@
+---
+/**
+ * Nová novinka a úprava existující. Adresa `/prihlasky/sprava/novinky/nova`
+ * zakládá, jinak je v adrese id novinky.
+ *
+ * Formulář je schválně krátký: nadpis, text, fotka. Soubor ke stažení
+ * a odkaz jsou schované pod „Přidat soubor nebo odkaz“.
+ *
+ * Fotku zmenší prohlížeč ještě před odesláním (na 1600 px, JPEG), takže
+ * projde i velká fotka z mobilu a web se pak rychle načítá.
+ */
+
+export const prerender = false;
+
+import PrihlaskyLayout from '@/layouts/PrihlaskyLayout.astro';
+import Zprava from '@/components/rezervace/Zprava.astro';
+import Pole from '@/components/prihlasky/Pole.astro';
+import { citelnaChyba } from '@/lib/prihlasky/db';
+import { bezCache, nactiSpravce } from '@/lib/prihlasky/spravce';
+import {
+  PRIPONY_DOKUMENTU,
+  PRIPONY_FOTEK,
+  druhSouboru,
+  nahratSoubor,
+} from '@/lib/prihlasky/soubory';
+import { slugZNadpisu, type Novinka } from '@/lib/novinky';
+
+bezCache(Astro.response.headers);
+
+const id = Astro.params.id ?? '';
+const nova = id === 'nova';
+const adresa = `/prihlasky/sprava/novinky/${id}`;
+
+const spravce = await nactiSpravce(Astro);
+if (!spravce) {
+  return Astro.redirect(`/prihlasky/prihlaseni?dal=${encodeURIComponent(adresa)}`);
+}
+
+let ulozena: Novinka | null = null;
+if (!nova) {
+  if (!/^[0-9a-f-]{36}$/.test(id)) return Astro.redirect('/prihlasky/sprava/novinky');
+  const { data } = await spravce.supabase.from('novinky').select('*').eq('id', id).maybeSingle();
+  ulozena = data as Novinka | null;
+  if (!ulozena) return Astro.redirect('/prihlasky/sprava/novinky');
+}
+
+/** Dnešek v českém čase, jako výchozí datum nové novinky. */
+const dnes = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Prague' }).format(new Date());
+
+let n: Omit<Novinka, 'id'> = ulozena ?? {
+  slug: '',
+  nadpis: '',
+  datum: dnes,
+  text: '',
+  foto_url: '',
+  soubor_url: '',
+  soubor_nazev: '',
+  odkaz_url: '',
+  odkaz_nazev: '',
+};
+
+let chyba = '';
+const chyby: Record<string, string> = {};
+
+if (Astro.request.method === 'POST') {
+  const f = await Astro.request.formData();
+  const text = (klic: string, max: number) => String(f.get(klic) ?? '').trim().slice(0, max);
+
+  if (f.get('co') === 'smazat' && ulozena) {
+    const { error } = await spravce.supabase.from('novinky').delete().eq('id', ulozena.id);
+    if (error) chyba = citelnaChyba(error);
+    else return Astro.redirect('/prihlasky/sprava/novinky?hotovo=smazana');
+  } else {
+    n = {
+      ...n,
+      nadpis: text('nadpis', 160),
+      datum: text('datum', 10) || dnes,
+      text: text('text', 8000),
+      odkaz_url: text('odkaz_url', 500),
+      odkaz_nazev: text('odkaz_nazev', 80),
+      soubor_nazev: text('soubor_nazev', 80),
+    };
+
+    if (!n.nadpis) chyby.nadpis = 'Napište prosím nadpis.';
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(n.datum)) chyby.datum = 'Datum není platné.';
+    if (n.odkaz_url && !/^https?:\/\//i.test(n.odkaz_url)) {
+      chyby.odkaz_url = 'Odkaz musí začínat https://';
+    }
+
+    if (f.get('foto_odebrat') === 'ano') n.foto_url = '';
+    if (f.get('soubor_odebrat') === 'ano') {
+      n.soubor_url = '';
+      n.soubor_nazev = '';
+    }
+
+    // Adresa novinky vzniká jen při založení. Pak se nemění, aby nepřestaly
+    // fungovat odkazy sdílené na Facebooku.
+    if (nova) n.slug = slugZNadpisu(n.nadpis) || 'novinka';
+
+    // Soubory až u jinak správně vyplněného formuláře.
+    if (Object.keys(chyby).length === 0) {
+      const foto = f.get('foto');
+      if (foto instanceof File && foto.size > 0) {
+        const v = await nahratSoubor(spravce.supabase, foto, 'novinky', n.slug, PRIPONY_FOTEK);
+        if ('chyba' in v) chyby.foto = v.chyba;
+        else n.foto_url = v.url;
+      }
+      const soubor = f.get('soubor');
+      if (soubor instanceof File && soubor.size > 0) {
+        const v = await nahratSoubor(spravce.supabase, soubor, 'novinky', n.slug, PRIPONY_DOKUMENTU);
+        if ('chyba' in v) chyby.soubor = v.chyba;
+        else {
+          n.soubor_url = v.url;
+          n.soubor_nazev ||= `Ke stažení (${druhSouboru(v.pripona)})`;
+        }
+      }
+    }
+
+    if (Object.keys(chyby).length === 0) {
+      if (nova) {
+        // Stejný nadpis podruhé: k adrese se přidá číslo.
+        let pokus = 1;
+        const zaklad = n.slug;
+        for (;;) {
+          const { error } = await spravce.supabase.from('novinky').insert(n);
+          if (!error) return Astro.redirect('/prihlasky/sprava/novinky?hotovo=ulozena');
+          if (!/duplicate key/i.test(error.message ?? '') || pokus >= 20) {
+            chyba = citelnaChyba(error);
+            break;
+          }
+          pokus += 1;
+          n.slug = `${zaklad}-${pokus}`;
+        }
+      } else {
+        const { slug: _slug, ...zmeny } = n;
+        const { error } = await spravce.supabase.from('novinky').update(zmeny).eq('id', id);
+        if (error) chyba = citelnaChyba(error);
+        else return Astro.redirect('/prihlasky/sprava/novinky?hotovo=ulozena');
+      }
+    }
+  }
+}
+
+const maPrilohu = Boolean(n.soubor_url || n.odkaz_url || chyby.soubor || chyby.odkaz_url);
+---
+
+<PrihlaskyLayout
+  title={nova ? 'Nová novinka' : `Úprava: ${n.nadpis}`}
+  heading={nova ? 'Nová novinka' : n.nadpis}
+  spravce={spravce}
+  crumbs={[
+    { label: 'Novinky', href: '/prihlasky/sprava/novinky' },
+    { label: nova ? 'Nová' : 'Úprava' },
+  ]}
+  uzky
+>
+  {chyba && <Zprava typ="chyba" class="mb-8">{chyba}</Zprava>}
+  {
+    Object.keys(chyby).length > 0 && (
+      <Zprava typ="chyba" class="mb-8">Novinka se neuložila, projděte prosím označená pole.</Zprava>
+    )
+  }
+
+  <form method="post" enctype="multipart/form-data" class="space-y-7" data-novinka>
+    <Pole pole="nadpis" label="Nadpis" povinne chyba={chyby.nadpis}>
+      <input
+        type="text"
+        id="nadpis"
+        name="nadpis"
+        value={n.nadpis}
+        maxlength="160"
+        required
+        placeholder="Například: Změna termínu jezdeckých her"
+        class="form-control"
+        aria-invalid={chyby.nadpis ? 'true' : undefined}
+      />
+    </Pole>
+
+    <Pole
+      pole="text"
+      label="Text"
+      napoveda="Nový odstavec udělá prázdný řádek. Na úvodní stránce se ukáže jen začátek."
+    >
+      <textarea
+        id="text"
+        name="text"
+        rows="7"
+        maxlength="8000"
+        class="form-control"
+        aria-describedby="text-info">{n.text}</textarea>
+    </Pole>
+
+    <Pole pole="foto" label="Fotka" chyba={chyby.foto} napoveda="Nepovinná. Ideálně na šířku, klidně rovnou z mobilu.">
+      <div class="flex flex-wrap items-center gap-5">
+        <img
+          src={n.foto_url || undefined}
+          alt=""
+          data-nahled
+          hidden={!n.foto_url}
+          class="h-24 w-36 object-cover"
+        />
+        <input
+          type="file"
+          id="foto"
+          name="foto"
+          accept="image/*"
+          data-foto
+          class="form-control min-w-0 flex-1"
+          aria-describedby="foto-info"
+        />
+      </div>
+      {
+        n.foto_url && (
+          <label class="mt-3 flex cursor-pointer items-center gap-2 text-[0.875rem] text-ink-3">
+            <input type="checkbox" name="foto_odebrat" value="ano" class="h-4 w-4 accent-[var(--color-brass-600)]" />
+            Odebrat fotku
+          </label>
+        )
+      }
+    </Pole>
+
+    <Pole pole="datum" label="Datum" chyba={chyby.datum} napoveda="Podle něj se novinky řadí. Většinou nechte dnešek." class="max-w-xs">
+      <input type="date" id="datum" name="datum" value={n.datum} class="form-control" aria-describedby="datum-info" />
+    </Pole>
+
+    <details class="border border-ink/12 bg-white" open={maPrilohu}>
+      <summary class="cursor-pointer px-5 py-4 text-[0.9375rem] font-semibold">
+        Přidat soubor nebo odkaz
+        <span class="ml-2 font-normal text-ink-3">nepovinné</span>
+      </summary>
+      <div class="space-y-6 border-t border-ink/12 p-5">
+        <Pole pole="soubor" label="Soubor ke stažení" chyba={chyby.soubor} napoveda="Třeba startovní listiny nebo rozpis. PDF, Word, Excel, do 4 MB.">
+          {
+            n.soubor_url && (
+              <p class="mb-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[0.9375rem]">
+                <a href={n.soubor_url} class="link-underline text-brass-700" target="_blank" rel="noopener">
+                  {n.soubor_nazev || 'Soubor'}
+                </a>
+                <label class="flex cursor-pointer items-center gap-2 text-ink-3">
+                  <input type="checkbox" name="soubor_odebrat" value="ano" class="h-4 w-4 accent-[var(--color-brass-600)]" />
+                  Odebrat
+                </label>
+              </p>
+            )
+          }
+          <input
+            type="file"
+            id="soubor"
+            name="soubor"
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+            class="form-control"
+            aria-describedby="soubor-info"
+          />
+        </Pole>
+        <Pole pole="soubor_nazev" label="Popisek souboru" napoveda="Například: Startovní listiny (XLSX)">
+          <input type="text" id="soubor_nazev" name="soubor_nazev" value={n.soubor_nazev} maxlength="80" class="form-control" aria-describedby="soubor_nazev-info" />
+        </Pole>
+        <Pole pole="odkaz_url" label="Odkaz" chyba={chyby.odkaz_url} napoveda="Třeba na fotky na Facebooku.">
+          <input type="url" id="odkaz_url" name="odkaz_url" value={n.odkaz_url} maxlength="500" placeholder="https://" class="form-control" aria-describedby="odkaz_url-info" />
+        </Pole>
+        <Pole pole="odkaz_nazev" label="Popisek odkazu" napoveda="Například: Fotky na Facebooku">
+          <input type="text" id="odkaz_nazev" name="odkaz_nazev" value={n.odkaz_nazev} maxlength="80" class="form-control" aria-describedby="odkaz_nazev-info" />
+        </Pole>
+      </div>
+    </details>
+
+    <div class="flex flex-wrap items-center gap-4 border-t border-ink/12 pt-7">
+      <button type="submit" class="btn btn-primary" data-odeslat>
+        {nova ? 'Zveřejnit novinku' : 'Uložit změny'}
+      </button>
+      <a href="/prihlasky/sprava/novinky" class="btn btn-outline">Zpět</a>
+      {
+        !nova && (
+          <a href={`/novinky/${n.slug}`} target="_blank" rel="noopener" class="link-arrow">
+            Zobrazit na webu
+          </a>
+        )
+      }
+    </div>
+  </form>
+
+  {
+    !nova && (
+      <form method="post" class="mt-14 border-t border-ink/12 pt-7">
+        <input type="hidden" name="co" value="smazat" />
+        <button
+          type="submit"
+          class="btn btn-outline"
+          data-potvrdit={`Opravdu smazat novinku „${n.nadpis}"? Zmizí z webu.`}
+        >
+          Smazat novinku
+        </button>
+      </form>
+    )
+  }
+</PrihlaskyLayout>
+
+<script>
+  /* ---- zmenšení fotky před odesláním -------------------------------- */
+  const MAX = 1600;
+  const vstup = document.querySelector<HTMLInputElement>('[data-foto]');
+  const nahled = document.querySelector<HTMLImageElement>('[data-nahled]');
+  const odeslat = document.querySelector<HTMLButtonElement>('[data-odeslat]');
+
+  vstup?.addEventListener('change', async () => {
+    const puvodni = vstup.files?.[0];
+    if (!puvodni || !puvodni.type.startsWith('image/')) return;
+
+    if (odeslat) odeslat.disabled = true;
+    try {
+      const obrazek = await createImageBitmap(puvodni);
+      const pomer = Math.min(1, MAX / Math.max(obrazek.width, obrazek.height));
+      const platno = document.createElement('canvas');
+      platno.width = Math.round(obrazek.width * pomer);
+      platno.height = Math.round(obrazek.height * pomer);
+      platno.getContext('2d')?.drawImage(obrazek, 0, 0, platno.width, platno.height);
+
+      const blob = await new Promise<Blob | null>((hotovo) =>
+        platno.toBlob(hotovo, 'image/jpeg', 0.82),
+      );
+      if (blob) {
+        const nazev = puvodni.name.replace(/\.[^.]+$/, '') + '.jpg';
+        const prenos = new DataTransfer();
+        prenos.items.add(new File([blob], nazev, { type: 'image/jpeg' }));
+        vstup.files = prenos.files;
+        if (nahled) {
+          nahled.src = URL.createObjectURL(blob);
+          nahled.hidden = false;
+        }
+      }
+    } catch {
+      // Prohlížeč fotku neumí zmenšit (třeba HEIC): pošle se, jak je,
+      // a server ji případně odmítne se srozumitelnou hláškou.
+    } finally {
+      if (odeslat) odeslat.disabled = false;
+    }
+  });
+
+  document.querySelector<HTMLFormElement>('[data-novinka]')?.addEventListener('submit', () => {
+    if (odeslat) odeslat.disabled = true;
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-potvrdit]').forEach((tlacitko) => {
+    tlacitko.addEventListener('click', (e) => {
+      if (!confirm(tlacitko.dataset.potvrdit ?? 'Opravdu?')) e.preventDefault();
+    });
+  });
+</script>

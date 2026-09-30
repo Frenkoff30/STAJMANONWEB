@@ -3,6 +3,11 @@
   "buildCommand": "npm run build",
   "redirects": [
     {
+      "source": "/sprava",
+      "destination": "/prihlasky/sprava",
+      "permanent": false
+    },
+    {
       "source": "/index.php",
       "destination": "/",
       "permanent": true

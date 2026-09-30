@@ -1,0 +1,15 @@
+---
+/** Nadpis nejnovější novinky do lišty pod úvodní fotkou. Server island. */
+
+import { CACHE_NOVINEK, nactiNovinky } from '@/lib/novinky';
+
+interface Props {
+  nahrada: string;
+}
+
+Astro.response.headers.set('Cache-Control', CACHE_NOVINEK);
+
+const [nejnovejsi] = await nactiNovinky(1);
+---
+
+{nejnovejsi?.nadpis ?? Astro.props.nahrada}

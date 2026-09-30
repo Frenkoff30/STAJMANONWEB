@@ -1,7 +1,8 @@
 ---
 /**
- * Shell pro správu přihlášek na akce. Stejná řeč jako rezervace
- * (tmavý pruh s nadpisem, lišta pod ním), ale samostatná navigace.
+ * Shell správy webu: novinky, akce a přihlášky. Stejná řeč jako rezervace
+ * (tmavý pruh s nadpisem, lišta pod ním). V liště jsou i odkazy na správu
+ * rezervací a na redakci textů, ať má stáj všechno z jednoho místa.
  */
 
 import BaseLayout from './BaseLayout.astro';
@@ -17,9 +18,20 @@ interface Props {
 }
 
 const { title, heading, lead, spravce, crumbs = [], uzky = false } = Astro.props;
+
+const cesta = Astro.url.pathname;
+const zalozky = [
+  { href: '/prihlasky/sprava/novinky', label: 'Novinky', aktivni: cesta.startsWith('/prihlasky/sprava/novinky') },
+  {
+    href: '/prihlasky/sprava',
+    label: 'Akce a přihlášky',
+    aktivni: cesta.startsWith('/prihlasky/sprava') && !cesta.startsWith('/prihlasky/sprava/novinky'),
+  },
+  { href: '/rezervace/sprava', label: 'Rezervace jízdárny', aktivni: false },
+];
 ---
 
-<BaseLayout {title} description="Správa přihlášek na akce." noindex>
+<BaseLayout {title} description="Správa webu Stáje Manon." noindex>
   <div class="grain relative overflow-hidden bg-loden-950 text-white">
     <div class="container-x py-10 lg:py-14">
       <nav aria-label="Drobečková navigace" class="mb-5">
@@ -28,7 +40,7 @@ const { title, heading, lead, spravce, crumbs = [], uzky = false } = Astro.props
           <li aria-hidden="true">/</li>
           <li>
             <a href="/prihlasky/sprava" class="link-underline hover:text-white">
-              Přihlášky na akce
+              Správa webu
             </a>
           </li>
           {
@@ -59,13 +71,29 @@ const { title, heading, lead, spravce, crumbs = [], uzky = false } = Astro.props
     spravce && (
       <div class="border-b border-ink/12 bg-paper-2">
         <div class="container-x flex flex-wrap items-center justify-between gap-x-6 gap-y-3 py-3">
-          <a
-            href="/prihlasky/sprava"
-            class="text-[0.8125rem] font-semibold uppercase tracking-[0.1em] text-brass-700"
-          >
-            Přihlášky
-          </a>
+          <nav aria-label="Správa webu" class="flex flex-wrap gap-x-6 gap-y-2">
+            {zalozky.map((z) => (
+              <a
+                href={z.href}
+                aria-current={z.aktivni ? 'page' : undefined}
+                class:list={[
+                  'text-[0.8125rem] font-semibold uppercase tracking-[0.1em] transition-colors',
+                  z.aktivni ? 'text-brass-700' : 'text-ink-3 hover:text-ink',
+                ]}
+              >
+                {z.label}
+              </a>
+            ))}
+          </nav>
           <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-[0.8125rem]">
+            <a
+              href="/keystatic"
+              class="text-ink-3 transition-colors hover:text-brass-700"
+              title="Texty a fotky jednotlivých stránek (přihlášení přes GitHub)"
+            >
+              Texty webu
+            </a>
+            <span class="text-ink/20" aria-hidden="true">|</span>
             <span class="text-ink-3">{spravce.jmeno || spravce.email}</span>
             <form method="post" action="/prihlasky/odhlaseni">
               <button

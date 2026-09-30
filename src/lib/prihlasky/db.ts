@@ -4,12 +4,16 @@
  * Přihlášky na akce jsou samostatný systém, s rezervacemi jízdáren nesdílí nic
  * kromě knihovny. Můžou běžet v jiném projektu Supabase (proměnné
  * `PRIHLASKY_SUPABASE_*`), a když nejsou vyplněné, použijí ten společný.
- * Přihlášení do správy má vlastní cookie, takže se nemíchá s účty jezdců.
+ *
+ * Ve společném projektu sdílí správa webu přihlášení s rezervacemi: stáj má
+ * jeden účet a přihlásí se jednou. Do správy ale pustí jen správce (viz
+ * `je_spravce_prihlasek()`), obyčejný jezdec se tam nedostane.
  */
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { createServerClient, parseCookieHeader } from '@supabase/ssr';
 import type { AstroCookies } from 'astro';
+import { vytvorKlienta } from '@/lib/supabase';
 import type { EventKind } from '@/data/events';
 import type { TypAkce } from './typy';
 
@@ -48,11 +52,21 @@ const COOKIE = {
   maxAge: 60 * 60 * 24 * 14,
 } as const;
 
-/** Klient pro správu. Jeden na požadavek, session v cookie `prihlasky-auth`. */
+/** Běží přihlášky ve stejném projektu Supabase jako rezervace? */
+const spolecnyProjekt =
+  url === (import.meta.env.SUPABASE_URL || process.env.SUPABASE_URL || '');
+
+/**
+ * Klient pro správu, jeden na požadavek. Ve společném projektu je to tentýž
+ * klient jako u rezervací (jedna session na celý web), jinak má správa
+ * vlastní cookie `prihlasky-auth`.
+ */
 export function klientSpravy(context: {
   request: Request;
   cookies: AstroCookies;
 }): SupabaseClient {
+  if (spolecnyProjekt) return vytvorKlienta(context);
+
   return createServerClient(url, anonKey, {
     cookieOptions: { name: 'prihlasky-auth' },
     cookies: {

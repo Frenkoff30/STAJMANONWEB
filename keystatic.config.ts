@@ -33,52 +33,6 @@ const REPO = 'Frenkoff30/STAJMANONWEB';
 
 /* ---------------------------------------------------------------- kolekce */
 
-const novinky = collection({
-  label: 'Novinky',
-  path: 'src/obsah/novinky/*',
-  format: { data: 'json' },
-  slugField: 'title',
-  columns: ['title', 'date'],
-  entryLayout: 'form',
-  schema: {
-    title: fields.slug({
-      name: { label: 'Nadpis' },
-      slug: {
-        label: 'Adresa novinky',
-        description: 'Doplní se sama z nadpisu. Po zveřejnění ji už neměňte.',
-      },
-    }),
-    date: fields.date({
-      label: 'Datum',
-      defaultValue: { kind: 'today' },
-      validation: { isRequired: true },
-    }),
-    text: odstavec(
-      'Text',
-      'Pár vět. Nový odstavec začnete prázdným řádkem. Na úvodní stránce se ukáže jen začátek.',
-    ),
-    image: fields.image({
-      label: 'Fotka',
-      directory: 'src/assets/photos/novinky',
-      publicPath: '/src/assets/photos/novinky/',
-      description: 'Nepovinná. Ideálně na šířku. Ukáže se i při sdílení na Facebooku.',
-    }),
-    file: fields.file({
-      label: 'Soubor ke stažení',
-      directory: 'public/soubory/novinky',
-      publicPath: '/soubory/novinky/',
-      description: 'Nepovinný. Třeba startovní listina, rozpis nebo výsledky.',
-    }),
-    fileLabel: volitelnyText('Popisek souboru', 'Například: Startovní listiny (XLSX)'),
-    link: fields.url({
-      label: 'Odkaz',
-      description: 'Nepovinný. Třeba na příspěvek na Facebooku nebo na jiný web.',
-      validation: { isRequired: false },
-    }),
-    linkLabel: volitelnyText('Popisek odkazu', 'Například: Fotky na Facebooku'),
-  },
-});
-
 const vysledky = collection({
   label: 'Výsledkové listiny',
   path: 'src/obsah/vysledky/*',
@@ -534,7 +488,6 @@ export default config({
   ui: {
     brand: { name: 'Stáj Manon' },
     navigation: {
-      Novinky: ['novinky'],
       Sport: ['vysledky', 'uspechy', 'tituly'],
       'Pro jezdce': ['kurzy', 'pobyty', 'sluzby', 'kone'],
       'Areál a fotky': ['areal', 'penzion', 'galerie'],
@@ -561,7 +514,7 @@ export default config({
     },
   },
 
-  collections: { novinky, vysledky, uspechy, pobyty, galerie },
+  collections: { vysledky, uspechy, pobyty, galerie },
   singletons: {
     nastaveni,
     kurzy,

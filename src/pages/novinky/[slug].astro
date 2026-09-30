@@ -4,69 +4,56 @@
  * příspěvku si Facebook vezme z nadpisu, popisu a fotky téhle stránky.
  */
 
-import { Image, getImage } from 'astro:assets';
+export const prerender = false;
+
 import PageLayout from '@/layouts/PageLayout.astro';
 import Section from '@/components/Section.astro';
 import Icon from '@/components/Icon.astro';
 import Prose from '@/components/Prose.astro';
 import { formatLong } from '@/data/events';
-import { facebookShare, news, type NewsItem } from '@/data/news';
 import { photo } from '@/data/images';
 import { site } from '@/data/site';
+import { CACHE_NOVINEK, facebookShare, nactiNovinku, odstavce } from '@/lib/novinky';
 
-export function getStaticPaths() {
-  return news.map((n) => ({ params: { slug: n.slug }, props: { n } }));
-}
+const n = await nactiNovinku(Astro.params.slug ?? '');
+// Smazaná nebo neexistující novinka: zpátky na přehled.
+if (!n) return Astro.redirect('/novinky', 302);
 
-const { n } = Astro.props as { n: NewsItem };
+Astro.response.headers.set('Cache-Control', CACHE_NOVINEK);
 
-const heroImg = n.image ?? photo('areal-letecky')!;
-const ogImage = n.image
-  ? (await getImage({ src: n.image, width: 1200, format: 'jpg' })).src
-  : undefined;
-
+const paragraphs = odstavce(n.text);
 const adresa = new URL(`/novinky/${n.slug}`, site.url).href;
-const popis = (n.paragraphs[0] ?? n.title).slice(0, 160);
+const popis = (paragraphs[0] ?? n.nadpis).slice(0, 160);
 ---
 
 <PageLayout
-  title={n.title}
+  title={n.nadpis}
   description={popis}
-  heading={n.title}
-  lead={formatLong(n.date)}
-  image={heroImg}
+  heading={n.nadpis}
+  lead={formatLong(n.datum)}
+  image={photo('areal-letecky')!}
   imageAlt=""
-  ogImage={ogImage}
-  crumbs={[{ label: 'Novinky', href: '/novinky' }, { label: formatLong(n.date) }]}
+  ogImage={n.foto_url || undefined}
+  crumbs={[{ label: 'Novinky', href: '/novinky' }, { label: formatLong(n.datum) }]}
 >
   <Section tone="paper" space="lg">
     <article class="mx-auto max-w-2xl">
-      {n.paragraphs.length > 0 && <Prose paragraphs={n.paragraphs} />}
+      {paragraphs.length > 0 && <Prose paragraphs={paragraphs} />}
+
+      {n.foto_url && <img src={n.foto_url} alt="" decoding="async" class="mt-10 w-full" />}
 
       {
-        n.image && (
-          <Image
-            src={n.image}
-            alt=""
-            widths={[640, 1024, 1400]}
-            sizes="(min-width: 768px) 42rem, 100vw"
-            class="mt-10 w-full"
-          />
-        )
-      }
-
-      {
-        (n.file || n.link) && (
+        (n.soubor_url || n.odkaz_url) && (
           <div class="mt-10 flex flex-wrap gap-3">
-            {n.file && (
-              <a href={n.file.href} class="btn btn-primary" download>
+            {n.soubor_url && (
+              <a href={n.soubor_url} class="btn btn-primary" download>
                 <Icon name="download" class="h-4 w-4" />
-                {n.file.label}
+                {n.soubor_nazev || 'Soubor ke stažení'}
               </a>
             )}
-            {n.link && (
-              <a href={n.link.href} class="btn btn-outline" target="_blank" rel="noopener">
-                {n.link.label}
+            {n.odkaz_url && (
+              <a href={n.odkaz_url} class="btn btn-outline" target="_blank" rel="noopener">
+                {n.odkaz_nazev || 'Více informací'}
                 <Icon name="arrow-right" class="h-4 w-4" />
               </a>
             )}

@@ -1,0 +1,86 @@
+---
+/** Správa webu → Novinky: seznam a tlačítko na novou. */
+
+export const prerender = false;
+
+import PrihlaskyLayout from '@/layouts/PrihlaskyLayout.astro';
+import Zprava from '@/components/rezervace/Zprava.astro';
+import Icon from '@/components/Icon.astro';
+import { formatLong } from '@/data/events';
+import type { Novinka } from '@/lib/novinky';
+import { bezCache, nactiSpravce } from '@/lib/prihlasky/spravce';
+
+bezCache(Astro.response.headers);
+
+const spravce = await nactiSpravce(Astro);
+if (!spravce) {
+  return Astro.redirect(`/prihlasky/prihlaseni?dal=${encodeURIComponent(Astro.url.pathname)}`);
+}
+
+const { data } = await spravce.supabase
+  .from('novinky')
+  .select('*')
+  .order('datum', { ascending: false })
+  .order('vytvoreno', { ascending: false });
+const novinky = (data as Novinka[]) ?? [];
+
+const hotovo = Astro.url.searchParams.get('hotovo') ?? '';
+const hlasky: Record<string, string> = {
+  ulozena: 'Novinka je uložená a už je na webu.',
+  smazana: 'Novinka je smazaná.',
+};
+---
+
+<PrihlaskyLayout
+  title="Novinky"
+  heading="Novinky"
+  lead="Co napíšete sem, se hned ukáže na úvodní stránce a v Novinkách."
+  spravce={spravce}
+  crumbs={[{ label: 'Novinky' }]}
+>
+  {hotovo && hlasky[hotovo] && <Zprava typ="ok" class="mb-8">{hlasky[hotovo]}</Zprava>}
+
+  <a href="/prihlasky/sprava/novinky/nova" class="btn btn-primary">
+    <Icon name="plus" class="h-4 w-4" />
+    Nová novinka
+  </a>
+
+  {
+    novinky.length === 0 ? (
+      <p class="mt-8 border-t border-ink/12 pt-6 text-ink-3">Zatím tu žádná novinka není.</p>
+    ) : (
+      <ul class="mt-8">
+        {novinky.map((n) => (
+          <li class="border-t border-ink/12 last:border-b">
+            <a
+              href={`/prihlasky/sprava/novinky/${n.id}`}
+              class="group flex items-center gap-5 py-5 transition-colors hover:bg-paper-2 sm:px-3"
+            >
+              {n.foto_url ? (
+                <img
+                  src={n.foto_url}
+                  alt=""
+                  loading="lazy"
+                  class="h-14 w-20 shrink-0 object-cover"
+                />
+              ) : (
+                <span class="h-14 w-20 shrink-0 bg-ink/5" />
+              )}
+              <span class="min-w-0 flex-1">
+                <span class="block text-[0.75rem] uppercase tracking-[0.12em] text-ink-3">
+                  {formatLong(n.datum)}
+                </span>
+                <span class="mt-1 block truncate font-display text-[1.25rem] group-hover:text-brass-700">
+                  {n.nadpis}
+                </span>
+              </span>
+              <span class="hidden text-[0.8125rem] font-semibold uppercase tracking-[0.1em] text-brass-700 sm:block">
+                Upravit
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</PrihlaskyLayout>

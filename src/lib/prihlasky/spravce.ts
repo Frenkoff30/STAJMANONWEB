@@ -33,19 +33,25 @@ export async function nactiSpravce(
   const { data } = await supabase.auth.getUser();
   if (!data.user) return null;
 
-  const { data: zaznam } = await supabase
-    .from('prihlasky_spravci')
-    .select('jmeno')
-    .eq('uzivatel', data.user.id)
-    .maybeSingle<{ jmeno: string }>();
+  // Stejná podmínka, jakou hlídá databáze: správce přihlášek, nebo
+  // schválený správce rezervací.
+  const { data: smi } = await supabase.rpc('je_spravce_prihlasek');
+  if (smi !== true) return null;
 
-  if (!zaznam) return null;
+  const [{ data: zaznam }, { data: profil }] = await Promise.all([
+    supabase
+      .from('prihlasky_spravci')
+      .select('jmeno')
+      .eq('uzivatel', data.user.id)
+      .maybeSingle<{ jmeno: string }>(),
+    supabase.from('profily').select('jmeno').eq('id', data.user.id).maybeSingle<{ jmeno: string }>(),
+  ]);
 
   return {
     supabase,
     id: data.user.id,
     email: data.user.email ?? '',
-    jmeno: zaznam.jmeno,
+    jmeno: zaznam?.jmeno || profil?.jmeno || '',
   };
 }
 

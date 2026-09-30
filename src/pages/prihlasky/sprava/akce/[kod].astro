@@ -35,6 +35,7 @@ import {
 } from '@/lib/prihlasky/akce';
 import { eventKindLabels, type EventKind } from '@/data/events';
 import { bezCache, nactiSpravce } from '@/lib/prihlasky/spravce';
+import { PRIPONY_DOKUMENTU, druhSouboru, nahratSoubor } from '@/lib/prihlasky/soubory';
 
 bezCache(Astro.response.headers);
 
@@ -73,48 +74,6 @@ if (ulozena) {
     .select('id', { count: 'exact', head: true })
     .eq('akce', ulozena.kod);
   pocetPrihlasek = count ?? 0;
-}
-
-/* ---------------------------------------------------------------- rozpis */
-
-/** Co jde nahrát jako rozpis. Obrázky kvůli vyfocenému papírovému rozpisu. */
-const PRIPONY = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png'];
-/** Vercel víc než ~4,5 MB v jednom požadavku nepustí, necháme rezervu. */
-const MAX_ROZPIS = 4 * 1024 * 1024;
-
-/**
- * Nahraje rozpis do úložiště a vrátí odkaz s popiskem. Při chybě vrátí
- * hlášku pro člověka.
- */
-async function nahratRozpis(
-  soubor: File,
-  kodAkce: string,
-): Promise<{ url: string; nazev: string } | { chyba: string }> {
-  const pripona = (soubor.name.split('.').pop() ?? '').toLowerCase();
-  if (!PRIPONY.includes(pripona)) {
-    return { chyba: 'Rozpis nahrajte jako PDF, Word, Excel nebo fotku (JPG, PNG).' };
-  }
-  if (soubor.size > MAX_ROZPIS) {
-    return { chyba: 'Soubor je větší než 4 MB. Zmenšete ho prosím, třeba uložením do PDF.' };
-  }
-
-  // Časová značka v názvu: nový rozpis nepřepíše starý v mezipaměti prohlížečů.
-  const cesta = `akce/${kodAkce}-${Date.now()}.${pripona}`;
-  const uloziste = spravce!.supabase.storage.from('soubory');
-  const { error } = await uloziste.upload(cesta, soubor, {
-    contentType: soubor.type || undefined,
-    upsert: false,
-  });
-  if (error) {
-    console.error('Rozpis se nenahrál', error.message);
-    return { chyba: 'Rozpis se nepodařilo nahrát. Zkuste to prosím znovu.' };
-  }
-
-  const druhSouboru = pripona === 'jpeg' ? 'JPG' : pripona.toUpperCase();
-  return {
-    url: uloziste.getPublicUrl(cesta).data.publicUrl,
-    nazev: `Rozpis (${druhSouboru})`,
-  };
 }
 
 /* ------------------------------------------------------------------ zápis */
@@ -162,12 +121,18 @@ if (Astro.request.method === 'POST') {
     // nezůstávají rozpisy k akcím, které se nakonec neuložily.
     const soubor = formular.get('rozpis');
     if (!jsouChyby(vysledek) && soubor instanceof File && soubor.size > 0) {
-      const nahrano = await nahratRozpis(soubor, akce.kod);
+      const nahrano = await nahratSoubor(
+        spravce.supabase,
+        soubor,
+        'akce',
+        akce.kod,
+        PRIPONY_DOKUMENTU,
+      );
       if ('chyba' in nahrano) {
         chyby.rozpis_url = nahrano.chyba;
       } else {
         akce.rozpis_url = nahrano.url;
-        akce.rozpis_nazev = nahrano.nazev;
+        akce.rozpis_nazev = `Rozpis (${druhSouboru(nahrano.pripona)})`;
       }
     }
 
