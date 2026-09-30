@@ -1,0 +1,131 @@
+---
+/**
+ * Přihláška do jezdecké školy: dítě, rodič, o co je zájem. Odešle stáji
+ * e-mail přes /jezdecka-skola/odeslat. S JavaScriptem bez přenačtení
+ * stránky, bez něj klasicky s návratem sem (?odeslano=1 / ?chyba=…).
+ */
+
+import { zkusenosti } from '@/lib/prihlasky/typy';
+
+interface Props {
+  /** Co si rodič může vybrat, typicky položky ceníku. */
+  moznosti: string[];
+}
+
+const { moznosti } = Astro.props;
+---
+
+<form
+  id="formular"
+  method="post"
+  action="/jezdecka-skola/odeslat"
+  class="card relative bg-white p-6 text-ink sm:p-8"
+  data-prihlaska-skola
+>
+  {/* Honeypot, viz ContactForm. */}
+  <div class="absolute left-[-9999px]" aria-hidden="true">
+    <label for="skola-website">Nevyplňujte</label>
+    <input type="text" id="skola-website" name="website" tabindex="-1" autocomplete="off" />
+  </div>
+  <input type="hidden" name="ts" value="0" data-ts />
+
+  <div class="grid gap-5 sm:grid-cols-2">
+    <div>
+      <label for="dite" class="form-label">Jméno dítěte <span class="text-brass-700">*</span></label>
+      <input type="text" id="dite" name="dite" required maxlength="120" class="form-control" />
+    </div>
+    <div>
+      <label for="narozeni" class="form-label">Datum narození <span class="text-brass-700">*</span></label>
+      <input type="date" id="narozeni" name="narozeni" required class="form-control" />
+    </div>
+    <div>
+      <label for="zkusenosti" class="form-label">Zkušenosti</label>
+      <select id="zkusenosti" name="zkusenosti" class="form-control">
+        {zkusenosti.map((z) => <option value={z}>{z}</option>)}
+      </select>
+    </div>
+    <div>
+      <label for="zajem" class="form-label">Máme zájem o</label>
+      <select id="zajem" name="zajem" class="form-control">
+        {moznosti.map((m) => <option value={m}>{m}</option>)}
+        <option value="Zatím nevíme, poraďte">Zatím nevíme, poraďte</option>
+      </select>
+    </div>
+    <div class="sm:col-span-2">
+      <label for="rodic" class="form-label">Jméno rodiče <span class="text-brass-700">*</span></label>
+      <input type="text" id="rodic" name="rodic" required maxlength="120" autocomplete="name" class="form-control" />
+    </div>
+    <div>
+      <label for="skola-email" class="form-label">E-mail <span class="text-brass-700">*</span></label>
+      <input type="email" id="skola-email" name="email" required autocomplete="email" class="form-control" />
+    </div>
+    <div>
+      <label for="telefon" class="form-label">Telefon <span class="text-brass-700">*</span></label>
+      <input type="tel" id="telefon" name="telefon" required autocomplete="tel" placeholder="+420" class="form-control" />
+    </div>
+    <div class="sm:col-span-2">
+      <label for="poznamka" class="form-label">Poznámka</label>
+      <textarea
+        id="poznamka"
+        name="poznamka"
+        rows="3"
+        maxlength="3000"
+        placeholder="Které dny se vám hodí, zdravotní omezení, cokoli dalšího…"
+        class="form-control resize-y"></textarea>
+    </div>
+  </div>
+
+  <div class="mt-6 flex flex-wrap items-center gap-4">
+    <button type="submit" class="btn btn-primary" data-odeslat>Odeslat přihlášku</button>
+    <p class="text-[0.8125rem] text-ink-3">Ozveme se vám s termínem lekcí.</p>
+  </div>
+
+  <p role="status" aria-live="polite" class="mt-5 hidden border p-4 text-[0.9375rem]" data-stav></p>
+</form>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-prihlaska-skola]');
+
+  if (form) {
+    const ts = form.querySelector<HTMLInputElement>('[data-ts]');
+    if (ts) ts.value = String(Math.floor(Date.now() / 1000));
+
+    const stav = form.querySelector<HTMLElement>('[data-stav]')!;
+    const odeslat = form.querySelector<HTMLButtonElement>('[data-odeslat]')!;
+
+    const ukazat = (ok: boolean, text: string) => {
+      stav.classList.remove('hidden');
+      stav.style.borderColor = ok ? 'var(--color-loden-600)' : '#a13a2a';
+      stav.style.color = ok ? 'var(--color-loden-800)' : '#7d2b1f';
+      stav.textContent = text;
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!form.reportValidity()) return;
+
+      odeslat.disabled = true;
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { 'X-Requested-With': 'fetch' },
+        });
+        const data = (await res.json()) as { ok?: boolean; message?: string };
+        ukazat(Boolean(data.ok), data.message ?? 'Přihlášku se nepodařilo odeslat.');
+        if (data.ok) form.reset();
+      } catch {
+        ukazat(false, 'Přihlášku se nepodařilo odeslat. Zavolejte nám prosím.');
+      } finally {
+        odeslat.disabled = false;
+      }
+    });
+
+    const parametry = new URLSearchParams(location.search);
+    if (parametry.get('odeslano') === '1') {
+      ukazat(true, 'Děkujeme, přihláška dorazila. Ozveme se vám s termínem lekcí.');
+    } else if (parametry.get('chyba')) {
+      ukazat(false, parametry.get('chyba')!);
+    }
+  }
+</script>

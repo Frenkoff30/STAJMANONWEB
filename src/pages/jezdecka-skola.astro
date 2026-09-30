@@ -6,6 +6,7 @@ import SectionHead from '@/components/SectionHead.astro';
 import Icon from '@/components/Icon.astro';
 import { site } from '@/data/site';
 import AkceSeznam from '@/components/kalendar/AkceSeznam.astro';
+import PrihlaskaSkola from '@/components/PrihlaskaSkola.astro';
 
 import { photo } from '@/data/images';
 import page from '@/obsah/stranky/jezdecka-skola.json';
@@ -205,17 +206,19 @@ const klubActivities = page.klubActivities;
   </Section>
 
   <!-- Kontakt -->
-  <Section tone="loden" space="md" id="prihlaseni">
-    <div class="grid gap-10 lg:grid-cols-12 lg:items-center">
-      <div class="lg:col-span-7">
+  <Section tone="loden" space="lg" id="prihlaseni">
+    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+      <div class="lg:col-span-5">
         <h2 class="t-2 text-white">{page.cta.heading}</h2>
         <p class="lead mt-5 text-white/70">{page.cta.lead}</p>
-      </div>
-      <div class="lg:col-span-5 lg:text-right">
-        <a href={`tel:${site.contacts[1]!.phoneHref}`} class="btn btn-brass">
+        <p class="mt-8 text-[0.9375rem] text-white/60">Radši po telefonu?</p>
+        <a href={`tel:${site.contacts[1]!.phoneHref}`} class="btn btn-ghost-light mt-3">
           <Icon name="phone" class="h-4 w-4" />
           {site.contacts[1]!.phone}
         </a>
+      </div>
+      <div class="lg:col-span-7">
+        <PrihlaskaSkola moznosti={page.cenik.items.map((c) => c.title)} />
       </div>
     </div>
   </Section>
