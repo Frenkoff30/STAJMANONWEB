@@ -1,7 +1,8 @@
 ---
 /**
- * Správa přihlášek: přehled akcí a seznam přihlášek.
- * Vyřizuje se v detailu přihlášky, tady se jen hledá a třídí.
+ * Správa akcí a přihlášek: přehled akcí (podle nich se plní kalendář na
+ * webu) a seznam přihlášek. Vyřizuje se v detailu přihlášky, tady se jen
+ * hledá a třídí.
  */
 
 export const prerender = false;
@@ -10,6 +11,7 @@ import PrihlaskyLayout from '@/layouts/PrihlaskyLayout.astro';
 import Stitek from '@/components/prihlasky/Stitek.astro';
 import Zprava from '@/components/rezervace/Zprava.astro';
 import Icon from '@/components/Icon.astro';
+import KartaAkce from '@/components/prihlasky/KartaAkce.astro';
 import {
   jmenaUcastniku,
   stavy,
@@ -17,8 +19,10 @@ import {
   type Prihlaska,
   type StavPrihlasky,
 } from '@/lib/prihlasky/db';
-import { kc, terminAkce } from '@/lib/prihlasky/platba';
+import { kc } from '@/lib/prihlasky/platba';
 import { popisTypu } from '@/lib/prihlasky/typy';
+import { isUpcoming } from '@/data/events';
+import { naUdalost } from '@/lib/kalendar';
 import { bezCache, datumCas, nactiSpravce } from '@/lib/prihlasky/spravce';
 
 bezCache(Astro.response.headers);
@@ -40,7 +44,12 @@ const [{ data: akceData }, { data: prihlaskyData }] = await Promise.all([
     .order('vytvoreno', { ascending: false }),
 ]);
 
-const akce = (akceData as Akce[]) ?? [];
+const vsechnyAkce = (akceData as Akce[]) ?? [];
+/** Nadcházející nahoře od nejbližší, proběhlé schované pod nimi. */
+const akce = vsechnyAkce
+  .filter((a) => isUpcoming(naUdalost(a)))
+  .sort((a, b) => a.zacatek.localeCompare(b.zacatek));
+const probehle = vsechnyAkce.filter((a) => !isUpcoming(naUdalost(a)));
 const vsechny = (prihlaskyData as Prihlaska[]) ?? [];
 
 const filtrAkce = Astro.url.searchParams.get('akce') ?? '';
@@ -53,12 +62,12 @@ const seznam = vAkci.filter((p) => {
   return p.stav === filtrStav;
 });
 
-const akcePodleKodu = new Map(akce.map((a) => [a.kod, a]));
+const akcePodleKodu = new Map(vsechnyAkce.map((a) => [a.kod, a]));
 
 /** Kolik lidí je na přihlášce — u klubů se počítají všichni jezdci. */
 const pocetLidi = (p: Prihlaska) => p.ucastnici?.length ?? 0;
 
-const souhrn = akce.map((a) => {
+const souhrnAkce = (a: Akce) => {
   const jeji = vsechny.filter((p) => p.akce === a.kod);
   const prijate = jeji.filter((p) => p.stav === 'prijata');
   return {
@@ -67,7 +76,9 @@ const souhrn = akce.map((a) => {
     prijate: prijate.reduce((s, p) => s + pocetLidi(p), 0),
     zaplacene: prijate.filter((p) => p.zaplaceno).reduce((s, p) => s + pocetLidi(p), 0),
   };
-});
+};
+const souhrn = akce.map(souhrnAkce);
+const souhrnProbehlych = probehle.map(souhrnAkce);
 
 const zalozky: { kod: string; label: string; pocet: number }[] = [
   { kod: '', label: 'Všechny', pocet: vAkci.length },
@@ -97,12 +108,17 @@ const odkaz = (zmeny: { akce?: string; stav?: string }) => {
 ---
 
 <PrihlaskyLayout
-  title="Přihlášky na akce"
-  heading="Přihlášky na akce"
-  lead="Nové přihlášky potvrďte nebo odmítněte v detailu. Přihlášeným pak automaticky odejde e-mail."
+  title="Akce a přihlášky"
+  heading="Akce a přihlášky"
+  lead="Akce, které tu založíte, se hned ukážou v kalendáři na webu. Přihlášky potvrďte nebo odmítněte v detailu, přihlášeným pak automaticky odejde e-mail."
   spravce={spravce}
 >
   {hotovo === 'akce-smazana' && <Zprava typ="ok" class="mb-8">Akce je smazaná.</Zprava>}
+  {
+    hotovo === 'akce-zalozena' && (
+      <Zprava typ="ok" class="mb-8">Akce je uložená a už je v kalendáři na webu.</Zprava>
+    )
+  }
 
   <!-- -------------------------------------------------------------- akce -->
   <section>
@@ -117,74 +133,33 @@ const odkaz = (zmeny: { akce?: string; stav?: string }) => {
     {
       akce.length === 0 ? (
         <p class="mt-6 border-t border-ink/12 pt-6 text-ink-3">
-          Zatím tu žádná akce není. Založte ji tlačítkem výš: vyplníte termín a ceník
-          a přihláška hned poběží na vlastní adrese.
+          Žádná nadcházející akce. Založte ji tlačítkem Nová akce: stačí druh, název a datum.
         </p>
       ) : (
         <ul class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {souhrn.map((s) => (
-            <li
-              class:list={[
-                'card card-hover relative flex h-full flex-col p-6',
-                filtrAkce === s.akce.kod && 'border-brass-600',
-              ]}
-            >
-              {/* Filtr přes celou kartu, odkaz na úpravu nad ním. Vnořené
-                  odkazy by prohlížeč nepřijal, proto roztažená plocha. */}
-              <a
-                href={odkaz({ akce: filtrAkce === s.akce.kod ? '' : s.akce.kod, stav: '' })}
-                aria-current={filtrAkce === s.akce.kod ? 'true' : undefined}
-                class="absolute inset-0"
-                aria-label={`Filtrovat přihlášky: ${s.akce.nazev}`}
-              />
-              <div class="pointer-events-none relative">
-                <p class="eyebrow">
-                  {popisTypu(s.akce.typ).nazev} · {terminAkce(s.akce)}
-                </p>
-                <p class="mt-2 font-display text-[1.375rem] leading-snug">{s.akce.nazev}</p>
-                <p class="mt-1 text-[0.8125rem] text-ink-3">
-                  {s.akce.otevreno ? 'Přihlášky otevřené' : 'Přihlášky uzavřené'} ·{' '}
-                  <span class="text-brass-700">/prihlaska/{s.akce.kod}</span>
-                </p>
-
-                <dl class="mt-5 grid grid-cols-3 gap-3 border-t border-ink/12 pt-4">
-                  <div>
-                    <dt class="text-[0.6875rem] font-semibold uppercase tracking-[0.1em] text-ink-3">
-                      Přijato
-                    </dt>
-                    <dd class="mt-1 font-display text-[1.375rem] leading-none">
-                      {s.prijate}
-                      {s.akce.kapacita > 0 && (
-                        <span class="text-[0.9375rem] text-ink-3">/{s.akce.kapacita}</span>
-                      )}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt class="text-[0.6875rem] font-semibold uppercase tracking-[0.1em] text-ink-3">
-                      Zaplaceno
-                    </dt>
-                    <dd class="mt-1 font-display text-[1.375rem] leading-none">{s.zaplacene}</dd>
-                  </div>
-                  <div>
-                    <dt class="text-[0.6875rem] font-semibold uppercase tracking-[0.1em] text-brass-700">
-                      Nové
-                    </dt>
-                    <dd class="mt-1 font-display text-[1.375rem] leading-none text-brass-700">
-                      {s.nove}
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-
-              <div class="relative mt-5 flex items-center justify-end border-t border-ink/12 pt-4">
-                <a href={`/prihlasky/sprava/akce/${s.akce.kod}`} class="link-arrow">
-                  Upravit akci
-                  <Icon name="arrow-right" class="h-3.5 w-3.5" />
-                </a>
-              </div>
-            </li>
-          ))}
+          {souhrn.map((s) => <KartaAkce
+              s={s}
+              vybrana={filtrAkce === s.akce.kod}
+              filtr={odkaz({ akce: filtrAkce === s.akce.kod ? '' : s.akce.kod, stav: '' })}
+            />)}
         </ul>
+      )
+    }
+
+    {
+      souhrnProbehlych.length > 0 && (
+        <details class="mt-8 border border-ink/12">
+          <summary class="cursor-pointer px-5 py-4 text-[0.9375rem] font-semibold">
+            Proběhlé akce <span class="font-normal text-ink-3">({souhrnProbehlych.length})</span>
+          </summary>
+          <ul class="grid gap-4 border-t border-ink/12 p-5 md:grid-cols-2 xl:grid-cols-3">
+            {souhrnProbehlych.map((s) => <KartaAkce
+              s={s}
+              vybrana={filtrAkce === s.akce.kod}
+              filtr={odkaz({ akce: filtrAkce === s.akce.kod ? '' : s.akce.kod, stav: '' })}
+            />)}
+          </ul>
+        </details>
       )
     }
   </section>

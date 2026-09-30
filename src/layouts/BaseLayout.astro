@@ -62,9 +62,9 @@ const {
       const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const targets = document.querySelectorAll<HTMLElement>('[data-reveal]');
 
-      if (reduce || !('IntersectionObserver' in window)) {
-        targets.forEach((el) => el.classList.add('is-revealed'));
-      } else {
+      let sledovat = (el: HTMLElement) => el.classList.add('is-revealed');
+
+      if (!reduce && 'IntersectionObserver' in window) {
         const io = new IntersectionObserver(
           (entries) => {
             for (const entry of entries) {
@@ -75,8 +75,21 @@ const {
           },
           { rootMargin: '0px 0px -12% 0px', threshold: 0.05 },
         );
-        targets.forEach((el) => io.observe(el));
+        sledovat = (el) => io.observe(el);
       }
+      targets.forEach((el) => sledovat(el));
+
+      /* Akce z kalendáře se do stránky dotahují až po načtení (server
+         islands). I ty je potřeba sledovat, jinak by zůstaly neviditelné. */
+      new MutationObserver((zmeny) => {
+        for (const zmena of zmeny) {
+          zmena.addedNodes.forEach((uzel) => {
+            if (!(uzel instanceof HTMLElement)) return;
+            if (uzel.matches('[data-reveal]')) sledovat(uzel);
+            uzel.querySelectorAll<HTMLElement>('[data-reveal]').forEach((el) => sledovat(el));
+          });
+        }
+      }).observe(document.body, { childList: true, subtree: true });
     </script>
   </body>
 </html>

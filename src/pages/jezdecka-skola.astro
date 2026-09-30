@@ -5,8 +5,7 @@ import Section from '@/components/Section.astro';
 import SectionHead from '@/components/SectionHead.astro';
 import Icon from '@/components/Icon.astro';
 import { site } from '@/data/site';
-import { upcomingEvents } from '@/data/events';
-import EventRow from '@/components/EventRow.astro';
+import AkceSeznam from '@/components/kalendar/AkceSeznam.astro';
 
 import { photo } from '@/data/images';
 import page from '@/obsah/stranky/jezdecka-skola.json';
@@ -15,9 +14,6 @@ const heroImg = photo(page.hero.image)!;
 const lekceImg = photo(page.images.lekce)!;
 const bezpecnostImg = photo(page.images.bezpecnost)!;
 
-const nextGames = upcomingEvents()
-  .filter((e) => e.kind === 'hry' || e.kind === 'zkousky')
-  .slice(0, 3);
 
 const steps = page.steps.map((x, i) => ({
   ...x,
@@ -183,18 +179,7 @@ const klubActivities = page.klubActivities;
           }
         </ul>
 
-        {
-          nextGames.length > 0 && (
-            <div class="mt-12">
-              <div class="mt-5">
-                {nextGames.map((e, i) => (
-                  <EventRow event={e} index={i} />
-                ))}
-                <div class="border-t border-ink/12" />
-              </div>
-            </div>
-          )
-        }
+        <AkceSeznam server:defer vyber="hry" pocet={3} class="mt-12" />
       </div>
     </div>
   </Section>

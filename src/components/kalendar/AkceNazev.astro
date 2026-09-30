@@ -1,0 +1,19 @@
+---
+/**
+ * Název nejbližší akce, do rychlého odkazu v záhlaví úvodní stránky.
+ * Server island stejně jako AkceSeznam, bez akcí vypíše náhradní text.
+ */
+
+import { upcomingPublicEvents } from '@/data/events';
+import { CACHE_KALENDARE, nactiKalendar } from '@/lib/kalendar';
+
+interface Props {
+  nahrada: string;
+}
+
+Astro.response.headers.set('Cache-Control', CACHE_KALENDARE);
+
+const nejblizsi = upcomingPublicEvents(await nactiKalendar())[0];
+---
+
+{nejblizsi?.title ?? Astro.props.nahrada}

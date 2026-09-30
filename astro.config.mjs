@@ -45,6 +45,7 @@ export default defineConfig({
       // Do mapy webu patří kalendář, ne přihlašování a administrace.
       filter: (page) =>
         !page.includes('/keystatic') &&
+        !page.endsWith('/sprava/') && !page.endsWith('/sprava') &&
         !/\/rezervace\/./.test(page),
     }),
     react(),

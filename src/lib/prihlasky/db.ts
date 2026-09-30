@@ -10,6 +10,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { createServerClient, parseCookieHeader } from '@supabase/ssr';
 import type { AstroCookies } from 'astro';
+import type { EventKind } from '@/data/events';
 import type { TypAkce } from './typy';
 
 // Každá proměnná vypsaná zvlášť: Vite dosazuje `import.meta.env.X` při
@@ -82,6 +83,8 @@ export interface Polozka {
  */
 export interface Akce {
   kod: string;
+  /** Druh akce v kalendáři. Typ formuláře se z něj odvozuje (viz typProDruh). */
+  druh: EventKind;
   typ: TypAkce;
   nazev: string;
   podtitul: string;
@@ -102,6 +105,12 @@ export interface Akce {
   varianty: Polozka[];
   priplatky: Polozka[];
   otevreno: boolean;
+  /** Jde se na akci přihlásit přes web? Bez toho je to jen záznam v kalendáři. */
+  prihlasovani: boolean;
+  /** Vrchol sezóny, v kalendáři zvýrazněný. */
+  zvyraznit: boolean;
+  rozpis_nazev: string;
+  rozpis_url: string;
 }
 
 /** Jeden přihlášený. Která pole jsou vyplněná, závisí na typu akce. */

@@ -1,0 +1,98 @@
+---
+/**
+ * Karta akce v přehledu správy. U akce s přihlašováním ukazuje počty
+ * přihlášených, u akce jen do kalendáře jen termín.
+ */
+
+import Icon from '@/components/Icon.astro';
+import type { Akce } from '@/lib/prihlasky/db';
+import { terminAkce } from '@/lib/prihlasky/platba';
+import { eventKindLabels } from '@/data/events';
+
+interface Props {
+  s: { akce: Akce; nove: number; prijate: number; zaplacene: number };
+  /** Je podle téhle akce zrovna filtrovaný seznam přihlášek? */
+  vybrana: boolean;
+  /** Kam vede klik na kartu (zapnutí / vypnutí filtru). */
+  filtr: string;
+}
+
+const { s, vybrana, filtr } = Astro.props;
+const a = s.akce;
+---
+
+<li
+  class:list={[
+    'card relative flex h-full flex-col p-6',
+    a.prihlasovani && 'card-hover',
+    vybrana && 'border-brass-600',
+  ]}
+>
+  {/* Filtr přes celou kartu, odkaz na úpravu nad ním. Vnořené odkazy
+      by prohlížeč nepřijal, proto roztažená plocha. */}
+  {
+    a.prihlasovani && (
+      <a
+        href={filtr}
+        aria-current={vybrana ? 'true' : undefined}
+        class="absolute inset-0"
+        aria-label={`Filtrovat přihlášky: ${a.nazev}`}
+      />
+    )
+  }
+  <div class="pointer-events-none relative pb-5">
+    <p class="eyebrow">
+      {eventKindLabels[a.druh] ?? 'Akce'} · {terminAkce(a)}
+    </p>
+    <p class="mt-2 font-display text-[1.375rem] leading-snug">{a.nazev}</p>
+    <p class="mt-1 text-[0.8125rem] text-ink-3">
+      {
+        a.prihlasovani ? (
+          <>
+            {a.otevreno ? 'Přihlášky otevřené' : 'Přihlášky uzavřené'} ·{' '}
+            <span class="text-brass-700">/prihlaska/{a.kod}</span>
+          </>
+        ) : (
+          'Jen v kalendáři, bez přihlašování'
+        )
+      }
+    </p>
+
+    {
+      a.prihlasovani && (
+        <dl class="mt-5 grid grid-cols-3 gap-3 border-t border-ink/12 pt-4">
+          <div>
+            <dt class="text-[0.6875rem] font-semibold uppercase tracking-[0.1em] text-ink-3">
+              Přijato
+            </dt>
+            <dd class="mt-1 font-display text-[1.375rem] leading-none">
+              {s.prijate}
+              {a.kapacita > 0 && <span class="text-[0.9375rem] text-ink-3">/{a.kapacita}</span>}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-[0.6875rem] font-semibold uppercase tracking-[0.1em] text-ink-3">
+              Zaplaceno
+            </dt>
+            <dd class="mt-1 font-display text-[1.375rem] leading-none">{s.zaplacene}</dd>
+          </div>
+          <div>
+            <dt class="text-[0.6875rem] font-semibold uppercase tracking-[0.1em] text-brass-700">
+              Nové
+            </dt>
+            <dd class="mt-1 font-display text-[1.375rem] leading-none text-brass-700">
+              {s.nove}
+            </dd>
+          </div>
+        </dl>
+      )
+    }
+  </div>
+
+  <div class="relative mt-auto flex items-center justify-end border-t border-ink/12 pt-4">
+    <a href={`/prihlasky/sprava/akce/${a.kod}`} class="link-arrow">
+      Upravit akci
+      <Icon name="arrow-right" class="h-3.5 w-3.5" />
+    </a>
+  </div>
+</li>

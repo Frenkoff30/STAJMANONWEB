@@ -12,7 +12,8 @@
 
 import { platneDatum } from '@/lib/rezervace';
 import type { Akce, Polozka } from './db';
-import { typyAkci, type TypAkce } from './typy';
+import { eventKindLabels, type EventKind } from '@/data/events';
+import { typProDruh, type TypAkce } from './typy';
 
 /** Kolik řádků ceníku formulář vykreslí. Prázdné se zahodí. */
 export const RADKU_CENIKU = 8;
@@ -84,12 +85,15 @@ export const vychoziProTyp: Record<TypAkce, VychoziProTyp> = {
   zavody: { max_ucastniku: 10, vyber: 'vice', splatnost_dni: 0, platba_hned: true },
 };
 
-/** Nová akce: rozumné výchozí hodnoty podle typu, ať je co ukázat. */
-export function prazdnaAkce(typ: TypAkce = 'tabor'): VyplnenaAkce {
-  const vychozi = vychoziProTyp[typ] ?? vychoziProTyp.tabor;
+/** Nová akce: rozumné výchozí hodnoty podle druhu, ať je co ukázat. */
+export function prazdnaAkce(druh: EventKind = 'zavody'): VyplnenaAkce {
+  const platnyDruh = druh in eventKindLabels ? druh : 'zavody';
+  const typ = typProDruh[platnyDruh];
+  const vychozi = vychoziProTyp[typ];
 
   return {
     kod: '',
+    druh: platnyDruh,
     typ,
     nazev: '',
     podtitul: '',
@@ -104,6 +108,11 @@ export function prazdnaAkce(typ: TypAkce = 'tabor'): VyplnenaAkce {
     varianty: [],
     priplatky: [],
     otevreno: true,
+    // Nová akce je napřed jen v kalendáři, přihlašování se zapne zaškrtnutím.
+    prihlasovani: false,
+    zvyraznit: false,
+    rozpis_nazev: '',
+    rozpis_url: '',
   };
 }
 
@@ -133,15 +142,21 @@ function nactiPolozky(fd: FormData, seznam: 'varianty' | 'priplatky'): Polozka[]
   return out;
 }
 
+/**
+ * Akce z formuláře. Rozpis ke stažení se tu nečte — soubor nahrává
+ * stránka sama a výsledek doplní do `rozpis_*`.
+ */
 export function nactiAkci(fd: FormData): VyplnenaAkce {
-  const typ = String(fd.get('typ') ?? 'tabor') as TypAkce;
+  const surovyDruh = String(fd.get('druh') ?? '') as EventKind;
+  const druh: EventKind = surovyDruh in eventKindLabels ? surovyDruh : 'jina';
   const zacatek = text(fd, 'zacatek', 10);
   const nazev = text(fd, 'nazev', 120);
   const vekOd = text(fd, 'vek_od', 3);
 
   return {
     kod: text(fd, 'kod', 60).toLowerCase() || kodZNazvu(nazev, zacatek),
-    typ: typ in typyAkci ? typ : 'tabor',
+    druh,
+    typ: typProDruh[druh],
     nazev,
     podtitul: text(fd, 'podtitul', 160),
     popis: text(fd, 'popis', 2000),
@@ -159,6 +174,10 @@ export function nactiAkci(fd: FormData): VyplnenaAkce {
     varianty: nactiPolozky(fd, 'varianty'),
     priplatky: nactiPolozky(fd, 'priplatky'),
     otevreno: fd.get('otevreno') === 'ano',
+    prihlasovani: fd.get('prihlasovani') === 'ano',
+    zvyraznit: fd.get('zvyraznit') === 'ano',
+    rozpis_nazev: '',
+    rozpis_url: '',
   };
 }
 
@@ -211,6 +230,10 @@ export function zkontrolujAkci(a: VyplnenaAkce): {
     chyby.konec = 'Konec nemůže být dřív než začátek.';
   }
 
+  // Akce jen do kalendáře: ceník a nastavení přihlášek se nekontroluje,
+  // stejně se nepoužijí.
+  if (!a.prihlasovani) return { chyby, cenik };
+
   if (a.vek_od !== null && (a.vek_od < 0 || a.vek_od > 99)) {
     chyby.vek_od = 'Věk zadejte mezi 0 a 99, nebo nechte prázdné.';
   }
@@ -249,6 +272,7 @@ export function jsouChyby(v: { chyby: ChybyAkce; cenik: ChybyCeniku }): boolean 
 export function proDatabazi(a: VyplnenaAkce): Record<string, unknown> {
   return {
     kod: a.kod,
+    druh: a.druh,
     typ: a.typ,
     nazev: a.nazev,
     podtitul: a.podtitul,
@@ -265,7 +289,13 @@ export function proDatabazi(a: VyplnenaAkce): Record<string, unknown> {
     platba_hned: a.platba_hned,
     varianty: a.varianty,
     priplatky: a.priplatky,
-    otevreno: a.otevreno,
+    // Bez online přihlašování musí zůstat zavřeno, jinak by šla přihláška
+    // odeslat přímo přes adresu.
+    otevreno: a.prihlasovani && a.otevreno,
+    prihlasovani: a.prihlasovani,
+    zvyraznit: a.zvyraznit,
+    rozpis_nazev: a.rozpis_nazev,
+    rozpis_url: a.rozpis_url,
   };
 }
 

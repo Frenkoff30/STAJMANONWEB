@@ -33,73 +33,6 @@ const REPO = 'Frenkoff30/STAJMANONWEB';
 
 /* ---------------------------------------------------------------- kolekce */
 
-const akce = collection({
-  label: 'Kalendář akcí',
-  path: 'src/obsah/akce/*',
-  format: { data: 'json' },
-  slugField: 'title',
-  columns: ['title', 'start'],
-  entryLayout: 'form',
-  schema: {
-    title: fields.slug({
-      name: { label: 'Název akce' },
-      slug: {
-        label: 'Adresa záznamu',
-        description:
-          'Interní název souboru. U opakujících se akcí přidejte datum, ať je jedinečný.',
-      },
-    }),
-    start: fields.date({ label: 'Datum konání' }),
-    end: fields.date({
-      label: 'Datum konce',
-      description: 'Vyplňte jen u vícedenních akcí.',
-      validation: { isRequired: false },
-    }),
-    detail: volitelnyText(
-      'Upřesnění',
-      'Disciplíny a úrovně, například: hobby, Z–ST, pony',
-    ),
-    kind: fields.select({
-      label: 'Typ akce',
-      options: [
-        { label: 'Skokové závody', value: 'zavody' },
-        { label: 'Drezura', value: 'drezura' },
-        { label: 'Všestrannost', value: 'vsestrannost' },
-        { label: 'Jezdecké hry pro děti', value: 'hry' },
-        { label: 'Soustředění', value: 'soustredeni' },
-        { label: 'Pobyt s výukou', value: 'pobyt' },
-        { label: 'Chovatelská akce', value: 'chov' },
-        { label: 'Zkoušky', value: 'zkousky' },
-        { label: 'Spřežení', value: 'sprezeni' },
-        { label: 'Vrchol sezóny', value: 'vrchol' },
-      ],
-      defaultValue: 'zavody',
-    }),
-    highlight: fields.checkbox({
-      label: 'Vrcholná akce sezóny',
-      description: 'Vykreslí se zvýrazněně na úvodní stránce i v kalendáři.',
-      defaultValue: false,
-    }),
-    file: fields.object(
-      {
-        label: volitelnyText('Popisek odkazu', 'Například: Rozpis (DOC)'),
-        href: volitelnyText(
-          'Cesta k souboru',
-          'Soubor patří do public/soubory/akce/, sem napište /soubory/akce/nazev.doc',
-        ),
-      },
-      {
-        label: 'Rozpis ke stažení',
-        description: 'Nechte prázdné, pokud rozpis není.',
-      },
-    ),
-    prihlaska: volitelnyText(
-      'Online přihláška',
-      'Kód akce ze správy přihlášek, například jezdecke-hry-2027-jaro. U akce se pak ukáže tlačítko Přihlásit se a formulář se přizpůsobí typu akce (tábor se ptá na dítě, hry na klub a jeho dvojice). Nechte prázdné, pokud se na akci online nepřihlašuje.',
-    ),
-  },
-});
-
 const novinky = collection({
   label: 'Novinky',
   path: 'src/obsah/novinky/*',
@@ -602,7 +535,7 @@ export default config({
     brand: { name: 'Stáj Manon' },
     navigation: {
       Novinky: ['novinky'],
-      Sport: ['akce', 'vysledky', 'uspechy', 'tituly'],
+      Sport: ['vysledky', 'uspechy', 'tituly'],
       'Pro jezdce': ['kurzy', 'pobyty', 'sluzby', 'kone'],
       'Areál a fotky': ['areal', 'penzion', 'galerie'],
       'Texty stránek': [
@@ -628,7 +561,7 @@ export default config({
     },
   },
 
-  collections: { novinky, akce, vysledky, uspechy, pobyty, galerie },
+  collections: { novinky, vysledky, uspechy, pobyty, galerie },
   singletons: {
     nastaveni,
     kurzy,

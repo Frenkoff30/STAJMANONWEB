@@ -227,7 +227,7 @@ create table if not exists public.prihlasky_spravci (
 --
 -- Další akce se tímhle skriptem zakládat nemusí: ve správě přihlášek je na to
 -- formulář (/prihlasky/sprava → Nová akce), včetně ceníku a zavírání přihlášek.
--- V kalendáři na akce odkazují záznamy v src/obsah/akce/ polem „prihlaska“.
+-- Do kalendáře na webu se akce propisují samy (supabase/uprava-kalendar.sql).
 
 insert into public.akce (
   kod, typ, nazev, podtitul, popis, zacatek, konec, nastup, odjezd,

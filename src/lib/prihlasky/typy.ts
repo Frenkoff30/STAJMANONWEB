@@ -11,7 +11,28 @@
  * tady je jen to, co se nedá vyčíst z ceníku.
  */
 
+import type { EventKind } from '@/data/events';
+
 export type TypAkce = 'tabor' | 'pobyt' | 'hry' | 'soustredeni' | 'zavody';
+
+/**
+ * Ve správě se vybírá jen druh akce (jak se ukáže v kalendáři). Podoba
+ * přihlášky se z něj odvodí sama: tábor a pobyt se ptají na dítě, hry
+ * na klub a dvojice, všechno ostatní jako závody na jezdce a koně.
+ */
+export const typProDruh: Record<EventKind, TypAkce> = {
+  zavody: 'zavody',
+  drezura: 'zavody',
+  vsestrannost: 'zavody',
+  sprezeni: 'zavody',
+  zkousky: 'zavody',
+  chov: 'zavody',
+  jina: 'zavody',
+  hry: 'hry',
+  soustredeni: 'soustredeni',
+  tabor: 'tabor',
+  pobyt: 'pobyt',
+};
 
 /** Pole, na která se dá ptát u jednoho účastníka. */
 export type PoleUcastnika =

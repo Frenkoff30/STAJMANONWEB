@@ -1,0 +1,44 @@
+---
+/**
+ * Pár nejbližších akcí jako řádky kalendáře.
+ *
+ * Vkládá se jako server island (`server:defer`): stránka kolem zůstane
+ * statická a rychlá, seznam se dotáhne z databáze až v prohlížeči. Nová
+ * akce ze správy je tak na webu hned, bez nového nasazení.
+ */
+
+import EventRow from '@/components/EventRow.astro';
+import { upcomingEvents, upcomingPublicEvents } from '@/data/events';
+import { CACHE_KALENDARE, nactiKalendar } from '@/lib/kalendar';
+
+interface Props {
+  /** `verejne` = úvodní stránka, `hry` = jezdecké hry a zkoušky pro jezdeckou školu. */
+  vyber: 'verejne' | 'hry';
+  pocet: number;
+  /** Třídy obalu, který se vykreslí jen když nějaké akce jsou. */
+  class?: string;
+  kompaktni?: boolean;
+}
+
+const { vyber, pocet, class: className, kompaktni = false } = Astro.props;
+
+Astro.response.headers.set('Cache-Control', CACHE_KALENDARE);
+
+const vsechny = await nactiKalendar();
+const akce = (
+  vyber === 'hry'
+    ? upcomingEvents(vsechny).filter((e) => e.kind === 'hry' || e.kind === 'zkousky')
+    : upcomingPublicEvents(vsechny)
+).slice(0, pocet);
+---
+
+{
+  akce.length > 0 && (
+    <div class={className}>
+      {akce.map((e, i) => (
+        <EventRow event={e} index={i} kompaktni={kompaktni} />
+      ))}
+      <div class="border-t border-ink/12" />
+    </div>
+  )
+}

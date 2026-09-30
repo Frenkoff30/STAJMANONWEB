@@ -1,23 +1,22 @@
 /**
  * Kalendář jezdeckých akcí.
  *
- * Jednotlivé akce spravuje redakční systém v `src/obsah/akce/`.
- * Stránka /akce se sama rozdělí na „nadcházející" a „archiv" podle dne buildu.
+ * Akce se zadávají ve správě na webu (/prihlasky/sprava) a leží v databázi,
+ * načítá je src/lib/kalendar.ts. Tady jsou jen typy a pomocné funkce.
  */
-
-import { collection, opt } from './_content';
 
 export type EventKind =
   | 'zavody'
   | 'drezura'
   | 'vsestrannost'
+  | 'sprezeni'
+  | 'zkousky'
   | 'hry'
   | 'soustredeni'
+  | 'tabor'
   | 'pobyt'
   | 'chov'
-  | 'zkousky'
-  | 'sprezeni'
-  | 'vrchol';
+  | 'jina';
 
 export interface StableEvent {
   /** ISO datum začátku (YYYY-MM-DD) */
@@ -25,55 +24,31 @@ export interface StableEvent {
   /** ISO datum konce, pokud je akce vícedenní */
   end?: string;
   title: string;
-  /** Disciplíny / úrovně — text v lomítkách ze starého webu */
+  /** Krátký popis pod názvem */
   detail?: string;
   kind: EventKind;
   /** Vrcholná akce sezóny — vykreslí se zvýrazněně */
   highlight?: boolean;
   /** Rozpis ke stažení */
   file?: { label: string; href: string };
-  /** Kód tábora v přihláškách, u akce se pak ukáže tlačítko „Přihlásit se“ */
+  /** Kód akce, když se na ni jde přihlásit online */
   prihlaska?: string;
 }
 
+/** Druhy akcí v pořadí, v jakém se nabízí ve správě i v legendě. */
 export const eventKindLabels: Record<EventKind, string> = {
   zavody: 'Skokové závody',
   drezura: 'Drezura',
   vsestrannost: 'Všestrannost',
+  sprezeni: 'Spřežení',
+  zkousky: 'Zkoušky',
   hry: 'Jezdecké hry pro děti',
   soustredeni: 'Soustředění',
+  tabor: 'Tábor',
   pobyt: 'Pobyt s výukou',
   chov: 'Chovatelská akce',
-  zkousky: 'Zkoušky',
-  sprezeni: 'Spřežení',
-  vrchol: 'Vrchol sezóny',
+  jina: 'Jiná akce',
 };
-
-interface RawEvent {
-  title: string;
-  start: string;
-  end?: string;
-  detail?: string;
-  kind: EventKind;
-  highlight?: boolean;
-  file?: { label: string; href: string } | null;
-  prihlaska?: string;
-}
-
-export const events: StableEvent[] = collection<RawEvent>(
-  import.meta.glob('/src/obsah/akce/*.json', { eager: true }),
-)
-  .map((e) => ({
-    start: e.start,
-    end: opt(e.end),
-    title: e.title,
-    detail: opt(e.detail),
-    kind: e.kind,
-    highlight: e.highlight === true,
-    file: e.file && opt(e.file.href) ? e.file : undefined,
-    prihlaska: opt(e.prihlaska),
-  }))
-  .sort((a, b) => a.start.localeCompare(b.start));
 
 /* ------------------------------------------------------------------ utils */
 
@@ -117,13 +92,13 @@ export function formatRange(e: StableEvent): string {
   return `${s.getDate()}. ${CZ_MONTHS[s.getMonth()]} – ${t.getDate()}. ${CZ_MONTHS[t.getMonth()]} ${t.getFullYear()}`;
 }
 
-/** Akce, která ještě neskončila (počítáno k dnešnímu dni buildu). */
+/** Akce, která ještě neskončila. */
 export function isUpcoming(e: StableEvent, now = new Date()): boolean {
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   return parseDate(e.end ?? e.start) >= today;
 }
 
-export function upcomingEvents(now = new Date()): StableEvent[] {
+export function upcomingEvents(events: StableEvent[], now = new Date()): StableEvent[] {
   return events
     .filter((e) => isUpcoming(e, now))
     .sort((a, b) => a.start.localeCompare(b.start));
@@ -134,11 +109,13 @@ export function upcomingEvents(now = new Date()): StableEvent[] {
  * a v teaseru na homepage by jen zabraly místo skutečným závodům.
  * Výjimkou je pobyt s online přihláškou, na ten se jde přihlásit rovnou.
  */
-export function upcomingPublicEvents(now = new Date()): StableEvent[] {
-  return upcomingEvents(now).filter((e) => e.kind !== 'pobyt' || e.prihlaska);
+export function upcomingPublicEvents(events: StableEvent[], now = new Date()): StableEvent[] {
+  return upcomingEvents(events, now).filter(
+    (e) => (e.kind !== 'pobyt' && e.kind !== 'tabor') || e.prihlaska,
+  );
 }
 
-export function pastEvents(now = new Date()): StableEvent[] {
+export function pastEvents(events: StableEvent[], now = new Date()): StableEvent[] {
   return events
     .filter((e) => !isUpcoming(e, now))
     .sort((a, b) => b.start.localeCompare(a.start));

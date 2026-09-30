@@ -17,17 +17,19 @@
       "label": "Ubytování a penzion",
       "href": "/penzion"
     },
-    "quickEvents": {
-      "label": "Nejbližší akce",
-      "href": "/akce",
-      "fallback": "Kalendář akcí"
+    "quickNews": {
+      "label": "Novinky",
+      "href": "/novinky",
+      "fallback": "Co je nového ve stáji"
     },
     "quickCourses": {
       "label": "Prázdninové kurzy",
       "href": "/kurzy"
     },
-    "quickPhone": {
-      "label": "Zavolejte nám"
+    "quickEvents": {
+      "label": "Akce",
+      "href": "/akce",
+      "fallback": "Kalendář akcí"
     }
   },
   "pillarsIntro": {
@@ -92,8 +94,8 @@
         "href": "/pobyty"
       }
     ],
-    "imageTall": "kurzy-pony",
-    "imageTallAlt": "Dvě dívky na ponym během prázdninového kurzu"
+    "imageTall": "skola-pony-parkur",
+    "imageTallAlt": "Dívka na poníkovi skáče překážku v areálu Suchá"
   },
   "uspechy": {
     "image": "skrivan-01",

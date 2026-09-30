@@ -1,0 +1,64 @@
+---
+/**
+ * Rozcestník pro stáj: kde se co na webu spravuje. Vede sem tlačítko
+ * „Správa webu“ v patičce. Každá část má vlastní přihlášení, tady jsou
+ * jen odkazy, takže stránka může být statická.
+ */
+
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Section from '@/components/Section.astro';
+import Icon from '@/components/Icon.astro';
+
+const dlazdice = [
+  {
+    href: '/prihlasky/sprava',
+    ikona: 'calendar' as const,
+    nadpis: 'Akce a přihlášky',
+    text: 'Nová akce do kalendáře, přihlášky na tábory, hry a závody.',
+  },
+  {
+    href: '/keystatic',
+    ikona: 'sparkle' as const,
+    nadpis: 'Novinky a texty',
+    text: 'Novinky na úvodní stránce, výsledky, fotky a texty stránek.',
+  },
+  {
+    href: '/rezervace/sprava',
+    ikona: 'clock' as const,
+    nadpis: 'Rezervace jízdárny',
+    text: 'Obsazenost hal a kolbiště, členové a jejich rezervace.',
+  },
+];
+---
+
+<BaseLayout title="Správa webu" description="Správa webu Stáje Manon." noindex>
+  <Section tone="paper" space="lg">
+    <p class="eyebrow">Pro stáj</p>
+    <h1 class="t-2 mt-3">Správa webu</h1>
+    <p class="lead mt-4 max-w-2xl">Vyberte, co chcete upravit.</p>
+
+    <ul class="mt-10 grid gap-4 md:grid-cols-3">
+      {
+        dlazdice.map((d) => (
+          <li>
+            <a
+              href={d.href}
+              rel="nofollow"
+              class="card card-hover group flex h-full flex-col p-7"
+            >
+              <Icon name={d.ikona} class="h-7 w-7 text-brass-600" />
+              <span class="mt-6 font-display text-[1.625rem] leading-snug transition-colors group-hover:text-brass-700">
+                {d.nadpis}
+              </span>
+              <span class="mt-2 text-[0.9375rem] leading-relaxed text-ink-3">{d.text}</span>
+              <span class="link-arrow mt-auto pt-6">
+                Otevřít
+                <Icon name="arrow-right" class="h-3.5 w-3.5" />
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+</BaseLayout>

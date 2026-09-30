@@ -68,6 +68,9 @@ if (prihlaskyNastaveny && Astro.params.kod) {
   akce = data as Akce | null;
 }
 
+// Akce jen do kalendáře přihlášku nemá, vrátíme člověka na kalendář.
+if (akce && akce.prihlasovani === false) return Astro.redirect('/akce', 302);
+
 if (prihlaskyNastaveny && !akce) Astro.response.status = 404;
 
 const typ = popisTypu(akce?.typ);

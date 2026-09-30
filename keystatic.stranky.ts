@@ -60,6 +60,15 @@ export const strankaUvod = stranka(
         lead: odstavec('Úvodní odstavec'),
         primaryCta: odkaz('Hlavní tlačítko'),
         secondaryCta: odkaz('Vedlejší tlačítko'),
+        quickNews: fields.object(
+          {
+            label: fields.text({ label: 'Popisek' }),
+            href: fields.text({ label: 'Odkaz' }),
+            fallback: fields.text({ label: 'Text, když není žádná novinka' }),
+          },
+          { label: 'Lišta: nejnovější novinka' },
+        ),
+        quickCourses: odkaz('Lišta: prázdninové kurzy'),
         quickEvents: fields.object(
           {
             label: fields.text({ label: 'Popisek' }),
@@ -69,11 +78,6 @@ export const strankaUvod = stranka(
             }),
           },
           { label: 'Lišta: nejbližší akce' },
-        ),
-        quickCourses: odkaz('Lišta: prázdninové kurzy'),
-        quickPhone: fields.object(
-          { label: fields.text({ label: 'Popisek' }) },
-          { label: 'Lišta: telefon' },
         ),
       },
       { label: 'Úvodní obrazovka' },

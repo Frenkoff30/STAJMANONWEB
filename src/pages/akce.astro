@@ -1,4 +1,11 @@
 ---
+/**
+ * Kalendář akcí. Akce se zadávají ve správě (/prihlasky/sprava) a stránka
+ * si je čte z databáze při zobrazení, takže nová akce je tu hned.
+ */
+
+export const prerender = false;
+
 import PageLayout from '@/layouts/PageLayout.astro';
 import Section from '@/components/Section.astro';
 import SectionHead from '@/components/SectionHead.astro';
@@ -11,23 +18,27 @@ import {
   groupByMonth,
   formatRange,
   eventKindLabels,
-  events,
 } from '@/data/events';
+import { CACHE_KALENDARE, nactiKalendar } from '@/lib/kalendar';
 
 import { photo } from '@/data/images';
 import page from '@/obsah/stranky/akce.json';
 
 const heroImg = photo(page.hero.image)!;
 
-const upcoming = upcomingEvents();
+Astro.response.headers.set('Cache-Control', CACHE_KALENDARE);
+
+const events = await nactiKalendar();
+const upcoming = upcomingEvents(events);
 const months = groupByMonth(upcoming);
-const past = pastEvents();
+const past = pastEvents(events);
 const pastByYear = [...new Set(past.map((e) => e.start.slice(0, 4)))].map((y) => ({
   year: y,
   items: past.filter((e) => e.start.startsWith(y)),
 }));
 
-const vcl = events.find((e) => e.highlight);
+/** Vrchol sezóny: nejbližší zvýrazněná akce, která ještě neproběhla. */
+const vcl = upcoming.find((e) => e.highlight);
 
 /** Schema.org Event pro nadcházející akce — Google je umí zobrazit ve výsledcích. */
 const eventsLd = upcoming.slice(0, 20).map((e) => ({
@@ -142,7 +153,9 @@ const eventsLd = upcoming.slice(0, 20).map((e) => ({
       </div>
       <ul class="grid gap-x-8 gap-y-3 sm:grid-cols-2 lg:col-span-8">
         {
-          Object.entries(eventKindLabels).map(([, label]) => (
+          Object.entries(eventKindLabels)
+            .filter(([druh]) => druh !== 'jina')
+            .map(([, label]) => (
             <li class="flex items-start gap-3 text-[0.9375rem] text-ink-3">
               <span class="mt-2 h-px w-4 shrink-0 bg-brass-600" />
               {label}
