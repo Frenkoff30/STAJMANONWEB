@@ -218,40 +218,6 @@ const jsonLd = {
     </div>
   </Section>
 
-  <!-- ============================================================ PENZION -->
-  <section class="relative bg-white">
-    <div class="grid lg:grid-cols-2">
-      <div class="parallax relative min-h-[14rem] overflow-hidden lg:min-h-[24rem]">
-        <Image
-          src={restauraceImg}
-          alt={page.penzion.imageAlt}
-          widths={[640, 1024, 1600, 2000]}
-          sizes="(min-width: 1024px) 50vw, 100vw"
-          class="absolute inset-0 h-full w-full object-cover"
-        />
-      </div>
-
-      <div class="flex items-center px-5 py-10 sm:px-8 lg:px-12 lg:py-14 xl:px-16">
-        <div class="max-w-xl" data-reveal>
-          <h2 class="t-2">{page.penzion.title}</h2>
-          <p class="lead mt-4">{page.penzion.lead}</p>
-
-          <div class="mt-8 flex flex-wrap gap-3">
-            <a href={page.penzion.primaryCta.href} class="btn btn-primary">
-              {page.penzion.primaryCta.label}
-            </a>
-            {/* Ubytování se domlouvá po telefonu, online rezervace má jen
-                jízdárna. */}
-            <a href={`tel:${site.phoneHref}`} class="btn btn-outline">
-              <Icon name="phone" class="h-4 w-4" />
-              {page.penzion.secondaryCtaLabel}
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- ============================================================== ŠKOLA -->
   <!-- Cesta jezdce: škola → kurzy a pobyty → první závody. Fotka přes půl
        šířky jako u penzionu, jen zrcadlově, ať se sekce střídají. -->
@@ -302,6 +268,40 @@ const jsonLd = {
           sizes="(min-width: 1024px) 50vw, 100vw"
           class="absolute inset-0 h-full w-full object-cover"
         />
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ PENZION -->
+  <section class="relative bg-white">
+    <div class="grid lg:grid-cols-2">
+      <div class="parallax relative min-h-[14rem] overflow-hidden lg:min-h-[24rem]">
+        <Image
+          src={restauraceImg}
+          alt={page.penzion.imageAlt}
+          widths={[640, 1024, 1600, 2000]}
+          sizes="(min-width: 1024px) 50vw, 100vw"
+          class="absolute inset-0 h-full w-full object-cover"
+        />
+      </div>
+
+      <div class="flex items-center px-5 py-10 sm:px-8 lg:px-12 lg:py-14 xl:px-16">
+        <div class="max-w-xl" data-reveal>
+          <h2 class="t-2">{page.penzion.title}</h2>
+          <p class="lead mt-4">{page.penzion.lead}</p>
+
+          <div class="mt-8 flex flex-wrap gap-3">
+            <a href={page.penzion.primaryCta.href} class="btn btn-primary">
+              {page.penzion.primaryCta.label}
+            </a>
+            {/* Ubytování se domlouvá po telefonu, online rezervace má jen
+                jízdárna. */}
+            <a href={`tel:${site.phoneHref}`} class="btn btn-outline">
+              <Icon name="phone" class="h-4 w-4" />
+              {page.penzion.secondaryCtaLabel}
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   </section>
