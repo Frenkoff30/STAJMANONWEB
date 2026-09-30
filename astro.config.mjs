@@ -26,6 +26,18 @@ export default defineConfig({
    */
   security: {
     checkOrigin: false,
+
+    /**
+     * Domény, kterým Astro na serveru věří. Bez nich ignoruje hlavičku Host
+     * od Vercelu a adresa žádosti vyjde jako `https://localhost/…` — redakce
+     * pak posílá GitHubu špatnou zpětnou adresu a přihlášení skončí chybou
+     * „redirect_uri is not associated with this application".
+     */
+    allowedDomains: [
+      { hostname: 'www.stajmanon.cz', protocol: 'https' },
+      { hostname: 'stajmanon.cz', protocol: 'https' },
+      { hostname: 'stajmanonweb.vercel.app', protocol: 'https' },
+    ],
   },
 
   integrations: [
