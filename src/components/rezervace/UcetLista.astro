@@ -58,6 +58,16 @@ const odkazy = [
       {
         prihlasen ? (
           <>
+            {/* Správce sem přichází ze Správy webu (novinky, akce), ať se má
+                jak vrátit. */}
+            {spravce && (
+              <a
+                href="/prihlasky/sprava"
+                class="font-semibold uppercase tracking-[0.1em] text-brass-700 transition-colors hover:text-brass-800"
+              >
+                ← Správa webu
+              </a>
+            )}
             <span class="text-ink-3">
               {profil?.jmeno || email}
               {profil && !profil.schvaleno && (
