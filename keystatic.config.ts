@@ -4,7 +4,12 @@
  * Obsah se ukládá jako JSON do `src/obsah/`, fotky do `src/assets/photos/`.
  * Uložení v administraci = commit do repozitáře = automatický build na Vercelu.
  *
- * Lokálně (`npm run dev`) se zapisuje rovnou na disk, na produkci přes GitHub.
+ * Lokálně (`npm run dev`) se zapisuje rovnou na disk. Na produkci se do
+ * redakce přihlašuje přes Keystatic Cloud (projekt stajmanon/stajmanonweb):
+ * lidé ze stáje jen e-mailem, bez GitHub účtu. Zapisuje se pak do repozitáře
+ * Frenkoff30/STAJMANONWEB přes aplikaci Keystatic Cloud na GitHubu.
+ *
+ * Novinky a akce tu nejsou, píšou se ve správě webu (/prihlasky/sprava).
  */
 
 import { config, fields, collection, singleton } from '@keystatic/core';
@@ -29,7 +34,6 @@ import {
   strankaVysledky,
 } from './keystatic.stranky';
 
-const REPO = 'Frenkoff30/STAJMANONWEB';
 
 /* ---------------------------------------------------------------- kolekce */
 
@@ -481,9 +485,8 @@ const tituly = singleton({
 /* ------------------------------------------------------------------ config */
 
 export default config({
-  storage: import.meta.env.DEV
-    ? { kind: 'local' }
-    : { kind: 'github', repo: REPO },
+  storage: import.meta.env.DEV ? { kind: 'local' } : { kind: 'cloud' },
+  cloud: { project: 'stajmanon/stajmanonweb' },
 
   ui: {
     brand: { name: 'Stáj Manon' },
