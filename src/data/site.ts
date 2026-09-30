@@ -11,14 +11,8 @@ export const site = {
   url: 'https://www.stajmanon.cz',
   locale: 'cs_CZ',
 
-  /**
-   * Kam odesílá kontaktní formulář.
-   *
-   * Výchozí je PHP skript v public/ — funguje na běžném hostingu s mail().
-   * Na Vercelu PHP neběží, proto se dá přepsat proměnnou prostředí
-   * PUBLIC_FORM_ENDPOINT na adresu formulářové služby. Odpověď musí být JSON.
-   */
-  formEndpoint: import.meta.env.PUBLIC_FORM_ENDPOINT || '/kontakt-odeslat.php',
+  /** Kam odesílá kontaktní formulář — src/pages/kontakt/odeslat.ts (přes Resend). */
+  formEndpoint: '/kontakt/odeslat',
 } as const;
 
 /** Klíčová čísla — používají se v hero i v „o nás". */

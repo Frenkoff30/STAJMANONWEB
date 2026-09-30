@@ -26,6 +26,8 @@ export const emailNastaven = Boolean(apiKlic && od);
 
 export interface Email {
   komu: string;
+  /** Komu jde odpověď. Nevyplněno = stáji. */
+  odpovedet?: string;
   predmet: string;
   html: string;
   text: string;
@@ -63,7 +65,7 @@ export async function odeslatEmail(email: Email): Promise<boolean> {
       body: JSON.stringify({
         from: od,
         to: [email.komu],
-        reply_to: emailStaje,
+        reply_to: email.odpovedet ?? emailStaje,
         subject: email.predmet,
         html: email.html,
         text: email.text,

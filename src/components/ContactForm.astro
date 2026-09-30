@@ -33,18 +33,6 @@ const topics = [
     <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
   </div>
   <input type="hidden" name="ts" id="form-ts" value="0" />
-  {
-    /* Klíč pro externí formulářovou službu (Web3Forms apod.), pokud se
-       místo PHP použije ona — viz PUBLIC_FORM_ENDPOINT v src/data/site.ts. */
-    import.meta.env.PUBLIC_FORM_ACCESS_KEY && (
-      <input
-        type="hidden"
-        name="access_key"
-        value={import.meta.env.PUBLIC_FORM_ACCESS_KEY}
-      />
-    )
-  }
-  <input type="hidden" name="subject" value="Nová zpráva z webu stajmanon.cz" />
 
   <div class="mt-8 grid gap-5 sm:grid-cols-2">
     <div class="sm:col-span-2">

@@ -70,7 +70,6 @@ src/
 
 public/                kopíruje se 1:1 do buildu
 ├── soubory/           výsledkové listiny a rozpisy přenesené ze starého webu
-├── kontakt-odeslat.php formulář
 ├── .htaccess          301 přesměrování ze starých .php adres, cache, hlavičky
 └── _redirects         totéž pro Netlify / Cloudflare Pages
 ```
@@ -617,25 +616,15 @@ src/pages/prihlasky/
 
 ## Kontaktní formulář
 
-`public/kontakt-odeslat.php` — jediný kus serverového kódu na webu.
+`src/pages/kontakt/odeslat.ts` posílá zprávu stáji přes Resend (stejný klíč
+a odesílatel jako e-maily k přihláškám). Odpovědí na e-mail se píše rovnou
+tomu, kdo formulář vyplnil.
 
 - honeypot + časová past proti robotům
-- validace na straně serveru, ochrana proti vkládání hlaviček
+- validace na straně serveru
 - s JavaScriptem odesílá `fetch` a vrací JSON, bez JavaScriptu klasický POST
   a přesměrování na `/kontakt?odeslano=1`
-- adresa příjemce je konstanta `RECIPIENT` na začátku souboru
-
-**Na statickém hostingu** (Vercel, Netlify, Cloudflare Pages) PHP neběží.
-Adresa se proto dá přepnout proměnnými prostředí — kód se nemusí sahat:
-
-```
-PUBLIC_FORM_ENDPOINT=https://api.web3forms.com/submit
-PUBLIC_FORM_ACCESS_KEY=<klíč z web3forms.com>
-```
-
-Bez nich se použije `/kontakt-odeslat.php`. Formulář zvládne obě odpovědi —
-`{ ok, message }` z vlastního PHP i `{ success, message }` z Web3Forms.
-Vzor je v `.env.example`.
+- příjemce je `PRIHLASKY_EMAIL_STAJ`, nevyplněno = e-mail stáje z nastavení
 
 ---
 
@@ -658,13 +647,11 @@ adres a bezpečnostní hlavičky, zbytek zajistí adaptér `@astrojs/vercel`.
 | `KEYSTATIC_GITHUB_CLIENT_SECRET` | tamtéž |
 | `KEYSTATIC_SECRET` | podepisování přihlašovací session |
 | `PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` | název GitHub App |
-| `PUBLIC_FORM_ENDPOINT` | kam odesílat kontaktní formulář |
-| `PUBLIC_FORM_ACCESS_KEY` | klíč formulářové služby |
 | `SUPABASE_URL` | databáze rezervací i přihlášek |
 | `SUPABASE_ANON_KEY` | tamtéž, veřejný klíč |
 | `PRIHLASKY_SUPABASE_URL` | jen když mají přihlášky vlastní projekt Supabase |
 | `PRIHLASKY_SUPABASE_ANON_KEY` | tamtéž. Nevyplněno = použije se `SUPABASE_URL` |
-| `RESEND_API_KEY` | odesílání e-mailů z přihlášek |
+| `RESEND_API_KEY` | odesílání e-mailů z přihlášek a kontaktního formuláře |
 | `PRIHLASKY_EMAIL_OD` | odesílatel, například `Stáj Manon <prihlasky@stajmanon.cz>` |
 | `PRIHLASKY_EMAIL_STAJ` | kam chodí upozornění na novou přihlášku |
 
