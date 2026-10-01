@@ -1,8 +1,9 @@
 ---
 /**
  * Shell správy webu: novinky, akce a přihlášky. Stejná řeč jako rezervace
- * (tmavý pruh s nadpisem, lišta pod ním). V liště jsou i odkazy na správu
- * rezervací a na redakci textů, ať má stáj všechno z jednoho místa.
+ * (tmavý pruh s nadpisem, lišta pod ním). Vlevo v liště jsou záložky správy,
+ * vpravo odchody jinam (rezervace jízdárny, redakce textů) — tam, kde
+ * je na druhé straně odkaz zpátky.
  */
 
 import BaseLayout from './BaseLayout.astro';
@@ -27,7 +28,6 @@ const zalozky = [
     label: 'Akce a přihlášky',
     aktivni: cesta.startsWith('/prihlasky/sprava') && !cesta.startsWith('/prihlasky/sprava/novinky'),
   },
-  { href: '/rezervace/sprava', label: 'Rezervace jízdárny', aktivni: false },
 ];
 ---
 
@@ -86,6 +86,15 @@ const zalozky = [
             ))}
           </nav>
           <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-[0.8125rem]">
+            {/* Odchody jinam drží pravý kraj lišty: rezervace i redakce mají
+                na své straně odkaz zpět na stejném místě. */}
+            <a
+              href="/rezervace/sprava"
+              class="text-ink-3 transition-colors hover:text-brass-700"
+              title="Kalendář a správa rezervací jízdárny"
+            >
+              Rezervace jízdárny
+            </a>
             <a
               href="/keystatic"
               class="text-ink-3 transition-colors hover:text-brass-700"
