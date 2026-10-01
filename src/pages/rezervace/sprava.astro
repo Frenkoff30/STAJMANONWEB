@@ -225,6 +225,20 @@ const nastaveni = new Map(
   ]),
 );
 
+/**
+ * E-mail člověka žije v Supabase Auth, ne v tabulce profilů. Bez něj jsou si
+ * dva jmenovci v seznamu k nerozeznání a stáj neví, koho schvaluje, proto si
+ * adresy doplníme servisním klientem. Když klíč chybí, seznam funguje dál,
+ * jen bez e-mailů.
+ */
+const emaily = new Map<string, string>();
+if (mazaniClenuNastaveno) {
+  const { data: ucty } = await vytvorServisnihoKlienta().auth.admin.listUsers({
+    perPage: 1000,
+  });
+  for (const u of ucty?.users ?? []) if (u.email) emaily.set(u.id, u.email);
+}
+
 const cekajici = profily.filter((p) => !p.schvaleno);
 const clenove = profily.filter((p) => p.schvaleno);
 
@@ -273,7 +287,11 @@ const nazevSlotu = (kod: string | null) => {
               <div>
                 <p class="font-display text-[1.25rem]">{p.jmeno || 'Bez jména'}</p>
                 <p class="mt-0.5 text-[0.875rem] text-ink-3">
+                  {emaily.get(p.id) ?? 'e-mail neznámý'}
+                </p>
+                <p class="mt-0.5 text-[0.875rem] text-ink-3">
                   {p.telefon || 'telefon neuveden'}
+                  <span class="text-ink-3/70"> · registrace {dlouheDatum(p.vytvoreno.slice(0, 10))}</span>
                 </p>
               </div>
               <div class="flex flex-wrap items-center gap-3">
@@ -325,6 +343,9 @@ const nazevSlotu = (kod: string | null) => {
                     správce
                   </span>
                 )}
+              </p>
+              <p class="mt-0.5 text-[0.875rem] text-ink-3">
+                {emaily.get(p.id) ?? 'e-mail neznámý'}
               </p>
               <p class="mt-0.5 text-[0.875rem] text-ink-3">
                 {p.telefon || 'telefon neuveden'}
