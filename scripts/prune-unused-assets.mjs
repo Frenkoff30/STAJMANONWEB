@@ -12,6 +12,18 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 /**
+ * V režimu „připravujeme" (UDRZBA=1) se web vykresluje serverem a stránky
+ * vznikají až za běhu. V buildu proto není žádné HTML, podle kterého by se
+ * dalo poznat, co se používá — skript by smazal úplně všechno a obrázky by
+ * přestaly existovat. Originály jsou navíc potřeba: zmenšeniny se v tomhle
+ * režimu dělají až na vyžádání přes /_image.
+ */
+if (process.env.UDRZBA === '1') {
+  console.log('Režim připravujeme — originály obrázků zůstávají.');
+  process.exit(0);
+}
+
+/**
  * S adaptérem pro Vercel končí statické soubory v .vercel/output/static,
  * bez adaptéru v dist/. Vezmeme tu složku, která existuje.
  */

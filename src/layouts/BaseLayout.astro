@@ -13,6 +13,8 @@ interface Props {
   overlayHeader?: boolean;
   noindex?: boolean;
   bodyClass?: string;
+  /** Stránka stojí sama: bez menu a patičky (např. „připravujeme"). */
+  samostatna?: boolean;
 }
 
 const {
@@ -23,6 +25,7 @@ const {
   overlayHeader = false,
   noindex = false,
   bodyClass = '',
+  samostatna = false,
 } = Astro.props;
 ---
 
@@ -49,13 +52,13 @@ const {
       Přeskočit na obsah
     </a>
 
-    <Header overlay={overlayHeader} />
+    {!samostatna && <Header overlay={overlayHeader} />}
 
-    <main id="obsah" class={overlayHeader ? '' : 'pt-18 lg:pt-30'}>
+    <main id="obsah" class={overlayHeader || samostatna ? '' : 'pt-18 lg:pt-30'}>
       <slot />
     </main>
 
-    <Footer />
+    {!samostatna && <Footer />}
 
     <script>
       /* Reveal on scroll — jediný observer pro celou stránku. */
