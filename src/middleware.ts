@@ -15,8 +15,73 @@ const JEN_PRIHLASENI = ['/rezervace/moje', '/rezervace/nova', '/rezervace/ucet']
 /** Kam se nedostane nikdo kromě správce. */
 const JEN_SPRAVCE = ['/rezervace/sprava'];
 
+/* ------------------------------------------------------- režim „připravujeme" */
+
+const udrzba = import.meta.env.UDRZBA === '1' || process.env.UDRZBA === '1';
+
+/** Tajné slovo do adresy (`?klic=…`), kterým si web otevře stáj. */
+const udrzbaKlic = import.meta.env.UDRZBA_KLIC || process.env.UDRZBA_KLIC || '';
+
+const SUSENKA_PRISTUP = 'pristup-pred-spustenim';
+
+/**
+ * Co zůstává otevřené i při zavřeném webu: přihlašování a administrace
+ * (schované za heslem tak jako tak) a soubory, bez kterých by se stránka
+ * „připravujeme" nevykreslila.
+ */
+const UDRZBA_POVOLENO = [
+  '/pripravujeme',
+  '/rezervace',
+  '/prihlasky',
+  '/keystatic',
+  '/api/keystatic',
+  '/_astro',
+  '/_image',
+  '/_server-islands',
+  '/favicon.svg',
+  '/favicon-96.png',
+  '/apple-touch-icon.png',
+  '/robots.txt',
+];
+
 export const onRequest = defineMiddleware(async (context, next) => {
   const cesta = context.url.pathname.replace(/\/+$/, '') || '/';
+
+  if (udrzba) {
+    /* Odkaz s klíčem pustí prohlížeč dovnitř natrvalo: klíč se vymění za
+       sušenku, ať ho stáj nemusí tahat v adrese na každé stránce. */
+    const klic = context.url.searchParams.get('klic');
+    if (udrzbaKlic && klic === udrzbaKlic) {
+      context.cookies.set(SUSENKA_PRISTUP, udrzbaKlic, {
+        path: '/',
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: context.url.protocol === 'https:',
+        maxAge: 60 * 60 * 24 * 30,
+      });
+      const bezKlice = new URL(context.url);
+      bezKlice.searchParams.delete('klic');
+      return context.redirect(bezKlice.pathname + bezKlice.search);
+    }
+
+    const pusten =
+      Boolean(udrzbaKlic) && context.cookies.get(SUSENKA_PRISTUP)?.value === udrzbaKlic;
+
+    const povoleno = UDRZBA_POVOLENO.some(
+      (p) => cesta === p || cesta.startsWith(`${p}/`),
+    );
+
+    if (!pusten && !povoleno) {
+      /* Vyhledávačům a archivům říct, že tohle není trvalý stav webu. */
+      const odpoved = await context.rewrite('/pripravujeme');
+      odpoved.headers.set('Cache-Control', 'no-store');
+      odpoved.headers.set('X-Robots-Tag', 'noindex');
+      return new Response(odpoved.body, {
+        status: 503,
+        headers: odpoved.headers,
+      });
+    }
+  }
 
   if (!cesta.startsWith('/rezervace')) return next();
 

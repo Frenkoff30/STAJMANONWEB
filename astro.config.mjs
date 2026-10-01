@@ -14,7 +14,15 @@ export default defineConfig({
    * Web zůstává statický — všechny stránky se předgenerují při buildu.
    * Serverové jsou jen dvě věci: redakční systém (/keystatic, /api/keystatic)
    * a rezervace jízdáren (/rezervace/*). Obojí má `prerender: false`.
+   *
+   * Výjimka je režim „připravujeme" (proměnná UDRZBA=1). Předgenerované
+   * stránky obchází middleware — servírují se rovnou ze souborů —, takže by
+   * se přes ně dalo projít i při zavřeném webu. Po dobu údržby proto necháme
+   * všechno vykreslovat server a middleware má poslední slovo. Po vypnutí se
+   * web vrátí ke statickému buildu.
    */
+  output: process.env.UDRZBA === '1' ? 'server' : 'static',
+
   adapter: vercel(),
 
   /**
