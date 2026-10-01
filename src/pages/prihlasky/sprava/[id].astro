@@ -112,6 +112,22 @@ if (Astro.request.method === 'POST') {
       }
       break;
 
+    /* Úklid po zrušených přihláškách: testovací zápisy, dvojité odeslání.
+       Maže se jen to, co už je zrušené — z omylem rozkliknuté přihlášky se
+       tak nedá nenávratně přijít o údaje. Účastníci jsou součástí řádku,
+       mažou se s ním. */
+    case 'smazat': {
+      const soucasna = await nacist();
+      if (soucasna?.p.stav !== 'zrusena') {
+        chyba = 'Smazat jde jen zrušenou přihlášku.';
+        break;
+      }
+      const { error } = await spravce.supabase.from('prihlasky').delete().eq('id', id);
+      if (error) chyba = citelnaChyba(error);
+      else return Astro.redirect('/prihlasky/sprava?hotovo=smazana');
+      break;
+    }
+
     case 'poznamka':
       if (await ulozit({ poznamka_staje: String(formular.get('poznamka_staje') ?? '').trim().slice(0, 2000) })) {
         return Astro.redirect(`${adresa}?hotovo=poznamka`);
@@ -486,6 +502,28 @@ const klic = 'text-[0.8125rem] text-ink-3';
               Poslat přihlášenému e-mail o změně
             </label>
           </form>
+
+          {
+            p.stav === 'zrusena' && (
+              <form
+                method="post"
+                class="mt-5 border-t border-ink/12 pt-5"
+                onsubmit={`return confirm('Opravdu smazat přihlášku ${p.vs}? Údaje zmizí a tohle nejde vrátit.')`}
+              >
+                <input type="hidden" name="co" value="smazat" />
+                <button
+                  type="submit"
+                  class="text-[0.8125rem] font-semibold uppercase tracking-[0.1em] text-ink-3 transition-colors hover:text-red-700"
+                >
+                  Smazat přihlášku
+                </button>
+                <p class="mt-2 text-[0.8125rem] text-ink-3">
+                  Zrušenou přihlášku můžete úplně odstranit, třeba když vznikla
+                  omylem nebo jako test.
+                </p>
+              </form>
+            )
+          }
         </div>
 
         <div class="card p-6 lg:p-7">

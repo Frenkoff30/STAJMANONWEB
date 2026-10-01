@@ -114,6 +114,7 @@ const odkaz = (zmeny: { akce?: string; stav?: string }) => {
   spravce={spravce}
 >
   {hotovo === 'akce-smazana' && <Zprava typ="ok" class="mb-8">Akce je smazaná.</Zprava>}
+  {hotovo === 'smazana' && <Zprava typ="ok" class="mb-8">Přihláška je smazaná.</Zprava>}
   {
     hotovo === 'akce-zalozena' && (
       <Zprava typ="ok" class="mb-8">Akce je uložená a už je v kalendáři na webu.</Zprava>
