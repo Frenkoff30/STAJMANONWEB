@@ -10,14 +10,11 @@ import AkceSeznam from '@/components/kalendar/AkceSeznam.astro';
 import AkceNazev from '@/components/kalendar/AkceNazev.astro';
 import NovinkyUvod from '@/components/novinky/NovinkyUvod.astro';
 import NovinkaNazev from '@/components/novinky/NovinkaNazev.astro';
-import { turnusy } from '@/data/courses';
+import KurzyVolne from '@/components/kalendar/KurzyVolne.astro';
 import { majorTitles } from '@/data/achievements';
 import { photo } from '@/data/images';
 import page from '@/obsah/stranky/uvod.json';
 
-const freeTurnusy = turnusy.filter(
-  (t) => t.status === 'volno' || t.status === 'posledni',
-).length;
 
 const heroImg = photo(page.hero.image)!;
 const restauraceImg = photo(page.penzion.image)!;
@@ -117,7 +114,8 @@ const jsonLd = {
             {
               href: page.hero.quickCourses.href,
               label: page.hero.quickCourses.label,
-              value: `${freeTurnusy} turnusů s volnými místy`,
+              value: null,
+              ostrov: 'kurzy' as const,
               icon: 'users' as const,
             },
           ].map((item) => (
@@ -132,7 +130,11 @@ const jsonLd = {
                 </span>
                 <span class="mt-1 block truncate text-[0.9375rem]">
                   {item.value ??
-                    ('ostrov' in item && item.ostrov === 'novinka' ? (
+                    ('ostrov' in item && item.ostrov === 'kurzy' ? (
+                      <KurzyVolne server:defer>
+                        <Fragment slot="fallback">Termíny a ceny</Fragment>
+                      </KurzyVolne>
+                    ) : 'ostrov' in item && item.ostrov === 'novinka' ? (
                       <NovinkaNazev server:defer nahrada={page.hero.quickNews.fallback}>
                         <Fragment slot="fallback">{page.hero.quickNews.fallback}</Fragment>
                       </NovinkaNazev>

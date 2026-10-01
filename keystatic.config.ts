@@ -96,7 +96,7 @@ const uspechy = collection({
 });
 
 const sluzby = singleton({
-  label: 'Služby',
+  label: 'Služby – ceník',
   path: 'src/obsah/sluzby',
   format: { data: 'json' },
   schema: {
@@ -126,42 +126,8 @@ const sluzby = singleton({
   },
 });
 
-const pobyty = collection({
-  label: 'Pobyty s výukou',
-  path: 'src/obsah/pobyty/*',
-  format: { data: 'json' },
-  slugField: 'title',
-  columns: ['title', 'start'],
-  entryLayout: 'form',
-  schema: {
-    title: fields.slug({ name: { label: 'Název pobytu' } }),
-    subtitle: fields.text({ label: 'Podtitul', description: 'Například: Po krůčcích k ZZVJ' }),
-    start: fields.date({ label: 'Začátek' }),
-    end: fields.date({ label: 'Konec' }),
-    dateLabel: fields.text({
-      label: 'Termín slovy',
-      description: 'Jak se termín vypíše na webu, například 2.–6. dubna 2026',
-    }),
-    arrival: fields.text({ label: 'Příjezd', description: 'Například: čtvrtek do 18.00' }),
-    departure: fields.text({ label: 'Odjezd', description: 'Například: pondělí ve 14.00' }),
-    lessons: fields.text({ label: 'Počet lekcí', description: 'Například: 4 výukové lekce' }),
-    extras: fields.text({ label: 'Doplňkový program', description: 'Například: návštěva bazénu' }),
-    ageFrom: fields.number({ label: 'Věk od', defaultValue: 8, validation: { min: 0 } }),
-    description: odstavec('Popis pobytu'),
-    price: fields.text({ label: 'Cena', description: 'Například: 7 900 Kč' }),
-    priceNotes: fields.array(fields.text({ label: 'Sleva nebo příplatek' }), {
-      label: 'Slevy a příplatky',
-      itemLabel: (props) => props.value,
-    }),
-    prihlaska: volitelnyText(
-      'Online přihláška',
-      'Kód akce ze správy přihlášek, například velikonocni-pobyt-2027. Vyplněný kód změní tlačítko u pobytu na odkaz na formulář. Prázdné = tlačítko otevře e-mail.',
-    ),
-  },
-});
-
 const kone = singleton({
-  label: 'Koně na prodej',
+  label: 'Koně na prodej – nabídka',
   path: 'src/obsah/kone',
   format: { data: 'json' },
   schema: {
@@ -195,7 +161,7 @@ const kone = singleton({
 });
 
 const galerie = collection({
-  label: 'Fotogalerie',
+  label: 'Fotogalerie – fotky',
   path: 'src/obsah/galerie/*',
   format: { data: 'json' },
   slugField: 'alt',
@@ -239,7 +205,7 @@ const galerie = collection({
 /* ------------------------------------------------------------- singletony */
 
 const nastaveni = singleton({
-  label: 'Kontakty a údaje',
+  label: 'Kontakty a údaje stáje',
   path: 'src/obsah/nastaveni',
   format: { data: 'json' },
   schema: {
@@ -327,49 +293,10 @@ const nastaveni = singleton({
 });
 
 const kurzy = singleton({
-  label: 'Prázdninové kurzy',
+  label: 'Prázdninové kurzy – cena a program',
   path: 'src/obsah/kurzy',
   format: { data: 'json' },
   schema: {
-    turnusy: fields.array(
-      fields.object({
-        n: fields.number({ label: 'Číslo turnusu' }),
-        nazev: volitelnyText(
-          'Název',
-          'Vyplňte u pojmenovaných akcí, třeba Jezdecké hry pro děti. Prázdné = vypíše se „3. turnus“.',
-        ),
-        start: fields.date({ label: 'Začátek' }),
-        end: fields.date({
-          label: 'Konec',
-          description: 'Nechte prázdné u jednodenních akcí.',
-          validation: { isRequired: false },
-        }),
-        status: fields.select({
-          label: 'Obsazenost',
-          options: [
-            { label: 'Volná místa', value: 'volno' },
-            { label: 'Poslední místa', value: 'posledni' },
-            { label: 'Obsazeno', value: 'obsazeno' },
-            { label: 'Uzavřeno', value: 'uzavreno' },
-          ],
-          defaultValue: 'volno',
-        }),
-        note: volitelnyText(
-          'Poznámka k volným místům',
-          'Například: 2 místa + 1 místo s vlastním koněm',
-        ),
-        prihlaska: volitelnyText(
-          'Online přihláška',
-          'Kód akce ze správy přihlášek, například letni-tabor-2027. Vyplněný kód změní tlačítko u turnusu na odkaz na formulář. Prázdné = tlačítko otevře e-mail.',
-        ),
-      }),
-      {
-        label: 'Turnusy',
-        description: 'Obsazenost stačí přepsat u konkrétního turnusu.',
-        itemLabel: (props) =>
-          props.fields.nazev.value || `${props.fields.n.value}. turnus`,
-      },
-    ),
     cena: fields.object(
       {
         main: fields.text({ label: 'Základní cena' }),
@@ -409,7 +336,7 @@ const kurzy = singleton({
 });
 
 const penzion = singleton({
-  label: 'Penzion a okolí',
+  label: 'Penzion – pokoje a okolí',
   path: 'src/obsah/penzion',
   format: { data: 'json' },
   schema: {
@@ -447,7 +374,7 @@ const penzion = singleton({
 });
 
 const areal = singleton({
-  label: 'Vybavení areálu',
+  label: 'Areál – vybavení',
   path: 'src/obsah/areal',
   format: { data: 'json' },
   schema: {
@@ -490,34 +417,28 @@ export default config({
 
   ui: {
     brand: { name: 'Stáj Manon' },
+    // Seřazené jako menu webu. Novinky a akce (i tábory a pobyty) tu nejsou,
+    // zadávají se ve Správě webu (/prihlasky/sprava).
     navigation: {
-      Sport: ['vysledky', 'uspechy', 'tituly'],
-      'Pro jezdce': ['kurzy', 'pobyty', 'sluzby', 'kone'],
-      'Areál a fotky': ['areal', 'penzion', 'galerie'],
-      'Texty stránek': [
-        'strankaUvod',
-        'strankaAreal',
-        'strankaPenzion',
-        'strankaSluzby',
+      Úvod: ['strankaUvod'],
+      Areál: ['strankaAreal', 'areal', 'strankaPenzion', 'penzion', 'strankaGalerie', 'galerie'],
+      Jezdectví: [
         'strankaJezdeckaSkola',
         'strankaKurzy',
+        'kurzy',
         'strankaPobyty',
+        'strankaSluzby',
+        'sluzby',
         'strankaKoneNaProdej',
+        'kone',
         'strankaOdchovna',
-        'strankaAkce',
-        'strankaVysledky',
-        'strankaUspechy',
-        'strankaONas',
-        'strankaJiriSkrivan',
-        'strankaGalerie',
-        'strankaKontakt',
-        'strankaNenalezeno',
       ],
-      Web: ['nastaveni'],
+      Sport: ['strankaAkce', 'strankaVysledky', 'vysledky', 'strankaUspechy', 'uspechy', 'tituly'],
+      'O nás': ['strankaONas', 'strankaJiriSkrivan', 'strankaKontakt', 'nastaveni', 'strankaNenalezeno'],
     },
   },
 
-  collections: { vysledky, uspechy, pobyty, galerie },
+  collections: { vysledky, uspechy, galerie },
   singletons: {
     nastaveni,
     kurzy,

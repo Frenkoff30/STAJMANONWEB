@@ -162,7 +162,7 @@ export const strankaUvod = stranka(
 /* ------------------------------------------------------------- podstránky */
 
 export const strankaAreal = stranka(
-  'Areál',
+  'Areál – texty',
   {
     seo: seo(),
     hero: hero(),
@@ -196,7 +196,7 @@ export const strankaAreal = stranka(
 );
 
 export const strankaPenzion = stranka(
-  'Stránka: Penzion',
+  'Penzion – texty',
   {
     seo: seo(),
     hero: hero(),
@@ -235,7 +235,7 @@ export const strankaPenzion = stranka(
 );
 
 export const strankaSluzby = stranka(
-  'Stránka: Služby',
+  'Služby – texty',
   {
     seo: seo(),
     hero: hero(),
@@ -251,7 +251,7 @@ export const strankaSluzby = stranka(
 );
 
 export const strankaJezdeckaSkola = stranka(
-  'Stránka: Jezdecká škola',
+  'Jezdecká škola – texty',
   {
     seo: seo(),
     hero: hero(),
@@ -311,7 +311,7 @@ export const strankaJezdeckaSkola = stranka(
 );
 
 export const strankaKurzy = stranka(
-  'Stránka: Prázdninové kurzy',
+  'Prázdninové kurzy – texty',
   {
     seo: seo(),
     hero: hero(),
@@ -384,7 +384,7 @@ export const strankaKurzy = stranka(
 );
 
 export const strankaPobyty = stranka(
-  'Stránka: Pobyty',
+  'Pobyty – texty',
   {
     seo: seo(),
     hero: hero(),
@@ -398,7 +398,7 @@ export const strankaPobyty = stranka(
 );
 
 export const strankaKoneNaProdej = stranka(
-  'Stránka: Koně na prodej',
+  'Koně na prodej – texty',
   {
     seo: seo(),
     hero: hero(),
@@ -424,7 +424,7 @@ export const strankaKoneNaProdej = stranka(
 );
 
 export const strankaOdchovna = stranka(
-  'Stránka: Testační odchovna',
+  'Testační odchovna – texty',
   {
     seo: seo(),
     hero: hero(),
@@ -443,7 +443,7 @@ export const strankaOdchovna = stranka(
 );
 
 export const strankaAkce = stranka(
-  'Stránka: Kalendář akcí',
+  'Kalendář akcí – texty',
   {
     seo: seo(),
     hero: hero(),
@@ -475,7 +475,7 @@ export const strankaAkce = stranka(
 );
 
 export const strankaVysledky = stranka(
-  'Stránka: Výsledkové listiny',
+  'Výsledkové listiny – texty',
   {
     seo: seo(),
     hero: hero({ lead: false, leadSuffix: 'Doplní se za počet listin.' }),
@@ -498,7 +498,7 @@ export const strankaVysledky = stranka(
 );
 
 export const strankaUspechy = stranka(
-  'Stránka: Úspěchy',
+  'Úspěchy – texty',
   {
     seo: seo(),
     hero: hero(),
@@ -532,7 +532,7 @@ export const strankaUspechy = stranka(
 );
 
 export const strankaONas = stranka(
-  'Stránka: O nás',
+  'O nás – texty',
   {
     seo: seo(),
     hero: hero(),
@@ -575,7 +575,7 @@ export const strankaONas = stranka(
 );
 
 export const strankaJiriSkrivan = stranka(
-  'Stránka: Jiří Skřivan',
+  'Jiří Skřivan – texty',
   {
     seo: seo(),
     hero: hero(),
@@ -618,7 +618,7 @@ export const strankaJiriSkrivan = stranka(
 );
 
 export const strankaGalerie = stranka(
-  'Stránka: Fotogalerie',
+  'Fotogalerie – texty',
   {
     seo: seo(),
     hero: hero({ lead: false, leadSuffix: 'Doplní se za počet fotek.' }),
@@ -632,7 +632,7 @@ export const strankaGalerie = stranka(
 );
 
 export const strankaKontakt = stranka(
-  'Stránka: Kontakt',
+  'Kontakt – texty',
   {
     seo: seo(),
     hero: hero(),
@@ -656,7 +656,7 @@ export const strankaKontakt = stranka(
 );
 
 export const strankaNenalezeno = stranka(
-  'Stránka: Nenalezeno (404)',
+  'Stránka nenalezena (chyba 404)',
   {
     seo: seo(),
     heading: fields.text({ label: 'Nadpis' }),

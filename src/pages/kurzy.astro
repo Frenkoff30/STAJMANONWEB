@@ -5,17 +5,14 @@ import Section from '@/components/Section.astro';
 import SectionHead from '@/components/SectionHead.astro';
 import Icon from '@/components/Icon.astro';
 import { site } from '@/data/site';
+import KurzyTerminy from '@/components/kalendar/KurzyTerminy.astro';
 import {
-  turnusy,
-  turnusLabel,
-  turnusStatusLabels,
   kurzCena,
   kurzProgram,
   kurzIncluded,
   kurzPacking,
   stornoPodminky,
 } from '@/data/courses';
-import { formatRange } from '@/data/events';
 
 import { photo } from '@/data/images';
 import page from '@/obsah/stranky/kurzy.json';
@@ -24,19 +21,6 @@ const heroImg = photo(page.hero.image)!;
 const programImg = photo(page.images.program)!;
 const pokojImg = photo(page.images.pokoj)!;
 
-const statusStyle: Record<string, string> = {
-  volno: 'bg-loden-800 text-paper',
-  posledni: 'bg-brass-600 text-white',
-  obsazeno: 'bg-ink/10 text-ink-3',
-  uzavreno: 'bg-ink/10 text-ink-3',
-};
-
-const bookable = (s: string) => s === 'volno' || s === 'posledni';
-const freeCount = turnusy.filter((t) => bookable(t.status)).length;
-const volnoLead =
-  freeCount === turnusy.length
-    ? 'Přihlásit se jde rovnou přes formulář, potvrzení i platební údaje přijdou e-mailem.'
-    : `Volná místa má ${freeCount} z ${turnusy.length} vypsaných termínů.`;
 ---
 
 <PageLayout
@@ -60,66 +44,11 @@ const volnoLead =
   <Section tone="paper" space="lg" id="turnusy">
     <SectionHead
       title={page.sekce.terminy.title}
-      lead={`${volnoLead} U týdenních turnusů je nástup v neděli do 10.00, ukončení s vyhodnocením v sobotu ve 12.00 a odjezd zhruba ve 13.30.`}
+      lead={`Přihlásit se jde rovnou přes formulář, potvrzení i platební údaje přijdou e-mailem. U týdenních turnusů je nástup v neděli do 10.00, ukončení s vyhodnocením v sobotu ve 12.00 a odjezd zhruba ve 13.30.`}
       action={{ label: 'Poptat termín', href: `mailto:${site.email}` }}
     />
 
-    <ul class="mt-10 space-y-px">
-      {
-        turnusy.map((t, i) => (
-          <li
-            class:list={[
-              'grid grid-cols-[auto_1fr] items-center gap-x-5 gap-y-2 border-t border-ink/12 py-6 last:border-b sm:grid-cols-[auto_1fr_auto_auto] sm:gap-8',
-              !bookable(t.status) && 'opacity-55',
-            ]}
-            data-reveal
-            style={`--reveal-delay:${i * 55}ms`}
-          >
-            <span class="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-brass-700">
-              {turnusLabel(t)}
-            </span>
-
-            <div class="min-w-0">
-              <p class="font-display text-[1.25rem] leading-snug sm:text-[1.5rem]">
-                {formatRange({ start: t.start, end: t.end, title: '', kind: 'pobyt' })}
-              </p>
-              {t.note && (
-                <p class="mt-1 text-[0.875rem] text-ink-3">{t.note}</p>
-              )}
-            </div>
-
-            <span
-              class:list={[
-                'col-span-2 justify-self-start px-3 py-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.12em] sm:col-span-1 sm:justify-self-end',
-                statusStyle[t.status],
-              ]}
-            >
-              {turnusStatusLabels[t.status]}
-            </span>
-
-            <div class="col-span-2 sm:col-span-1 sm:w-40 sm:text-right">
-              {bookable(t.status) ? (
-                <a
-                  href={
-                    t.prihlaska
-                      ? `/prihlaska/${t.prihlaska}`
-                      : `mailto:${site.email}?subject=${encodeURIComponent(`Přihláška: ${turnusLabel(t)}`)}`
-                  }
-                  class="link-arrow sm:justify-end"
-                >
-                  {t.prihlaska ? 'Vyplnit přihlášku' : 'Poptat místo'}
-                  <Icon name="arrow-right" class="h-3.5 w-3.5" />
-                </a>
-              ) : (
-                <span class="text-[0.75rem] uppercase tracking-[0.12em] text-ink-3/60">
-                  ·
-                </span>
-              )}
-            </div>
-          </li>
-        ))
-      }
-    </ul>
+    <KurzyTerminy server:defer />
 
     <p class="mt-8 text-[0.9375rem] text-ink-3">
       {page.terminyNote.before}

@@ -1,0 +1,32 @@
+---
+/**
+ * Do lišty pod úvodní fotkou: kolik nadcházejících táborů má otevřené
+ * přihlášky. Server island, tábory jsou akce ve Správě webu.
+ */
+
+import { dnesCz } from '@/lib/rezervace';
+import { CACHE_KALENDARE } from '@/lib/kalendar';
+import { prihlaskyNastaveny, verejnyKlient } from '@/lib/prihlasky/db';
+
+Astro.response.headers.set('Cache-Control', CACHE_KALENDARE);
+
+let pocet = 0;
+if (prihlaskyNastaveny) {
+  const { count } = await verejnyKlient()
+    .from('akce')
+    .select('kod', { count: 'exact', head: true })
+    .eq('druh', 'tabor')
+    .eq('prihlasovani', true)
+    .eq('otevreno', true)
+    .gte('konec', dnesCz());
+  pocet = count ?? 0;
+}
+
+const tvar = new Intl.PluralRules('cs-CZ').select(pocet);
+const text =
+  pocet === 0
+    ? 'Termíny a ceny'
+    : `${pocet} ${tvar === 'one' ? 'turnus' : tvar === 'few' ? 'turnusy' : 'turnusů'} s volnými místy`;
+---
+
+{text}

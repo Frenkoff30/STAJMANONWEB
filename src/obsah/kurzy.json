@@ -1,23 +1,4 @@
 {
-  "turnusy": [
-    {
-      "n": 1,
-      "nazev": "Jezdecké hry pro děti",
-      "start": "2027-03-28",
-      "status": "volno",
-      "note": "jízdy zručnosti, křížkový parkur a parkury 40–60 cm, prezentace od 8.00",
-      "prihlaska": "jezdecke-hry-2027-jaro"
-    },
-    {
-      "n": 2,
-      "nazev": "Letní jezdecký tábor",
-      "start": "2027-07-04",
-      "end": "2027-07-10",
-      "status": "volno",
-      "note": "pro děti od 8 let, 6 lekcí jízdy, plná penze",
-      "prihlaska": "letni-tabor-2027"
-    }
-  ],
   "cena": {
     "main": "11 400 Kč",
     "discounted": "10 900 Kč",
