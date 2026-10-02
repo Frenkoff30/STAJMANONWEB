@@ -92,8 +92,21 @@ export default defineConfig({
   build: {
     inlineStylesheets: 'auto',
   },
+  /**
+   * Přednačítání odkazů je schválně jen na vyžádání (`data-astro-prefetch`),
+   * ne plošně.
+   *
+   * S `prefetchAll` si prohlížeč stahoval i stránky správy a rezervací. Každý
+   * takový požadavek na serveru ověří přihlášení, a když mezitím vypršel
+   * přístupový token, obnoví ho — přičemž se obnovovací token mění za nový.
+   * Když takové požadavky vyrazí dva naráz (přednačtení a vzápětí kliknutí),
+   * ten pomalejší už drží neplatný token, server ho vyhodnotí jako
+   * nepřihlášeného a pošle na přihlašovací stránku, odkud se vzápětí vrátí
+   * zpátky. Navenek to vypadá, že se stránka „resetovala" a napodruhé už
+   * jde. Veřejné stránky se přednačítají dál, ty se přihlášení netýkají.
+   */
   prefetch: {
-    prefetchAll: true,
-    defaultStrategy: 'viewport',
+    prefetchAll: false,
+    defaultStrategy: 'hover',
   },
 });

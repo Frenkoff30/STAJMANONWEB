@@ -117,6 +117,7 @@ const klubNazev = 'Jezdecký klub Hřebčín Suchá';
                     <li>
                       <a
                         href={link.href}
+                        data-astro-prefetch
                         class:list={[
                           'block px-4 py-3 transition-colors',
                           isActive(link.href) ? 'bg-paper-2' : 'hover:bg-paper-2',
@@ -150,7 +151,7 @@ const klubNazev = 'Jezdecký klub Hřebčín Suchá';
         ))
       }
 
-      <a href="/kontakt" class="btn header-cta ml-4">Kontakt</a>
+      <a href="/kontakt" data-astro-prefetch class="btn header-cta ml-4">Kontakt</a>
     </nav>
 
     <button
@@ -190,6 +191,7 @@ const klubNazev = 'Jezdecký klub Hřebčín Suchá';
                 <li>
                   <a
                     href={link.href}
+                    data-astro-prefetch
                     class:list={[
                       'block py-2 font-display text-[1.5rem] leading-tight transition-colors',
                       isActive(link.href) ? 'text-brass-300' : 'hover:text-brass-300',
