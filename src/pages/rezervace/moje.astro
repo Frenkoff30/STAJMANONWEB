@@ -13,6 +13,7 @@ import {
   dlouheDatum,
   dnesCz,
   jeMinulost,
+  kone,
   pondeliTydne,
 } from '@/lib/rezervace';
 
@@ -40,6 +41,20 @@ if (Astro.request.method === 'POST') {
 
     if (error) chyba = citelnaChyba(error);
     else potvrzeni = 'Rezervace byla zrušena.';
+  }
+
+  /* Pravidelný trénink se ruší najednou. Mažou se jen budoucí termíny —
+     co se už odjelo, zůstává v historii. */
+  if (akce === 'zrusit-serii') {
+    const { error } = await supabase
+      .from('rezervace')
+      .delete()
+      .eq('serie', String(formular.get('serie') ?? ''))
+      .eq('uzivatel', uzivatel.id)
+      .gte('datum', dnesCz());
+
+    if (error) chyba = citelnaChyba(error);
+    else potvrzeni = 'Celé opakování bylo zrušeno.';
   }
 
   if (akce === 'profil') {
@@ -73,6 +88,8 @@ interface RadekRezervace {
   slot: string;
   jizdarna: string;
   poznamka: string;
+  pocet_koni: number;
+  serie: string | null;
   jizdarny: { nazev: string } | null;
   sloty: { zacatek: string; konec: string } | null;
 }
@@ -81,7 +98,9 @@ const dnes = dnesCz();
 
 const { data } = await supabase
   .from('rezervace')
-  .select('id, datum, slot, jizdarna, poznamka, jizdarny(nazev), sloty(zacatek, konec)')
+  .select(
+    'id, datum, slot, jizdarna, poznamka, pocet_koni, serie, jizdarny(nazev), sloty(zacatek, konec)',
+  )
   .eq('uzivatel', uzivatel.id)
   .gte('datum', dnes)
   .order('datum')
@@ -138,7 +157,9 @@ const rezervace = ((data ?? []) as unknown as RadekRezervace[]).filter(
                 <p class="mt-1 font-display text-[1.25rem]">{dlouheDatum(r.datum)}</p>
                 <p class="mt-0.5 text-[0.9375rem] text-ink-3">
                   {cas(r.sloty?.zacatek ?? '')} – {cas(r.sloty?.konec ?? '')}
+                  <span> · {kone(r.pocet_koni)}</span>
                   {r.poznamka && <span> · {r.poznamka}</span>}
+                  {r.serie && <span> · pravidelný termín</span>}
                 </p>
               </div>
 
@@ -149,6 +170,22 @@ const rezervace = ((data ?? []) as unknown as RadekRezervace[]).filter(
                 >
                   V kalendáři
                 </a>
+                {r.serie && (
+                  <form
+                    method="post"
+                    onsubmit="return confirm('Zrušit všechny budoucí termíny tohohle opakování?')"
+                  >
+                    <input type="hidden" name="akce" value="zrusit-serii" />
+                    <input type="hidden" name="serie" value={r.serie} />
+                    <button
+                      type="submit"
+                      class="text-[0.8125rem] font-semibold uppercase tracking-[0.1em] text-ink-3 transition-colors hover:text-brass-700"
+                    >
+                      Zrušit opakování
+                    </button>
+                  </form>
+                )}
+
                 <form method="post">
                   <input type="hidden" name="akce" value="zrusit" />
                   <input type="hidden" name="id" value={r.id} />

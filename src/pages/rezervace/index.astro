@@ -17,7 +17,7 @@ import { rezervaceNastaveny } from '@/lib/supabase';
 import {
   dnesCz,
   dnyTydne,
-  mista,
+  doporuceniTextu,
   platneDatum,
   pondeliTydne,
   posunDnu,
@@ -95,8 +95,19 @@ function odkaz(zmena: { od?: string; jizdarna?: string }): string {
   return `/rezervace?${q}`;
 }
 
+/** Kolik termínů se právě založilo a kolik se jich muselo přeskočit. */
+const zalozeno = Math.max(0, Number(parametry.get('pocet') ?? 1) || 1);
+const preskoceno = Math.max(0, Number(parametry.get('preskoceno') ?? 0) || 0);
+
 const hlaseni: Record<string, string> = {
-  rezervovano: 'Hotovo, termín je váš. Najdete ho i v Moje rezervace.',
+  rezervovano:
+    (zalozeno > 1
+      ? `Hotovo, zarezervováno ${zalozeno} termínů.`
+      : 'Hotovo, termín je váš.') +
+    (preskoceno > 0
+      ? ` ${preskoceno} termínů se přeskočilo — byly zavřené nebo plné.`
+      : '') +
+    ' Najdete je i v Moje rezervace.',
   zruseno: 'Rezervace byla zrušena, termín je zase volný.',
   potvrzeno: 'E-mail je potvrzený. Teď už jen počkejte, až vás stáj schválí.',
 };
@@ -181,14 +192,16 @@ const clen = Boolean(profil?.schvaleno);
                   ]}
                 >
                   <span class="block text-[0.875rem] font-semibold">{j.nazev}</span>
-                  <span
-                    class:list={[
-                      'block text-[0.6875rem]',
-                      j.kod === zvolena?.kod ? 'text-white/60' : 'text-ink-3',
-                    ]}
-                  >
-                    {mista(j.kapacita)} v jednom čase
-                  </span>
+                  {doporuceniTextu(j) && (
+                    <span
+                      class:list={[
+                        'block text-[0.6875rem]',
+                        j.kod === zvolena?.kod ? 'text-white/60' : 'text-ink-3',
+                      ]}
+                    >
+                      {doporuceniTextu(j)}
+                    </span>
+                  )}
                 </a>
               ))}
             </div>
@@ -247,7 +260,8 @@ const clen = Boolean(profil?.schvaleno);
                 <Icon name="shield" class="mt-0.5 h-4 w-4 shrink-0 text-brass-600" />
                 <p class="text-[0.875rem] text-ink-3">
                   Rezervovat mohou jen členové stáje se schváleným účtem. Jména
-                  jezdců se nepřihlášeným návštěvníkům nezobrazují.
+                  jezdců se nepřihlášeným návštěvníkům nezobrazují. Zamluvit jde
+                  i několik hodin v kuse nebo pravidelný trénink na celý rok.
                 </p>
               </div>
             </div>

@@ -22,10 +22,18 @@ const od = import.meta.env.PRIHLASKY_EMAIL_OD || process.env.PRIHLASKY_EMAIL_OD 
 export const emailStaje =
   import.meta.env.PRIHLASKY_EMAIL_STAJ || process.env.PRIHLASKY_EMAIL_STAJ || site.email;
 
+/** Kam chodí dotazy na ubytování. Penzion si poštu vyřizuje sám. */
+export const emailPenzionu =
+  import.meta.env.PRIHLASKY_EMAIL_PENZION ||
+  process.env.PRIHLASKY_EMAIL_PENZION ||
+  site.emailPenzion ||
+  emailStaje;
+
 export const emailNastaven = Boolean(apiKlic && od);
 
 export interface Email {
-  komu: string;
+  /** Jedna adresa, nebo víc, když zpráva patří stáji i penzionu. */
+  komu: string | string[];
   /** Komu jde odpověď. Nevyplněno = stáji. */
   odpovedet?: string;
   predmet: string;
@@ -64,7 +72,7 @@ export async function odeslatEmail(email: Email): Promise<boolean> {
       },
       body: JSON.stringify({
         from: od,
-        to: [email.komu],
+        to: [email.komu].flat(),
         reply_to: email.odpovedet ?? emailStaje,
         subject: email.predmet,
         html: email.html,

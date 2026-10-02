@@ -7,7 +7,7 @@
  * `{ ok, message }`, bez něj klasický POST a přesměrování zpět na stránku.
  */
 
-import { emailStaje, odeslatEmail } from '@/lib/prihlasky/email';
+import { emailPenzionu, emailStaje, odeslatEmail } from '@/lib/prihlasky/email';
 
 /** Formulář vyplněný rychleji než za tolik sekund je téměř jistě robot. */
 const MIN_SEKUND = 3;
@@ -50,19 +50,33 @@ export function kontrolaRobota(data: FormData): 'robot' | 'rychle' | null {
   return null;
 }
 
-/** Pošle stáji e-mail s tabulkou údajů a textem zprávy. */
+/**
+ * Komu patří dotaz podle tématu v kontaktním formuláři.
+ *
+ * Ubytování vyřizuje penzion ze své vlastní adresy, všechno ostatní chodí
+ * stáji. Pobyt s výukou je obojí naráz, tak ho dostanou oba.
+ */
+export function prijemceTematu(tema: string): string[] {
+  if (tema === 'Ubytování v penzionu') return [emailPenzionu];
+  if (tema === 'Pobyt s výukou') return [emailStaje, emailPenzionu];
+  return [emailStaje];
+}
+
+/** Pošle stáji (nebo penzionu) e-mail s tabulkou údajů a textem zprávy. */
 export async function poslatStaji(email: {
   predmet: string;
   uvod: string;
   radky: [string, string][];
   zprava?: string;
   odpovedet: string;
+  /** Komu zpráva patří. Nevyplněno = stáji. */
+  komu?: string | string[];
 }): Promise<boolean> {
-  const { predmet, uvod, radky, zprava = '', odpovedet } = email;
+  const { predmet, uvod, radky, zprava = '', odpovedet, komu = emailStaje } = email;
   const paticka = 'Na tenhle e-mail stačí odpovědět, odpověď půjde přímo odesílateli.';
 
   return odeslatEmail({
-    komu: emailStaje,
+    komu,
     odpovedet,
     predmet,
     text: `${uvod}\n\n${radky.map(([k, h]) => `${k}: ${h}`).join('\n')}${
@@ -79,4 +93,4 @@ export async function poslatStaji(email: {
   });
 }
 
-export { emailStaje };
+export { emailPenzionu, emailStaje };

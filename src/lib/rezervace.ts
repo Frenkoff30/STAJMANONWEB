@@ -14,6 +14,8 @@ export interface Jizdarna {
   nazev: string;
   popis: string;
   kapacita: number;
+  /** Doporučený počet koní v jednom čase. 0 = nic se nedoporučuje. */
+  doporuceni_koni: number;
   poradi: number;
   aktivni: boolean;
 }
@@ -46,6 +48,8 @@ export interface ObsazenostSlotu {
   datum: string;
   slot: string;
   obsazeno: number;
+  /** Součet koní všech rezervací v tom slotu. */
+  koni: number;
   /** Vyplněné jen pro přihlášené členy, jinak `null`. */
   jmena: string[] | null;
   /** Vyplněné, když v tom slotu má rezervaci právě přihlášený člověk. */
@@ -58,6 +62,9 @@ export interface Rezervace {
   slot: string;
   datum: string;
   poznamka: string;
+  pocet_koni: number;
+  /** Rezervace založené jedním opakováním mají společné id. */
+  serie: string | null;
   vytvoreno: string;
 }
 
@@ -196,4 +203,45 @@ export function mista(pocet: number): string {
   if (pocet === 1) return '1 místo';
   if (pocet >= 2 && pocet <= 4) return `${pocet} místa`;
   return `${pocet} míst`;
+}
+
+/** Skloňování: 1 kůň, 2 koně, 5 koní. */
+export function kone(pocet: number): string {
+  if (pocet === 1) return '1 kůň';
+  if (pocet >= 2 && pocet <= 4) return `${pocet} koně`;
+  return `${pocet} koní`;
+}
+
+/** `Doporučujeme nejvýš 8 koní v jednom čase.` Bez doporučení prázdný text. */
+export function doporuceniTextu(jizdarna: Jizdarna): string {
+  return jizdarna.doporuceni_koni > 0
+    ? `Doporučujeme nejvýš ${kone(jizdarna.doporuceni_koni)} v jednom čase`
+    : '';
+}
+
+/**
+ * Navazující sloty počínaje zvoleným. Vrací nejvýš `pocet` kusů a končí
+ * tam, kde rozvrh přestane navazovat — tři hodiny v kuse se dají zamluvit
+ * jen tehdy, když na sebe časy opravdu sedí.
+ */
+export function navazujiciSloty(sloty: Slot[], od: string, pocet: number): Slot[] {
+  const start = sloty.findIndex((s) => s.kod === od);
+  if (start < 0) return [];
+
+  const rada = [sloty[start]!];
+  for (let i = start + 1; i < sloty.length && rada.length < pocet; i += 1) {
+    const predchozi = rada[rada.length - 1]!;
+    if (sloty[i]!.zacatek !== predchozi.konec) break;
+    rada.push(sloty[i]!);
+  }
+  return rada;
+}
+
+/** Data opakování po týdnech: `datum`, +7 dní, … až do `dokdy` včetně. */
+export function tydenniOpakovani(datum: string, dokdy: string, strop = 60): string[] {
+  const data: string[] = [];
+  for (let d = datum; d <= dokdy && data.length < strop; d = posunDnu(d, 7)) {
+    data.push(d);
+  }
+  return data;
 }

@@ -21,7 +21,9 @@ import {
   cas,
   dlouheDatum,
   dnesCz,
+  doporuceniTextu,
   platneDatum,
+  posunDnu,
   rozsahSlotu,
   type Blokace,
   type Jizdarna,
@@ -132,19 +134,40 @@ if (Astro.request.method === 'POST') {
       break;
     }
 
+    /**
+     * Zavření termínu. Akce trvá klidně několik dní, proto se zadává
+     * rozsah „od – do": vznikne z něj jedna blokace na každý den.
+     */
     case 'blokovat': {
       const datum = String(formular.get('datum') ?? '');
+      const doData = String(formular.get('datum_do') ?? '');
+
       if (!platneDatum(datum)) {
         chyba = 'Zadejte prosím platné datum.';
         break;
       }
-      await provest('Termín je zavřený.', () =>
-        supabase.from('blokace').insert({
-          datum,
-          jizdarna: String(formular.get('jizdarna') ?? '') || null,
-          slot: String(formular.get('slot') ?? '') || null,
-          duvod: String(formular.get('duvod') ?? '').trim().slice(0, 60),
-        }),
+      if (doData && (!platneDatum(doData) || doData < datum)) {
+        chyba = 'Datum „do" musí být stejné nebo pozdější než datum „od".';
+        break;
+      }
+
+      const dny: string[] = [];
+      // Strop 60 dní, ať se překlepem v roce nezaloží tisíce řádků.
+      for (let d = datum; d <= (doData || datum) && dny.length < 60; d = posunDnu(d, 1)) {
+        dny.push(d);
+      }
+
+      await provest(
+        dny.length > 1 ? `Zavřeno na ${dny.length} dní.` : 'Termín je zavřený.',
+        () =>
+          supabase.from('blokace').insert(
+            dny.map((den) => ({
+              datum: den,
+              jizdarna: String(formular.get('jizdarna') ?? '') || null,
+              slot: String(formular.get('slot') ?? '') || null,
+              duvod: String(formular.get('duvod') ?? '').trim().slice(0, 60),
+            })),
+          ),
       );
       break;
     }
@@ -175,6 +198,17 @@ if (Astro.request.method === 'POST') {
         supabase.from('oznameni').delete().eq('id', String(formular.get('id') ?? '')),
       );
       break;
+
+    case 'doporuceni': {
+      const hodnota = Math.max(0, Math.min(99, Number(formular.get('koni') ?? 0) || 0));
+      await provest('Doporučení je uložené.', () =>
+        supabase
+          .from('jizdarny')
+          .update({ doporuceni_koni: hodnota })
+          .eq('kod', String(formular.get('kod') ?? '')),
+      );
+      break;
+    }
 
     case 'nastaveni': {
       const zmeny = ['horizont_dnu', 'max_aktivnich', 'storno_minut'].map((klic) => ({
@@ -406,7 +440,8 @@ const nazevSlotu = (kod: string | null) => {
     <h2 class="t-3">Zavřené termíny</h2>
     <p class="mt-2 text-[0.9375rem] text-ink-3">
       Závody, soustředění, údržba. Zavřený termín nejde rezervovat a v
-      kalendáři je vidět důvod.
+      kalendáři je vidět důvod. Na celodenní akci nechte „Celý den" a u
+      jízdárny „Všechny" — hala i kolbiště pak zůstanou celý den jen akci.
     </p>
 
     <form method="post" class="card mt-6 p-7">
@@ -414,7 +449,7 @@ const nazevSlotu = (kod: string | null) => {
 
       <div class="grid gap-5 sm:grid-cols-2">
         <div>
-          <label for="b-datum" class="form-label">Datum</label>
+          <label for="b-datum" class="form-label">Datum od</label>
           <input
             type="date"
             id="b-datum"
@@ -423,6 +458,21 @@ const nazevSlotu = (kod: string | null) => {
             min={dnes}
             class="form-control"
           />
+        </div>
+
+        <div>
+          <label for="b-datum-do" class="form-label">Datum do (nepovinné)</label>
+          <input
+            type="date"
+            id="b-datum-do"
+            name="datum_do"
+            min={dnes}
+            max={posunDnu(dnes, 400)}
+            class="form-control"
+          />
+          <p class="mt-2 text-[0.8125rem] text-ink-3">
+            Vícedenní akce zavřete jedním zápisem.
+          </p>
         </div>
 
         <div>
@@ -594,16 +644,42 @@ const nazevSlotu = (kod: string | null) => {
   <section class="mt-16">
     <h2 class="t-3">Jízdárny a časy</h2>
     <p class="mt-2 text-[0.9375rem] text-ink-3">
-      Kapacity a rozvrh dne. Změna je zásah do celého systému, tak ji dělá
-      vývojář v souboru <code class="text-ink">supabase/schema.sql</code>.
+      Doporučený počet koní se ukazuje v kalendáři jako rada, ne jako zákaz:
+      jezdců se v jednom čase sejde víc a každý má jiný počet koní. Nula
+      znamená, že se u té jízdárny nedoporučuje nic. Rozvrh časů mění vývojář
+      v souboru <code class="text-ink">supabase/schema.sql</code>.
     </p>
 
     <ul class="mt-6 space-y-px">
       {
         jizdarny.map((j) => (
           <li class="flex flex-wrap items-center justify-between gap-4 border-t border-ink/12 py-4 last:border-b">
-            <p class="font-semibold">{j.nazev}</p>
-            <p class="text-[0.875rem] text-ink-3">kapacita {j.kapacita}</p>
+            <div>
+              <p class="font-semibold">{j.nazev}</p>
+              <p class="mt-0.5 text-[0.875rem] text-ink-3">
+                {doporuceniTextu(j) || 'bez doporučení'}
+              </p>
+            </div>
+
+            <form method="post" class="flex items-end gap-3">
+              <input type="hidden" name="akce" value="doporuceni" />
+              <input type="hidden" name="kod" value={j.kod} />
+              <div>
+                <label for={`d-${j.kod}`} class="form-label">Doporučeno koní</label>
+                <input
+                  type="number"
+                  id={`d-${j.kod}`}
+                  name="koni"
+                  min="0"
+                  max="99"
+                  value={j.doporuceni_koni}
+                  class="form-control w-28"
+                />
+              </div>
+              <button type="submit" class="btn btn-outline min-h-0 px-5 py-2 text-[0.75rem]">
+                Uložit
+              </button>
+            </form>
           </li>
         ))
       }

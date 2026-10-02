@@ -11,6 +11,7 @@ import {
   kontrolaRobota,
   odpovedFormulari,
   poslatStaji,
+  prijemceTematu,
 } from '@/lib/formular-email';
 
 export const POST: APIRoute = async ({ request }) => {
@@ -58,6 +59,7 @@ export const POST: APIRoute = async ({ request }) => {
     ],
     zprava,
     odpovedet: email,
+    komu: prijemceTematu(tema),
   });
 
   if (!odeslano) {

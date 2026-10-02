@@ -12,12 +12,12 @@
 import {
   cas,
   dlouheDatum,
+  doporuceniTextu,
   jeMinulost,
+  kone,
   kratkeDatum,
-  mista,
   najdiBlokaci,
   rozsahSlotu,
-  volnaMista,
   zkratkaDne,
   type Blokace,
   type Jizdarna,
@@ -50,8 +50,8 @@ function odkaz(datum: string, slot: string): string {
 <div class="obal">
   <table class="kal">
     <caption class="sr-only">
-      Obsazenost jízdárny {jizdarna.nazev}. Kapacita {mista(jizdarna.kapacita)} v
-      jednom termínu.
+      Obsazenost jízdárny {jizdarna.nazev}.{' '}
+      {doporuceniTextu(jizdarna) ? `${doporuceniTextu(jizdarna)}.` : ''}
     </caption>
 
     <thead>
@@ -82,6 +82,7 @@ function odkaz(datum: string, slot: string): string {
                 const zavreno = najdiBlokaci(blokace, jizdarna.kod, den, slot.kod);
                 const stav = obsazenost.get(`${jizdarna.kod}|${den}|${slot.kod}`);
                 const obsazeno = stav?.obsazeno ?? 0;
+                const koni = stav?.koni ?? 0;
                 const volno = Math.max(0, jizdarna.kapacita - obsazeno);
                 const pryc = jeMinulost(den, slot.zacatek);
                 const moje = Boolean(stav?.moje_id);
@@ -110,6 +111,11 @@ function odkaz(datum: string, slot: string): string {
                 const vypis = jmena ? jmena.slice(0, 2) : [];
                 const dalsi = jmena ? jmena.length - vypis.length : 0;
 
+                /* Doporučení je rada, ne zákaz: termín zůstává klikací,
+                   jen je vidět, že je v něm už koní dost. */
+                const plno =
+                  jizdarna.doporuceni_koni > 0 && koni >= jizdarna.doporuceni_koni;
+
                 const obsah = (
                   <>
                     {clen && vypis.length > 0 && (
@@ -120,25 +126,18 @@ function odkaz(datum: string, slot: string): string {
                         {dalsi > 0 && <span class="jmeno vic">+{dalsi} další</span>}
                       </span>
                     )}
-                    {!clen && obsazeno > 0 && (
-                      <span class="pocet">
-                        {obsazeno}/{jizdarna.kapacita}
-                      </span>
-                    )}
-                    {volno > 0 ? (
+                    {koni > 0 ? (
+                      <span class:list={['koni', plno && 'je-hodne']}>{kone(koni)}</span>
+                    ) : (
                       /* U zcela volného termínu by se „Volno" opakovalo v
                          devadesáti buňkách. Necháme mluvit barvu a text
                          ukážeme, až na buňku někdo najede nebo se na ni
                          dostane tabulátorem. */
-                      <span class:list={['volno', obsazeno === 0 && 'tise']}>
-                        {obsazeno === 0 ? 'Volno' : volnaMista(volno)}
-                      </span>
-                    ) : (
-                      <span class="plno">Obsazeno</span>
+                      <span class="volno tise">Volno</span>
                     )}
                     <span class="sr-only">
-                      {popis} —{' '}
-                      {volno > 0 ? volnaMista(volno) : 'obsazeno'}
+                      {popis} — {koni > 0 ? kone(koni) : 'volno'}
+                      {plno ? ', doporučený počet koní je naplněn' : ''}
                       {moje ? ', máte tu rezervaci' : ''}
                     </span>
                   </>
@@ -148,10 +147,10 @@ function odkaz(datum: string, slot: string): string {
                   'bunka',
                   moje && 'je-moje',
                   volno === 0 && !moje && 'je-plno',
-                  volno > 0 && obsazeno === 0 && 'je-volno',
+                  koni === 0 && 'je-volno',
                 ];
 
-                // Plný termín, ve kterém nemám rezervaci, nikam nevede.
+                // Technický strop jízdárny. Prakticky se na něj nedojde.
                 if (volno === 0 && !moje) {
                   return <td class:list={trida}>{obsah}</td>;
                 }
@@ -176,9 +175,13 @@ function odkaz(datum: string, slot: string): string {
 
 <ul class="legenda">
   <li><span class="vzor v-volno"></span> Volno</li>
-  <li><span class="vzor v-plno"></span> Obsazeno</li>
   <li><span class="vzor v-moje"></span> Moje rezervace</li>
   <li><span class="vzor v-zavreno"></span> Zavřeno stájí</li>
+  {
+    jizdarna.doporuceni_koni > 0 && (
+      <li>Čísla v buňkách jsou koně. {doporuceniTextu(jizdarna)}.</li>
+    )
+  }
 </ul>
 
 <style>
@@ -328,14 +331,15 @@ function odkaz(datum: string, slot: string): string {
       padding: 0.25rem 0.4rem;
     }
   }
-  .plno {
+  .koni {
     font-size: 0.625rem;
     font-weight: 600;
-    color: var(--color-ink-3);
-  }
-  .pocet {
-    font-weight: 600;
+    color: var(--color-loden-500);
     font-variant-numeric: tabular-nums;
+  }
+  /* Doporučený počet koní je naplněný — rada, ne zákaz. */
+  .koni.je-hodne {
+    color: var(--color-brass-900);
   }
 
   .jmena {
@@ -415,9 +419,6 @@ function odkaz(datum: string, slot: string): string {
   }
   .v-volno {
     background: color-mix(in srgb, var(--color-loden-100) 45%, #fff);
-  }
-  .v-plno {
-    background: var(--color-paper-2);
   }
   .v-moje {
     background: var(--color-brass-100);
