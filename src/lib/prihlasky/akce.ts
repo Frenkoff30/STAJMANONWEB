@@ -111,6 +111,7 @@ export function prazdnaAkce(druh: EventKind = 'zavody'): VyplnenaAkce {
     // Nová akce je napřed jen v kalendáři, přihlašování se zapne zaškrtnutím.
     prihlasovani: false,
     zvyraznit: false,
+    zavrit_jizdarnu: '',
     rozpis_nazev: '',
     rozpis_url: '',
   };
@@ -176,6 +177,7 @@ export function nactiAkci(fd: FormData): VyplnenaAkce {
     otevreno: fd.get('otevreno') === 'ano',
     prihlasovani: fd.get('prihlasovani') === 'ano',
     zvyraznit: fd.get('zvyraznit') === 'ano',
+    zavrit_jizdarnu: text(fd, 'zavrit_jizdarnu', 30),
     rozpis_nazev: '',
     rozpis_url: '',
   };
@@ -294,6 +296,7 @@ export function proDatabazi(a: VyplnenaAkce): Record<string, unknown> {
     otevreno: a.prihlasovani && a.otevreno,
     prihlasovani: a.prihlasovani,
     zvyraznit: a.zvyraznit,
+    zavrit_jizdarnu: a.zavrit_jizdarnu,
     rozpis_nazev: a.rozpis_nazev,
     rozpis_url: a.rozpis_url,
   };

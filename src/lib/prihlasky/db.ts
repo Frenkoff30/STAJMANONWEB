@@ -52,9 +52,14 @@ const COOKIE = {
   maxAge: 60 * 60 * 24 * 14,
 } as const;
 
-/** Běží přihlášky ve stejném projektu Supabase jako rezervace? */
-const spolecnyProjekt =
+/**
+ * Běží přihlášky ve stejném projektu Supabase jako rezervace? Jen tam se
+ * dá z akce zavřít jízdárna — v odděleném projektu žádné rezervace nejsou.
+ */
+export const sdilenaDatabaze =
   url === (import.meta.env.SUPABASE_URL || process.env.SUPABASE_URL || '');
+
+const spolecnyProjekt = sdilenaDatabaze;
 
 /**
  * Klient pro správu, jeden na požadavek. Ve společném projektu je to tentýž
@@ -125,6 +130,11 @@ export interface Akce {
   zvyraznit: boolean;
   rozpis_nazev: string;
   rozpis_url: string;
+  /**
+   * Co akce zavře v rezervacích jízdáren po dobu svého konání.
+   * Prázdné = nic, `vse` = všechny jízdárny, jinak kód jízdárny.
+   */
+  zavrit_jizdarnu: string;
 }
 
 /** Jeden přihlášený. Která pole jsou vyplněná, závisí na typu akce. */

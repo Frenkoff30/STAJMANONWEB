@@ -20,7 +20,9 @@ import PrihlaskyLayout from '@/layouts/PrihlaskyLayout.astro';
 import Zprava from '@/components/rezervace/Zprava.astro';
 import Pole from '@/components/prihlasky/Pole.astro';
 import Icon from '@/components/Icon.astro';
-import { citelnaChyba, type Akce } from '@/lib/prihlasky/db';
+import { citelnaChyba, sdilenaDatabaze, type Akce } from '@/lib/prihlasky/db';
+import { VSECHNY, srovnejBlokace, zrusBlokace } from '@/lib/prihlasky/zavirani';
+import type { Jizdarna } from '@/lib/rezervace';
 import {
   RADKU_CENIKU,
   jsouChyby,
@@ -66,6 +68,20 @@ const nacist = async (): Promise<Akce | null> => {
 const ulozena = await nacist();
 if (!novaAkce && !ulozena) return Astro.redirect('/prihlasky/sprava');
 
+/**
+ * Jízdárny, které jde akcí zavřít. Když přihlášky běží v samostatné
+ * databázi, žádné rezervace tam nejsou a volba se vůbec nenabídne.
+ */
+let jizdarny: Jizdarna[] = [];
+if (sdilenaDatabaze) {
+  const { data } = await spravce.supabase
+    .from('jizdarny')
+    .select('*')
+    .eq('aktivni', true)
+    .order('poradi');
+  jizdarny = (data as Jizdarna[]) ?? [];
+}
+
 /** Kolik přihlášek na akci už je. Rozhoduje o tom, jestli jde smazat. */
 let pocetPrihlasek = 0;
 if (ulozena) {
@@ -96,8 +112,13 @@ if (Astro.request.method === 'POST') {
       chyba = 'Na akci už jsou přihlášky, proto ji nejde smazat. Zavřete ji místo toho.';
     } else {
       const { error } = await spravce.supabase.from('akce').delete().eq('kod', ulozena.kod);
-      if (error) chyba = citelnaChyba(error);
-      else return Astro.redirect('/prihlasky/sprava?hotovo=akce-smazana');
+      if (error) {
+        chyba = citelnaChyba(error);
+      } else {
+        // Zrušená akce po sobě nenechá zavřené jízdárny.
+        if (sdilenaDatabaze) await zrusBlokace(spravce.supabase, ulozena.kod);
+        return Astro.redirect('/prihlasky/sprava?hotovo=akce-smazana');
+      }
     }
   } else if (co === 'ulozit') {
     akce = nactiAkci(formular);
@@ -144,15 +165,30 @@ if (Astro.request.method === 'POST') {
             ? `Akce s adresou „${akce.kod}" už existuje. Změňte prosím název nebo v Dalším nastavení adresu přihlášky.`
             : citelnaChyba(error);
         } else {
-          return Astro.redirect('/prihlasky/sprava?hotovo=akce-zalozena');
+          const potiz = sdilenaDatabaze
+            ? await srovnejBlokace(spravce.supabase, akce)
+            : '';
+          return Astro.redirect(
+            potiz
+              ? `${adresa}?hotovo=ulozena&potiz=blokace`
+              : '/prihlasky/sprava?hotovo=akce-zalozena',
+          );
         }
       } else {
         const { error } = await spravce.supabase
           .from('akce')
           .update(proDatabazi(akce))
           .eq('kod', akce.kod);
-        if (error) chyba = citelnaChyba(error);
-        else return Astro.redirect(`${adresa}?hotovo=ulozena`);
+        if (error) {
+          chyba = citelnaChyba(error);
+        } else {
+          const potiz = sdilenaDatabaze
+            ? await srovnejBlokace(spravce.supabase, akce)
+            : '';
+          return Astro.redirect(
+            `${adresa}?hotovo=ulozena${potiz ? '&potiz=blokace' : ''}`,
+          );
+        }
       }
     }
   }
@@ -189,6 +225,14 @@ const nadpis = novaAkce ? 'Nová akce' : akce.nazev;
   crumbs={[{ label: novaAkce ? 'Nová akce' : akce.nazev }]}
 >
   {hotovo === 'ulozena' && <Zprava typ="ok" class="mb-8">Změny jsou uložené.</Zprava>}
+  {
+    Astro.url.searchParams.get('potiz') === 'blokace' && (
+      <Zprava typ="dulezite" class="mb-8">
+        Akce je uložená, ale zavřít jízdárnu se nepodařilo. Zkuste to znovu,
+        nebo termín zavřete ručně ve správě rezervací.
+      </Zprava>
+    )
+  }
   {chyba && <Zprava typ="chyba" class="mb-8">{chyba}</Zprava>}
   {
     jsouChyby({ chyby, cenik: cenikChyby }) && (
@@ -359,6 +403,36 @@ const nadpis = novaAkce ? 'Nová akce' : akce.nazev;
           <span class="text-ink-3">V kalendáři se akce zvýrazní a ukáže nahoře na stránce.</span>
         </span>
       </label>
+
+      {/* Akce si může zabrat jízdárnu — na celé dny svého konání se pak
+          nedá rezervovat a členové tam místo volných políček vidí její
+          název. Mění se spolu s termínem akce, ručně se nic dohledávat
+          nemusí. */}
+      {
+        jizdarny.length > 0 && (
+          <div class="mt-6 border border-ink/12 bg-paper-2 p-5 sm:p-7">
+            <Pole
+              pole="zavrit_jizdarnu"
+              label="Zavřít jízdárnu po dobu akce"
+              napoveda="Na všechny dny akce. V rezervacích pak místo volných termínů svítí název akce."
+            >
+              <select id="zavrit_jizdarnu" name="zavrit_jizdarnu" class="form-control">
+                <option value="" selected={!akce.zavrit_jizdarnu}>
+                  Nezavírat, jízdárny jedou dál
+                </option>
+                <option value={VSECHNY} selected={akce.zavrit_jizdarnu === VSECHNY}>
+                  Všechny jízdárny — celý areál na akci
+                </option>
+                {jizdarny.map((j) => (
+                  <option value={j.kod} selected={akce.zavrit_jizdarnu === j.kod}>
+                    {j.nazev}
+                  </option>
+                ))}
+              </select>
+            </Pole>
+          </div>
+        )
+      }
     </section>
 
     <!-- ----------------------------------------------------- přihlašování -->
