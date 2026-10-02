@@ -211,19 +211,13 @@ if (Astro.request.method === 'POST') {
     }
 
     case 'nastaveni': {
-      const zmeny = ['horizont_dnu', 'max_aktivnich', 'storno_minut'].map((klic) => ({
-        klic,
-        hodnota: Math.max(0, Math.min(3650, Number(formular.get(klic) ?? 0) || 0)),
-      }));
-
-      for (const zmena of zmeny) {
-        const { error } = await supabase
+      const hodnota = Math.max(0, Math.min(1440, Number(formular.get('storno_minut') ?? 0) || 0));
+      await provest('Pravidla jsou uložená.', () =>
+        supabase
           .from('nastaveni')
-          .update({ hodnota: zmena.hodnota })
-          .eq('klic', zmena.klic);
-        if (error) chyba = citelnaChyba(error);
-      }
-      if (!chyba) potvrzeni = 'Pravidla jsou uložená.';
+          .update({ hodnota })
+          .eq('klic', 'storno_minut'),
+      );
       break;
     }
   }
@@ -591,49 +585,23 @@ const nazevSlotu = (kod: string | null) => {
     <form method="post" class="card mt-6 p-7">
       <input type="hidden" name="akce" value="nastaveni" />
 
-      <div class="grid gap-5 sm:grid-cols-3">
-        <div>
-          <label for="horizont_dnu" class="form-label">Dní dopředu</label>
-          <input
-            type="number"
-            id="horizont_dnu"
-            name="horizont_dnu"
-            min="1"
-            max="365"
-            value={nastaveni.get('horizont_dnu') ?? 21}
-            class="form-control"
-          />
-        </div>
-
-        <div>
-          <label for="max_aktivnich" class="form-label">Rezervací na člena</label>
-          <input
-            type="number"
-            id="max_aktivnich"
-            name="max_aktivnich"
-            min="1"
-            max="200"
-            value={nastaveni.get('max_aktivnich') ?? 15}
-            class="form-control"
-          />
-        </div>
-
-        <div>
-          <label for="storno_minut" class="form-label">Storno (minut předem)</label>
-          <input
-            type="number"
-            id="storno_minut"
-            name="storno_minut"
-            min="0"
-            max="1440"
-            value={nastaveni.get('storno_minut') ?? 0}
-            class="form-control"
-          />
-        </div>
+      <div class="max-w-xs">
+        <label for="storno_minut" class="form-label">Storno (minut předem)</label>
+        <input
+          type="number"
+          id="storno_minut"
+          name="storno_minut"
+          min="0"
+          max="1440"
+          value={nastaveni.get('storno_minut') ?? 0}
+          class="form-control"
+        />
       </div>
 
       <p class="mt-4 text-[0.8125rem] text-ink-3">
         Storno 0 znamená, že rezervace jde zrušit až do začátku termínu.
+        Kolik dní dopředu a kolik termínů naráz si kdo zamluví, systém
+        neomezuje.
       </p>
 
       <button type="submit" class="btn btn-primary mt-7">Uložit pravidla</button>

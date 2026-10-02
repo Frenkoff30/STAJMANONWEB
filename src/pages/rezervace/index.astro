@@ -44,11 +44,10 @@ let sloty: Slot[] = [];
 let blokace: Blokace[] = [];
 let oznameni: Oznameni[] = [];
 const obsazenost = new Map<string, ObsazenostSlotu>();
-let horizont = 21;
 let chybaNacteni = '';
 
 if (supabase) {
-  const [vysledekJizdaren, vysledekSlotu, vysledekBlokaci, vysledekOznameni, vysledekNastaveni] =
+  const [vysledekJizdaren, vysledekSlotu, vysledekBlokaci, vysledekOznameni] =
     await Promise.all([
       supabase.from('jizdarny').select('*').eq('aktivni', true).order('poradi'),
       supabase.from('sloty').select('*').eq('aktivni', true).order('poradi'),
@@ -62,14 +61,12 @@ if (supabase) {
         .select('*')
         .eq('aktivni', true)
         .order('poradi'),
-      supabase.from('nastaveni').select('*').eq('klic', 'horizont_dnu').maybeSingle(),
     ]);
 
   jizdarny = (vysledekJizdaren.data as Jizdarna[]) ?? [];
   sloty = (vysledekSlotu.data as Slot[]) ?? [];
   blokace = (vysledekBlokaci.data as Blokace[]) ?? [];
   oznameni = (vysledekOznameni.data as Oznameni[]) ?? [];
-  horizont = (vysledekNastaveni.data as { hodnota: number } | null)?.hodnota ?? 21;
 
   const { data: bunky, error } = await supabase.rpc('kalendar', {
     od: pondeli,
@@ -251,9 +248,8 @@ const clen = Boolean(profil?.schvaleno);
               <div class="flex gap-3">
                 <Icon name="clock" class="mt-0.5 h-4 w-4 shrink-0 text-brass-600" />
                 <p class="text-[0.875rem] text-ink-3">
-                  Rezervovat jde nejvýš {horizont} dní dopředu. Zrušit můžete
-                  kdykoli až do začátku termínu, ať se místo uvolní někomu
-                  dalšímu.
+                  Termín si zamluvíte kdykoli dopředu. Zrušit můžete až do jeho
+                  začátku, ať se místo uvolní někomu dalšímu.
                 </p>
               </div>
               <div class="flex gap-3">

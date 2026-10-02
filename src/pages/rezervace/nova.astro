@@ -215,7 +215,7 @@ const pryc = jeMinulost(datum, slot.zacatek);
 const jmena = stav?.jmena ?? [];
 const doporuceni = doporuceniTextu(jizdarna);
 
-/** Nejzazší datum opakování: rok dopředu, ale ne za horizont rezervací. */
+/** Nejzazší datum opakování. Rok dopředu je i strop jedné série. */
 const opakovatMax = posunDnu(datum, 364);
 ---
 

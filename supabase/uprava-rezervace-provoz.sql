@@ -6,7 +6,8 @@
 --      se v ní má potkat (8). U malých jízdáren se nic nedoporučuje.
 --    * Rezervace nese počet koní a činnost (co se tam bude dělat).
 --    * Rezervace jde udělat na několik navazujících hodin a opakovat
---      týdně klidně na celý rok — proto větší horizont i strop.
+--      týdně klidně na celý rok. Stropy „dní dopředu" a „rezervací na
+--      člena" se proto ruší úplně.
 --
 --  Pro databázi, kde už běží supabase/schema.sql. Spustit jednou:
 --  Supabase → SQL Editor → New query → vložit celý soubor → Run.
@@ -48,16 +49,83 @@ create index if not exists rezervace_serie_idx on public.rezervace (serie);
 
 -- ---------------------------------------------------------------- pravidla
 --
--- Opakovaný trénink na celý rok potřebuje horizont i strop, do kterých se
--- vejde. Stáj si obojí dál mění ve správě.
+-- Strop „kolik dní dopředu" a „kolik rezervací na člena" se ruší. Pravidelný
+-- trénink na celý rok se do nich nevešel a stáj si pořádek hlídá sama —
+-- zbytečný strop by jen bránil v práci. Zůstává jen lhůta na zrušení.
 
-update public.nastaveni set hodnota = 400,
-  popis = 'Na kolik dní dopředu jde rezervovat.'
-  where klic = 'horizont_dnu' and hodnota < 400;
+delete from public.nastaveni where klic in ('horizont_dnu', 'max_aktivnich');
 
-update public.nastaveni set hodnota = 400,
-  popis = 'Kolik budoucích rezervací smí mít jeden člen zároveň.'
-  where klic = 'max_aktivnich' and hodnota < 400;
+-- Kontrola rezervace bez obou stropů. Zbytek pravidel (člen, kapacita,
+-- minulost, zavřený termín) platí dál.
+create or replace function public.rezervace_kontrola()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $fn$
+declare
+  v_kapacita integer;
+  v_obsazeno integer;
+  v_zacatek  time;
+begin
+  -- Dva lidé klikající na totéž místo ve stejnou chvíli se seřadí za sebe.
+  -- Bez zámku by kontrola kapacity prošla oběma a místo by se přebookovalo.
+  perform pg_advisory_xact_lock(
+    hashtextextended(new.jizdarna || '|' || new.datum::text || '|' || new.slot, 0)
+  );
+
+  if not public.je_clen() then
+    raise exception 'Rezervovat může jen schválený člen stáje.'
+      using errcode = 'check_violation';
+  end if;
+
+  select kapacita into v_kapacita
+  from public.jizdarny where kod = new.jizdarna and aktivni;
+
+  if v_kapacita is null then
+    raise exception 'Tuhle jízdárnu nejde rezervovat.'
+      using errcode = 'check_violation';
+  end if;
+
+  select zacatek into v_zacatek
+  from public.sloty where kod = new.slot and aktivni;
+
+  if v_zacatek is null then
+    raise exception 'Tenhle čas nejde rezervovat.'
+      using errcode = 'check_violation';
+  end if;
+
+  -- Do minulosti se nerezervuje.
+  if (new.datum + v_zacatek) <= public.ted_cz() then
+    raise exception 'Tenhle termín už začal nebo je po něm.'
+      using errcode = 'check_violation';
+  end if;
+
+  -- Termín zavřený stájí.
+  if exists (
+    select 1 from public.blokace b
+    where b.datum = new.datum
+      and (b.jizdarna is null or b.jizdarna = new.jizdarna)
+      and (b.slot is null or b.slot = new.slot)
+  ) then
+    raise exception 'Tenhle termín má stáj zavřený.'
+      using errcode = 'check_violation';
+  end if;
+
+  -- Volná kapacita jízdárny. Je schválně velká, jde o pojistku proti
+  -- nesmyslu, ne o počítání míst.
+  select count(*) into v_obsazeno
+  from public.rezervace r
+  where r.jizdarna = new.jizdarna and r.datum = new.datum and r.slot = new.slot;
+
+  if v_obsazeno >= v_kapacita then
+    raise exception 'V tomhle termínu už je zapsaných hodně jezdců.'
+      using errcode = 'check_violation';
+  end if;
+
+  return new;
+end;
+$fn$;
 
 
 -- ---------------------------------------------------------------- kalendář
