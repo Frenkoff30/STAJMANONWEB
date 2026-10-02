@@ -9,7 +9,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { platneDatum, posunDnu } from '@/lib/rezervace';
+import { platneDatum, posunDnu, type Slot } from '@/lib/rezervace';
 
 /** Hodnota znamenající „zavřít všechny jízdárny". */
 export const VSECHNY = 'vse';
@@ -30,13 +30,41 @@ function dnyAkce(zacatek: string, konec: string): string[] {
 }
 
 /**
+ * Které sloty akce zabere. Prázdné „od" i „do" znamená celý den — pak se
+ * vrátí `[null]`, tedy jediná blokace bez slotu, což je v databázi zápis
+ * pro celý den. Vyplněné jen jedno z nich zavírá od začátku dne, nebo do
+ * jeho konce.
+ */
+function sloty(seznam: Slot[], od: string, doKdy: string): (string | null)[] {
+  if (!od && !doKdy) return [null];
+
+  const zacatek = od ? seznam.findIndex((s) => s.kod === od) : 0;
+  const konec = doKdy ? seznam.findIndex((s) => s.kod === doKdy) : seznam.length - 1;
+
+  // Neznámý slot (třeba po změně rozvrhu) radši zavře celý den, než aby
+  // akce zůstala bez blokace a někdo si do ní zarezervoval.
+  if (zacatek < 0 || konec < 0) return [null];
+
+  const [prvni, posledni] = zacatek <= konec ? [zacatek, konec] : [konec, zacatek];
+  return seznam.slice(prvni, posledni + 1).map((s) => s.kod);
+}
+
+/**
  * Srovná blokace s tím, co je u akce zaškrtnuté. Volá se po každém uložení
  * akce — staré blokace té akce zmizí a vzniknou nové podle aktuálního
  * termínu. Vrací chybu k zobrazení, nebo prázdný řetězec.
  */
 export async function srovnejBlokace(
   supabase: SupabaseClient,
-  akce: { kod: string; nazev: string; zacatek: string; konec: string; zavrit_jizdarnu: string },
+  akce: {
+    kod: string;
+    nazev: string;
+    zacatek: string;
+    konec: string;
+    zavrit_jizdarnu: string;
+    zavrit_od: string;
+    zavrit_do: string;
+  },
 ): Promise<string> {
   const { error: chybaMazani } = await supabase
     .from('blokace')
@@ -51,15 +79,25 @@ export async function srovnejBlokace(
   const dny = dnyAkce(akce.zacatek, akce.konec);
   if (dny.length === 0) return '';
 
+  const { data } = await supabase
+    .from('sloty')
+    .select('*')
+    .eq('aktivni', true)
+    .order('poradi');
+
+  const zabrane = sloty((data as Slot[]) ?? [], akce.zavrit_od, akce.zavrit_do);
+
   const { error } = await supabase.from('blokace').insert(
-    dny.map((datum) => ({
-      datum,
-      // Prázdná jízdárna i prázdný slot znamenají „všechny" a „celý den".
-      jizdarna: co === VSECHNY ? null : co,
-      slot: null,
-      duvod: akce.nazev.slice(0, 60),
-      akce: akce.kod,
-    })),
+    dny.flatMap((datum) =>
+      zabrane.map((slot) => ({
+        datum,
+        // Prázdná jízdárna znamená všechny, prázdný slot celý den.
+        jizdarna: co === VSECHNY ? null : co,
+        slot,
+        duvod: akce.nazev.slice(0, 60),
+        akce: akce.kod,
+      })),
+    ),
   );
 
   return error ? 'Akce je uložená, ale jízdárnu se nepodařilo zavřít.' : '';

@@ -112,6 +112,8 @@ export function prazdnaAkce(druh: EventKind = 'zavody'): VyplnenaAkce {
     prihlasovani: false,
     zvyraznit: false,
     zavrit_jizdarnu: '',
+    zavrit_od: '',
+    zavrit_do: '',
     rozpis_nazev: '',
     rozpis_url: '',
   };
@@ -178,6 +180,8 @@ export function nactiAkci(fd: FormData): VyplnenaAkce {
     prihlasovani: fd.get('prihlasovani') === 'ano',
     zvyraznit: fd.get('zvyraznit') === 'ano',
     zavrit_jizdarnu: text(fd, 'zavrit_jizdarnu', 30),
+    zavrit_od: text(fd, 'zavrit_od', 30),
+    zavrit_do: text(fd, 'zavrit_do', 30),
     rozpis_nazev: '',
     rozpis_url: '',
   };
@@ -297,6 +301,8 @@ export function proDatabazi(a: VyplnenaAkce): Record<string, unknown> {
     prihlasovani: a.prihlasovani,
     zvyraznit: a.zvyraznit,
     zavrit_jizdarnu: a.zavrit_jizdarnu,
+    zavrit_od: a.zavrit_od,
+    zavrit_do: a.zavrit_do,
     rozpis_nazev: a.rozpis_nazev,
     rozpis_url: a.rozpis_url,
   };

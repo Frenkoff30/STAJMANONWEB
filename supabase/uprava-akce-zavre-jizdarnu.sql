@@ -50,3 +50,17 @@ begin
     $p$;
   end if;
 end $$;
+
+
+-- ---------------------------------------------------------------- jen část dne
+--
+-- Jednodenní akce často zabere jen dopoledne. Prázdné obojí znamená celý
+-- den; vyplní-li se jen jedno, zavírá se od začátku dne, nebo do jeho konce.
+
+alter table public.akce add column if not exists zavrit_od text not null default '';
+alter table public.akce add column if not exists zavrit_do text not null default '';
+
+comment on column public.akce.zavrit_od is
+  'Kód prvního zavřeného slotu. Prázdné = od začátku dne.';
+comment on column public.akce.zavrit_do is
+  'Kód posledního zavřeného slotu. Prázdné = do konce dne.';

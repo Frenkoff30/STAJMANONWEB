@@ -22,7 +22,7 @@ import Pole from '@/components/prihlasky/Pole.astro';
 import Icon from '@/components/Icon.astro';
 import { citelnaChyba, sdilenaDatabaze, type Akce } from '@/lib/prihlasky/db';
 import { VSECHNY, srovnejBlokace, zrusBlokace } from '@/lib/prihlasky/zavirani';
-import type { Jizdarna } from '@/lib/rezervace';
+import { rozsahSlotu, type Jizdarna, type Slot } from '@/lib/rezervace';
 import {
   RADKU_CENIKU,
   jsouChyby,
@@ -73,13 +73,14 @@ if (!novaAkce && !ulozena) return Astro.redirect('/prihlasky/sprava');
  * databázi, žádné rezervace tam nejsou a volba se vůbec nenabídne.
  */
 let jizdarny: Jizdarna[] = [];
+let sloty: Slot[] = [];
 if (sdilenaDatabaze) {
-  const { data } = await spravce.supabase
-    .from('jizdarny')
-    .select('*')
-    .eq('aktivni', true)
-    .order('poradi');
-  jizdarny = (data as Jizdarna[]) ?? [];
+  const [{ data: jizdarnyData }, { data: slotyData }] = await Promise.all([
+    spravce.supabase.from('jizdarny').select('*').eq('aktivni', true).order('poradi'),
+    spravce.supabase.from('sloty').select('*').eq('aktivni', true).order('poradi'),
+  ]);
+  jizdarny = (jizdarnyData as Jizdarna[]) ?? [];
+  sloty = (slotyData as Slot[]) ?? [];
 }
 
 /** Kolik přihlášek na akci už je. Rozhoduje o tom, jestli jde smazat. */
@@ -430,6 +431,38 @@ const nadpis = novaAkce ? 'Nová akce' : akce.nazev;
                 ))}
               </select>
             </Pole>
+
+            {/* Jednodenní akce často zabere jen dopoledne. Nevyplněné obojí
+                znamená celý den, vyplněné jen jedno zavírá od rána, nebo do
+                večera. */}
+            <div class="mt-5 grid gap-5 sm:grid-cols-2">
+              <Pole pole="zavrit_od" label="Od hodiny">
+                <select id="zavrit_od" name="zavrit_od" class="form-control">
+                  <option value="" selected={!akce.zavrit_od}>Od začátku dne</option>
+                  {sloty.map((s) => (
+                    <option value={s.kod} selected={akce.zavrit_od === s.kod}>
+                      {rozsahSlotu(s)}
+                    </option>
+                  ))}
+                </select>
+              </Pole>
+
+              <Pole pole="zavrit_do" label="Do hodiny">
+                <select id="zavrit_do" name="zavrit_do" class="form-control">
+                  <option value="" selected={!akce.zavrit_do}>Do konce dne</option>
+                  {sloty.map((s) => (
+                    <option value={s.kod} selected={akce.zavrit_do === s.kod}>
+                      {rozsahSlotu(s)}
+                    </option>
+                  ))}
+                </select>
+              </Pole>
+            </div>
+
+            <p class="mt-3 text-[0.8125rem] text-ink-3">
+              Nevyplněné hodiny zavřou celý den. U vícedenní akce platí
+              vybrané hodiny pro každý její den.
+            </p>
           </div>
         )
       }

@@ -135,6 +135,10 @@ export interface Akce {
    * Prázdné = nic, `vse` = všechny jízdárny, jinak kód jízdárny.
    */
   zavrit_jizdarnu: string;
+  /** Od kterého slotu se zavírá. Prázdné = od začátku dne. */
+  zavrit_od: string;
+  /** Po který slot se zavírá. Prázdné = do konce dne. */
+  zavrit_do: string;
 }
 
 /** Jeden přihlášený. Která pole jsou vyplněná, závisí na typu akce. */
