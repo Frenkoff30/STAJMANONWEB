@@ -29,7 +29,6 @@ import {
   platneDatum,
   pondeliTydne,
   posunDnu,
-  rozsahSlotu,
   tydenniOpakovani,
   type Blokace,
   type Jizdarna,
@@ -76,6 +75,18 @@ const dnes = dnesCz();
 
 /** Navazující hodiny, ze kterých jde vybírat délku. */
 const rada = navazujiciSloty(sloty, slot.kod, MAX_BLOKU);
+
+/**
+ * Délka přinesená z kalendáře. Kdo tam přetáhl přes tři políčka, najde tu
+ * rovnou tři hodiny; ve formuláři to jde ještě přepsat.
+ */
+const vychoziDelka = Math.max(
+  1,
+  Math.min(rada.length, Number(parametry.get('delka') ?? 1) || 1),
+);
+
+/** Konec posledního vybraného slotu — co se ukáže v záhlaví. */
+const konecBloku = rada[vychoziDelka - 1]?.konec ?? slot.konec;
 
 let chyba = '';
 
@@ -215,7 +226,9 @@ const opakovatMax = posunDnu(datum, 364);
   <div class="card p-7 lg:p-9">
     <p class="eyebrow text-brass-700">{jizdarna.nazev}</p>
     <p class="t-3 mt-2">{dlouheDatum(datum)}</p>
-    <p class="mt-1 font-display text-[1.75rem]">{rozsahSlotu(slot)}</p>
+    <p class="mt-1 font-display text-[1.75rem]">
+      {cas(slot.zacatek)} – {cas(konecBloku)}
+    </p>
 
     <dl class="mt-7 space-y-px border-t border-ink/12">
       {
@@ -349,7 +362,7 @@ const opakovatMax = posunDnu(datum, 364);
                 <label for="delka" class="form-label">Délka</label>
                 <select id="delka" name="delka" class="form-control">
                   {rada.map((s, i) => (
-                    <option value={i + 1}>
+                    <option value={i + 1} selected={i + 1 === vychoziDelka}>
                       {i === 0 ? '1 hodina' : `${i + 1} hodiny v kuse`} — do{' '}
                       {cas(s.konec)}
                     </option>

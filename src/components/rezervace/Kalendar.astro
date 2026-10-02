@@ -48,7 +48,7 @@ function odkaz(datum: string, slot: string): string {
 ---
 
 <div class="obal">
-  <table class="kal">
+  <table class="kal" data-kalendar>
     <caption class="sr-only">
       Obsazenost jízdárny {jizdarna.nazev}.{' '}
       {doporuceniTextu(jizdarna) ? `${doporuceniTextu(jizdarna)}.` : ''}
@@ -70,7 +70,7 @@ function odkaz(datum: string, slot: string): string {
 
     <tbody>
       {
-        sloty.map((slot) => (
+        sloty.map((slot, radek) => (
           <tr>
             <th scope="row" class="casova">
               <span>{cas(slot.zacatek)}</span>
@@ -90,7 +90,7 @@ function odkaz(datum: string, slot: string): string {
 
                 if (pryc) {
                   return (
-                    <td class="bunka je-pryc">
+                    <td class="bunka je-pryc" data-den={den} data-radek={radek}>
                       <span class="sr-only">{popis} — proběhlo</span>
                     </td>
                   );
@@ -98,7 +98,7 @@ function odkaz(datum: string, slot: string): string {
 
                 if (zavreno) {
                   return (
-                    <td class="bunka je-zavreno">
+                    <td class="bunka je-zavreno" data-den={den} data-radek={radek}>
                       <span class="stitek">{zavreno.duvod || 'Zavřeno'}</span>
                       <span class="sr-only">
                         {popis} — zavřeno{zavreno.duvod ? `: ${zavreno.duvod}` : ''}
@@ -152,11 +152,15 @@ function odkaz(datum: string, slot: string): string {
 
                 // Technický strop jízdárny. Prakticky se na něj nedojde.
                 if (volno === 0 && !moje) {
-                  return <td class:list={trida}>{obsah}</td>;
+                  return (
+                    <td class:list={trida} data-den={den} data-radek={radek}>
+                      {obsah}
+                    </td>
+                  );
                 }
 
                 return (
-                  <td class:list={trida}>
+                  <td class:list={trida} data-den={den} data-radek={radek} data-volna>
                     <a href={odkaz(den, slot.kod)} class="klik">
                       {obsah}
                     </a>
@@ -173,6 +177,12 @@ function odkaz(datum: string, slot: string): string {
 
 <p class="posuv" aria-hidden="true">Tabulkou jde posouvat do stran →</p>
 
+<p class="tah">
+  Víc hodin v kuse vyberete tažením myší přes sousední políčka jednoho dne,
+  jako v tabulce. Na dotykovém displeji klepněte na první hodinu a délku
+  nastavte ve formuláři.
+</p>
+
 <ul class="legenda">
   <li><span class="vzor v-volno"></span> Volno</li>
   <li><span class="vzor v-moje"></span> Moje rezervace</li>
@@ -183,6 +193,107 @@ function odkaz(datum: string, slot: string): string {
     )
   }
 </ul>
+
+<script>
+  /**
+   * Výběr více hodin tažením, jako v tabulkovém editoru.
+   *
+   * Tahem přes sousední políčka jednoho dne se vybere souvislý blok a po
+   * puštění se otevře potvrzení rovnou s touhle délkou. Jedno klepnutí
+   * zůstává obyčejným odkazem, takže bez JavaScriptu i na dotykovém
+   * displeji funguje všechno jako dřív — jen se délka nastaví ve formuláři.
+   */
+  const tabulka = document.querySelector<HTMLTableElement>('[data-kalendar]');
+
+  if (tabulka) {
+    const bunky = [...tabulka.querySelectorAll<HTMLTableCellElement>('[data-radek]')];
+
+    /** Volná políčka jednoho dne, seřazená podle rozvrhu. */
+    const den = (datum: string) =>
+      bunky.filter((b) => b.dataset.den === datum).sort(
+        (a, b) => Number(a.dataset.radek) - Number(b.dataset.radek),
+      );
+
+    let zacatek: HTMLTableCellElement | null = null;
+    let vybrane: HTMLTableCellElement[] = [];
+
+    const zrusitVyber = () => {
+      for (const b of vybrane) b.classList.remove('je-vybrana');
+      vybrane = [];
+    };
+
+    /**
+     * Souvislý blok od začátku tahu k políčku pod kurzorem. Na prvním
+     * obsazeném nebo zavřeném políčku se blok zastaví — přes zavřený termín
+     * se přetáhnout nedá.
+     */
+    const blok = (konec: HTMLTableCellElement) => {
+      if (!zacatek || konec.dataset.den !== zacatek.dataset.den) return [];
+
+      const rada = den(zacatek.dataset.den!);
+      const od = rada.indexOf(zacatek);
+      const kam = rada.indexOf(konec);
+      if (od < 0 || kam < 0) return [];
+
+      const vysek: HTMLTableCellElement[] = [];
+      const krok = kam >= od ? 1 : -1;
+      for (let i = od; krok > 0 ? i <= kam : i >= kam; i += krok) {
+        if (!('volna' in rada[i]!.dataset)) break;
+        vysek.push(rada[i]!);
+      }
+      // Tah nahoru vybírá taky odshora dolů, jen začíná jinde.
+      return krok > 0 ? vysek : vysek.reverse();
+    };
+
+    tabulka.addEventListener('pointerdown', (udalost) => {
+      // Dotyk nechává scrollovat, tam se táhnout nedá.
+      if (udalost.pointerType === 'touch') return;
+
+      const bunka = (udalost.target as Element).closest<HTMLTableCellElement>(
+        '[data-volna]',
+      );
+      if (!bunka) return;
+
+      zrusitVyber();
+      zacatek = bunka;
+    });
+
+    tabulka.addEventListener('pointermove', (udalost) => {
+      if (!zacatek) return;
+
+      const bunka = (udalost.target as Element).closest<HTMLTableCellElement>(
+        '[data-radek]',
+      );
+      if (!bunka) return;
+
+      zrusitVyber();
+      vybrane = blok(bunka);
+      for (const b of vybrane) b.classList.add('je-vybrana');
+    });
+
+    /* Puštění myši kdekoli na stránce tah ukončí, i když kurzor mezitím
+       sjel z tabulky pryč. */
+    document.addEventListener('pointerup', () => {
+      const delka = vybrane.length;
+      const prvni = vybrane[0];
+      zacatek = null;
+
+      if (delka > 1 && prvni) {
+        const cil = prvni.querySelector<HTMLAnchorElement>('a.klik')?.href;
+        zrusitVyber();
+        if (cil) window.location.href = `${cil}&delka=${delka}`;
+        return;
+      }
+      zrusitVyber();
+    });
+
+    /* Při tahu nechceme, aby prohlížeč označoval text nebo odtáhl odkaz. */
+    tabulka.addEventListener('dragstart', (udalost) => udalost.preventDefault());
+    tabulka.addEventListener('selectstart', (udalost) => {
+      if (zacatek) udalost.preventDefault();
+    });
+  }
+</script>
 
 <style>
   .obal {
@@ -380,12 +491,23 @@ function odkaz(datum: string, slot: string): string {
   .je-zavreno {
     background: var(--color-sand-300);
   }
+  /* Políčka pod právě taženým výběrem. */
+  .je-vybrana {
+    background: var(--color-brass-100);
+    box-shadow: inset 0 0 0 1px var(--color-brass-600);
+  }
   .je-zavreno .stitek {
     font-size: 0.625rem;
     font-weight: 600;
     color: var(--color-brass-900);
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  .tah {
+    margin-top: 0.6rem;
+    font-size: 0.75rem;
+    color: var(--color-ink-3);
   }
 
   .posuv {
