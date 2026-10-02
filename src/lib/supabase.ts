@@ -118,6 +118,14 @@ export function citelnaChyba(chyba: { message?: string } | null): string {
   if (/duplicate key value/i.test(zprava)) {
     return 'Tenhle termín už máte zarezervovaný.';
   }
+  /* Databáze je o úpravu pozadu. Hláška míří na správce, protože běžný člen
+     s tím nic nenadělá — a mlčet by znamenalo hádat, co se stalo. */
+  if (/schema cache|column .* does not exist|pocet_koni|doporuceni_koni/i.test(zprava)) {
+    return (
+      'Databáze ještě nemá úpravu pro počet koní a opakování. ' +
+      'Spusťte v Supabase (SQL Editor) soubor supabase/uprava-rezervace-provoz.sql.'
+    );
+  }
   // Vlastní hlášky z triggerů v databázi končí tečkou a jsou česky.
   if (/[ěščřžýáíéúůňťď]/i.test(zprava) && zprava.length < 200) {
     return zprava;

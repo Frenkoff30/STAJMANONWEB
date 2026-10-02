@@ -159,8 +159,13 @@ if (Astro.request.method === 'POST') {
       );
 
       for (const { error } of vysledky) {
-        if (error) posledniChyba = citelnaChyba(error);
-        else hotovo += 1;
+        if (error) {
+          // Do logu celá hláška z databáze, na stránku jen ta čitelná.
+          console.error('Rezervace se neuložila', error.message);
+          posledniChyba = citelnaChyba(error);
+        } else {
+          hotovo += 1;
+        }
       }
     }
 
